@@ -1,0 +1,255 @@
+<div class="perfil-wrapper"></div>
+{% extends 'base.html' %} {% block content %}
+<h2>Gerenciamento da Equipe</h2>
+
+<!-- Resumo geral de usuários -->
+{% set total_users = users|length %} {% set total_adm =
+users|selectattr("papel_str", "equalto", "ADM")|list|length %} {% set
+total_editor = users|selectattr("papel_str", "equalto", "EDITOR")|list|length %}
+{% set total_visualizador = users|selectattr("papel_str", "equalto",
+"VISUALIZADOR")|list|length %}
+
+<div class="equipes-summary">
+  Usuários: <span id="total-usuarios">{{ total_users }}</span> | ADM:
+  <span id="total-adm">{{ total_adm }}</span> | EDITOR:
+  <span id="total-editor">{{ total_editor }}</span> | VISUALIZADOR:
+  <span id="total-visualizador">{{ total_visualizador }}</span>
+</div>
+
+<!-- Botão de ordenação -->
+<div class="sorting">
+  <button id="orderToggle" data-order="asc" class="btn">Ordenar A-Z</button>
+</div>
+
+<!-- Tabela com a lista de usuários -->
+<div class="table-responsive">
+  <table class="table" id="usuariosTable">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Perfil de acesso</th>
+        <th style="text-align: right">Ações</th>
+      </tr>
+    </thead>
+    <tbody id="usuariosBody">
+      {% for user in users %}
+      <tr
+        class="user-row"
+        data-user-id="{{ user.id }}"
+        data-user-name="{{ user.nome|lower }}"
+        data-user-email="{{ user.email }}"
+        data-user-papel="{{ user.papel_str }}"
+      >
+        <td>{{ user.nome }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.papel_str }}</td>
+        <td style="text-align: right" onclick="event.stopPropagation();">
+          <button
+            class="btn-excluir"
+            data-user-id="{{ user.id }}"
+            title="Excluir"
+          ></button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Botão para adicionar novo usuário -->
+<div class="equipe-controls">
+  <a href="{{ url_for('cadastro.cadastrar_usuario') }}" class="btn btn-primary"
+    >+ Adicionar usuário</a
+  >
+</div>
+
+<!-- Modal para Edição de Usuário (abre ao clicar na linha, exceto o ícone de exclusão) -->
+<div class="modal-overlay" id="modalEditarUsuario" style="display: none">
+  <div class="modal-content">
+    <h2>Editar Usuário</h2>
+    <form id="formEditarUsuario">
+      <input type="hidden" name="id" id="editUserId" />
+      <div class="form-group">
+        <label for="editUserNome">Nome</label>
+        <input
+          type="text"
+          name="nome"
+          id="editUserNome"
+          class="form-control"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="editUserEmail">Email</label>
+        <input
+          type="email"
+          name="email"
+          id="editUserEmail"
+          class="form-control"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="editUserPapel">Perfil de Acesso</label>
+        <select name="papel" id="editUserPapel" class="form-control">
+          <option value="ADM">ADM</option>
+          <option value="EDITOR">EDITOR</option>
+          <option value="VISUALIZADOR">VISUALIZADOR</option>
+        </select>
+      </div>
+      <div class="modal-button-group">
+        <button type="button" id="btnFecharModalEditar" class="btn btn-voltar">
+          Cancelar
+        </button>
+        <button type="submit" id="btnSalvarModalEditar" class="btn btn-primary">
+          Salvar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para Exclusão de Usuário -->
+<div class="modal-overlay" id="modalExcluirUsuario" style="display: none">
+  <div class="modal-content">
+    <h2>Excluir Usuário</h2>
+    <p>
+      Tem certeza que deseja excluir o usuário
+      <span id="excluirUsuarioNome"></span>?
+    </p>
+    <div class="modal-button-group">
+      <button type="button" id="btnFecharModalExcluir" class="btn btn-voltar">
+        Cancelar
+      </button>
+      <button type="button" id="btnConfirmarExclusao" class="btn btn-danger">
+        Excluir
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Ordenação dos usuários
+  document.getElementById("orderToggle").addEventListener("click", function () {
+    var currentOrder = this.getAttribute("data-order");
+    var newOrder = currentOrder === "asc" ? "desc" : "asc";
+    sortUserRows(newOrder);
+    this.setAttribute("data-order", newOrder);
+    this.textContent = newOrder === "asc" ? "Ordenar A-Z" : "Ordenar Z-A";
+  });
+
+  function sortUserRows(order) {
+    var tbody = document.getElementById("usuariosBody");
+    var rows = Array.from(tbody.querySelectorAll(".user-row"));
+    rows.sort(function (a, b) {
+      var nameA = a.getAttribute("data-user-name");
+      var nameB = b.getAttribute("data-user-name");
+      return order === "asc"
+        ? nameA.localeCompare(nameB)
+        : nameB.localeCompare(nameA);
+    });
+    rows.forEach(function (row) {
+      tbody.appendChild(row);
+    });
+  }
+
+  // Abre o modal de edição ao clicar em uma linha (exceto se clicar no botão de exclusão)
+  document.querySelectorAll(".user-row").forEach(function (row) {
+    row.addEventListener("click", function (e) {
+      // Se o clique não tiver sido no botão de exclusão
+      if (!e.target.closest(".btn-excluir")) {
+        var userId = this.getAttribute("data-user-id");
+        var userNome = this.getAttribute("data-user-name");
+        var userEmail =
+          this.getAttribute("data-user-email") ||
+          this.cells[1].textContent.trim();
+        var userPapel =
+          this.getAttribute("data-user-papel") ||
+          this.cells[2].textContent.trim();
+
+        document.getElementById("editUserId").value = userId;
+        document.getElementById("editUserNome").value = userNome;
+        document.getElementById("editUserEmail").value = userEmail;
+        document.getElementById("editUserPapel").value = userPapel;
+
+        document.getElementById("modalEditarUsuario").style.display = "flex";
+      }
+    });
+  });
+
+  // Configura o botão de exclusão para abrir o modal de exclusão
+  document.querySelectorAll(".btn-excluir").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation(); // Impede que o clique dispare o evento da linha
+      var userId = btn.getAttribute("data-user-id");
+      var row = btn.closest("tr");
+      var userNome = row.children[0].textContent.trim();
+      document.getElementById("excluirUsuarioNome").textContent = userNome;
+      document
+        .getElementById("modalExcluirUsuario")
+        .setAttribute("data-user-id", userId);
+      document.getElementById("modalExcluirUsuario").style.display = "flex";
+    });
+  });
+
+  // Fechar modais
+  document
+    .getElementById("btnFecharModalEditar")
+    .addEventListener("click", function () {
+      document.getElementById("modalEditarUsuario").style.display = "none";
+    });
+  document
+    .getElementById("btnFecharModalExcluir")
+    .addEventListener("click", function () {
+      document.getElementById("modalExcluirUsuario").style.display = "none";
+    });
+
+  // Envio do formulário de edição (AJAX)
+  document
+    .getElementById("formEditarUsuario")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+      var userId = document.getElementById("editUserId").value;
+      var userNome = document.getElementById("editUserNome").value;
+      var userEmail = document.getElementById("editUserEmail").value;
+      var userPapel = document.getElementById("editUserPapel").value;
+
+      fetch("/auth/editar_usuario/" + userId, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: userNome,
+          email: userEmail,
+          papel: userPapel,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert("Erro ao atualizar usuário: " + data.message);
+          }
+        });
+    });
+
+  // Confirmação de exclusão (AJAX)
+  document
+    .getElementById("btnConfirmarExclusao")
+    .addEventListener("click", function () {
+      var userId = document
+        .getElementById("modalExcluirUsuario")
+        .getAttribute("data-user-id");
+      fetch("/auth/excluir_usuario/" + userId, { method: "DELETE" })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert("Erro ao excluir usuário: " + data.message);
+          }
+        });
+    });
+</script>
+{% endblock %}

@@ -110,6 +110,23 @@ header {
   border-radius: 12px 12px 0 0;
 }
 
+.navbar-profile {
+  margin-right: 1rem;
+  cursor: pointer;
+}
+.navbar-profile img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-text-2);
+  box-sizing: border-box;
+}
+.navbar-profile.editing-indicator img {
+  filter: brightness(0.5);
+  border-color: var(--color-navbar-active);
+}
+
 .navbar-center {
   display: flex;
   gap: clamp(35px, 5vw, 65px);
@@ -167,6 +184,211 @@ header {
 }
 
 /* ====================================
+      ESTILOS PARA O MODAL MENU
+==================================== */
+
+.profile-modal-content {
+  background-color: var(--color-modal-bg);
+  width: 90%;
+  max-width: 450px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  padding: 0;
+  overflow: hidden;
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+.profile-modal-overlay.show .profile-modal-content {
+  transform: translateY(0);
+}
+
+.profile-modal-header {
+  background: var(--color-navbar-bg);
+  color: var(--color-text-1);
+  padding: 20px 25px;
+  position: relative;
+}
+
+.profile-modal-header h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.profile-modal-body {
+  padding: 25px;
+}
+
+.profile-info-item {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.profile-info-label {
+  font-weight: 600;
+  color: var(--color-text-4);
+  min-width: 80px;
+}
+
+.profile-info-value {
+  color: var(--color-text-2);
+  flex-grow: 1;
+  font-size: 15px;
+}
+
+.profile-button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.profile-btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-btn-primary {
+  background-color: hsl(354, 70%, 55%);
+  color: white;
+}
+
+.profile-btn-primary:hover {
+  background-color: hsl(354, 70%, 45%);
+  box-shadow: 0 4px 8px hsla(354, 70%, 55%, 0.3);
+}
+
+.profile-btn-secondary {
+  background-color: var(--color-link-hover);
+  color: var(--color-text-2);
+}
+
+.profile-btn-secondary:hover {
+  background-color: var(--color-link);
+  color: var(--color-text-1);
+}
+
+.profile-btn-admin {
+  background-color: hsl(354, 80%, 40%);
+  color: white;
+}
+
+.profile-btn-admin:hover {
+  background-color: hsl(354, 80%, 35%);
+  box-shadow: 0 4px 8px hsla(354, 80%, 40%, 0.3);
+}
+
+/* Avatar e divider */
+.profile-user-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  background-color: #e3e9ff;
+  border: 2px solid var(--color-input-border);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-text {
+  font-size: 32px;
+  color: #4a77e5;
+}
+
+.profile-divider {
+  height: 1px;
+  background-color: var(--color-input-border);
+  margin: 20px 0;
+}
+
+.profile-footer {
+  padding: 15px 25px;
+  background-color: var(--color-brand-soft);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.profile-access-section {
+  margin-bottom: 16px;
+}
+
+.profile-access-item {
+  display: flex;
+  align-items: center;
+}
+
+.profile-access-section-tag {
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+.profile-access-value-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 14px;
+  color: var(--color-text-1);
+  background-color: var(--color-modal-bg);
+  border: 1px solid var(--color-input-border);
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+
+/* Animação de entrada para os elementos do modal */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-animate {
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+.profile-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.profile-delay-2 {
+  animation-delay: 0.2s;
+}
+
+.profile-delay-3 {
+  animation-delay: 0.3s;
+}
+
+.profile-delay-4 {
+  animation-delay: 0.4s;
+}
+
+/* ====================================
          CONTAINERS & LAYOUT
 ==================================== */
 .container-login {
@@ -190,9 +412,7 @@ main.fade-in {
 }
 
 .container-floating {
-  min-width: 90%;
-  max-height: 90%;
-  margin: 20px auto;
+  margin: 0 auto;
   background-color: var(--color-container-bg);
   padding: 20px;
   border-radius: 12px;
@@ -768,6 +988,80 @@ label {
 }
 
 /* ====================================
+       ESTILOS PARA A TAG DE PERFIL DE ACESSO
+==================================== */
+.form-editar-perfil {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.form-editar-perfil-input {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.editar-perfil-btn-save:hover {
+  background-color: var(--color-btn-primary-hover, #0056b3);
+}
+
+.perfil-upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.perfil-access-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 14px;
+  color: var(--color-text-1);
+  background-color: var(--color-modal-bg);
+  border: 1px solid var(--color-input-border);
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+.perfil-foto-label {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+}
+
+.perfil-foto-preview {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--color-border, #ccc);
+  transition: 0.3s ease;
+}
+
+.perfil-foto-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #666;
+  border: 2px dashed #ccc;
+}
+
+.perfil-foto-label:hover .perfil-foto-preview {
+  opacity: 0.8;
+  filter: brightness(0.9);
+}
+
+.perfil-file-input {
+  display: none;
+}
+
+/* ====================================
       ESTILOS PARA GERENCIAMENTO E EDIÇÃO DE TURMAS
 ==================================== */
 .turmas-summary {
@@ -1034,6 +1328,7 @@ label {
 
   .navbar {
     border-radius: 12px;
+    padding: 5px 20px;
   }
 
   .navbar a {
@@ -1042,11 +1337,11 @@ label {
   }
 
   .container-login {
-    width: 400px;
+    width: 450px;
   }
 
   .container-floating {
-    max-height: 88%;
+    max-height: 89%;
     min-width: 599px;
     max-width: 950px;
   }

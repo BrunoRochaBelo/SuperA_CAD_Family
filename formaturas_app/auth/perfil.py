@@ -6,6 +6,8 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from formaturas_app import db
 from formaturas_app.models import Usuario
+from flask import jsonify
+
 
 perfil_bp = Blueprint('perfil', __name__)
 
@@ -98,3 +100,19 @@ def alterar_senha():
         flash("Erro ao alterar a senha: " + str(e), "danger")
     
     return redirect(url_for("perfil.editar_perfil"))
+
+@perfil_bp.route('/validar_senha', methods=['POST'])
+@login_required
+def validar_senha():
+    """
+    Endpoint para validação da senha atual via AJAX.
+    Recebe um JSON com a senha atual e retorna {"valid": True} ou {"valid": False}.
+    """
+    data = request.get_json()
+    current_password = data.get("current_password")
+    
+    if current_password and current_user.check_password(current_password):
+        return jsonify(valid=True)
+    else:
+        return jsonify(valid=False)
+

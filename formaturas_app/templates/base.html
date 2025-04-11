@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="pt-br">
   <head>
+    <meta charset="UTF-8" />
     <title>{% block title %}Formaturas App{% endblock %}</title>
     <link
       rel="icon"
@@ -8,71 +9,21 @@
       type="image/svg+xml"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <!-- CSS customizado -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
+
     <!-- Tippy.js CSS para tooltips -->
     <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
-    <style>
-      /* Estilos básicos para o ícone do perfil e o modal */
-      .navbar-profile {
-        margin-right: 1rem;
-        cursor: pointer;
-      }
-      .navbar-profile img {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-      }
-      /* Modal básico */
-      .modal {
-        display: none; /* Escondido por padrão */
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4); /* Fundo semi-transparente */
-      }
-      .modal-content {
-        background-color: #fefefe;
-        margin: 10% auto;
-        padding: 1.5rem;
-        border: 1px solid #888;
-        width: 90%;
-        max-width: 400px;
-        border-radius: 8px;
-        position: relative;
-      }
-      .modal-close {
-        position: absolute;
-        top: 5px;
-        right: 10px;
-        font-size: 1.5rem;
-        cursor: pointer;
-      }
-      .modal a {
-        display: block;
-        margin-top: 1rem;
-        text-decoration: none;
-        color: #007bff;
-      }
-      .modal a:hover {
-        text-decoration: underline;
-      }
-    </style>
   </head>
   <body>
     <header>
       <nav class="navbar">
         <div class="navbar-left">
           {% if current_user.is_authenticated %}
-          <!-- Ícone com a foto do usuário ou avatar default -->
           <div
             class="navbar-profile"
             id="profileIcon"
@@ -138,7 +89,30 @@
           </a>
           {% if current_user.is_authenticated and current_user.papel.value ==
           'ADM' %}
-          <!-- Relatório -->
+          <!-- Aba Equipe -->
+          <a
+            href="{{ url_for('equipe.index', active_page='equipe') }}"
+            class="{% if active_page=='equipe' %}active{% endif %}"
+            data-tippy-content="Equipe"
+          >
+            <span class="nav-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+            <span class="nav-text">Equipe</span>
+          </a>
+          <!-- Relatórios -->
           <a
             href="{{ url_for('relatorios.filtrar', active_page='relatorios') }}"
             class="{% if active_page=='relatorios' %}active{% endif %}"
@@ -168,34 +142,10 @@
           </a>
           {% endif %}
         </div>
-        <div class="navbar-right">
-          <!-- Sair -->
-          <a
-            href="{{ url_for('auth.logout') }}"
-            title="Sair"
-            data-tippy-content="Sair"
-          >
-            <span class="nav-icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-            </span>
-            <span class="nav-text">Sair</span>
-          </a>
-        </div>
+        <!-- Removida a seção 'navbar-right' com o botão Sair -->
       </nav>
     </header>
+
     <main>
       {% with messages = get_flashed_messages(with_categories=true) %} {% if
       messages %}
@@ -213,73 +163,165 @@
         {% endfor %}
       </div>
       {% endif %} {% endwith %}
+
       <div class="container-floating">{% block content %}{% endblock %}</div>
     </main>
 
     <!-- Modal do Perfil -->
-    <div id="profileModal" class="modal">
-      <div class="modal-content">
-        <span class="modal-close" id="modalClose">&times;</span>
-        <h2>Meu Perfil</h2>
-        {% if current_user.is_authenticated %}
-        <p><strong>Nome:</strong> {{ current_user.nome }}</p>
-        <p><strong>Email:</strong> {{ current_user.email }}</p>
-        <a href="{{ url_for('perfil.editar_perfil') }}">Editar Perfil</a>
-        {% if current_user.papel.value == 'ADM' %}
-        <a href="{{ url_for('cadastro.cadastrar_usuario') }}"
-          >Adicionar Novo Usuário</a
-        >
-        {% endif %} {% else %}
-        <p>Usuário não autenticado.</p>
-        {% endif %}
+    <div id="profileModal" class="modal-overlay">
+      <div class="profile-modal-content">
+        <div class="profile-modal-header">
+          <h2>Meu Perfil</h2>
+        </div>
+
+        <div class="profile-modal-body">
+          {% if current_user.is_authenticated %}
+          <div class="profile-user-avatar profile-animate">
+            {% if current_user.foto_perfil %}
+            <img
+              src="{{ url_for('static', filename=current_user.foto_perfil) }}"
+              alt="Foto de Perfil"
+              class="profile-avatar-img"
+            />
+            {% else %}
+            <div class="profile-avatar-text">
+              {{ current_user.nome[0].upper() }}
+            </div>
+            {% endif %}
+          </div>
+          <div class="profile-access-section-tag profile-animate">
+            <span class="profile-access-value-tag">
+              {{ current_user.papel.value }}
+            </span>
+          </div>
+          <div class="profile-info-item profile-animate">
+            <span class="profile-info-label">Nome:</span>
+            <span class="profile-info-value">{{ current_user.nome }}</span>
+          </div>
+
+          <div class="profile-info-item profile-animate">
+            <span class="profile-info-label">Email:</span>
+            <span class="profile-info-value">{{ current_user.email }}</span>
+          </div>
+
+          <div class="profile-divider"></div>
+
+          <!-- Grupo de botões: Editar Perfil e Encerrar Sessão -->
+          <div class="profile-button-group profile-animate">
+            <a
+              href="{{ url_for('perfil.editar_perfil') }}"
+              class="profile-btn profile-btn-primary"
+            >
+              Editar Perfil
+            </a>
+            <a
+              href="{{ url_for('auth.logout') }}"
+              class="profile-btn profile-btn-admin"
+            >
+              Encerrar sessão
+            </a>
+          </div>
+
+          {% else %}
+          <p>Usuário não autenticado.</p>
+          {% endif %}
+        </div>
+
+        <div class="profile-footer">
+          <button
+            type="button"
+            id="modalCloseBtn"
+            class="profile-btn profile-btn-secondary"
+          >
+            Fechar
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Scripts -->
-    <script src="https://unpkg.com/@popperjs/core@2"></script>
-    <script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.min.js"></script>
     <script>
-      // Tooltips
-      tippy("[data-tippy-content]", {
-        animation: "fade",
-        theme: "light-border",
-      });
       document.addEventListener("DOMContentLoaded", function () {
         document.querySelector("main").classList.add("fade-in");
-        setTimeout(function () {
+
+        // Gerenciamento de mensagens flash
+        setTimeout(() => {
           const flashDiv = document.getElementById("flash-messages");
           if (flashDiv) {
             flashDiv.style.opacity = "0";
-            setTimeout(function () {
-              flashDiv.style.display = "none";
-            }, 500);
+            setTimeout(() => (flashDiv.style.display = "none"), 500);
           }
         }, 5000);
-      });
 
-      // Modal: exibe/oculta ao clicar no ícone do perfil
-      const profileIcon = document.getElementById("profileIcon");
-      const profileModal = document.getElementById("profileModal");
-      const modalClose = document.getElementById("modalClose");
+        // Obter o caminho atual da URL
+        const currentPath = window.location.pathname;
+        // Elementos do perfil
+        const profileIcon = document.getElementById("profileIcon");
+        const profileModal = document.getElementById("profileModal");
+        const modalCloseBtn = document.getElementById("modalCloseBtn");
 
-      if (profileIcon) {
-        profileIcon.addEventListener("click", function () {
-          profileModal.style.display = "block";
+        // Se estiver na rota /auth/editar_perfil, aplica o estilo imediatamente
+        if (profileIcon && currentPath === "/auth/editar_perfil") {
+          profileIcon.classList.add("editing-indicator");
+        }
+
+        if (profileIcon) {
+          profileIcon.addEventListener("click", () => {
+            // Se estiver na página de editar perfil, não abre o modal; já está indicado
+            if (currentPath === "/auth/editar_perfil") {
+              console.log("Você já está na página de edição de perfil.");
+            } else {
+              // Abre o modal normalmente
+              document.body.style.overflow = "hidden";
+              profileModal.style.display = "flex";
+              setTimeout(() => {
+                profileModal.classList.add("show");
+              }, 10);
+            }
+          });
+        }
+
+        // Manipuladores de fechamento do modal
+        const closeModalHandlers = [modalCloseBtn];
+        closeModalHandlers.forEach((element) => {
+          if (element) {
+            element.addEventListener("click", () => {
+              closeProfileModal();
+            });
+          }
         });
-      }
 
-      if (modalClose) {
-        modalClose.addEventListener("click", function () {
-          profileModal.style.display = "none";
+        // Fechar clicando fora do modal
+        window.addEventListener("click", function (event) {
+          if (event.target === profileModal) {
+            closeProfileModal();
+          }
         });
-      }
 
-      // Fecha o modal se clicar fora do conteúdo
-      window.addEventListener("click", function (event) {
-        if (event.target == profileModal) {
-          profileModal.style.display = "none";
+        // Fechamento com tecla ESC
+        document.addEventListener("keydown", function (event) {
+          if (
+            event.key === "Escape" &&
+            profileModal.classList.contains("show")
+          ) {
+            closeProfileModal();
+          }
+        });
+
+        function closeProfileModal() {
+          profileModal.classList.remove("show");
+          setTimeout(() => {
+            profileModal.style.display = "none";
+            document.body.style.overflow = "";
+          }, 300);
+        }
+
+        // Inicialização de tooltips para os botões do modal
+        if (typeof tippy !== "undefined") {
+          tippy("[data-tippy-content]");
         }
       });
     </script>
+    {% block scripts %}{% endblock %}
   </body>
 </html>

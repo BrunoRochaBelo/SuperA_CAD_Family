@@ -1,430 +1,576 @@
-﻿{% extends 'base.html' %}
-{% block content %}
+﻿{% extends 'base.html' %} {% block content %}
 <!-- Área de exibição e edição do nome da Turma -->
 <div id="displayTurma" class="turma-display">
-    <h2>
-        <span id="nomeTurmaDisplay" class="turma-name-display">{{ turma_atual }}</span>
-        <a href="javascript:void(0);" id="btnToggleEdit" title="Editar" class="btn-editar btn-editar-left"></a>
-    </h2>
+  <h2>
+    <span id="nomeTurmaDisplay" class="turma-name-display"
+      >{{ turma_atual }}</span
+    >
+    <a
+      href="javascript:void(0);"
+      id="btnToggleEdit"
+      title="Editar"
+      class="btn-editar btn-editar-left"
+    ></a>
+  </h2>
 </div>
 <div id="editarNomeTurma" class="turma-edit">
-    <form method="post" id="formRenomearTurma">
-        <input type="text" name="nova_turma" id="novaTurma" required placeholder="Novo nome da Turma">
-        <button type="submit" class="btn">Renomear</button>
-        <button type="button" class="btn btn-voltar" id="btnCancelarEdicao">Cancelar</button>
-    </form>
+  <form method="post" id="formRenomearTurma">
+    <input
+      type="text"
+      name="nova_turma"
+      id="novaTurma"
+      required
+      placeholder="Novo nome da Turma"
+    />
+    <button type="submit" class="btn">Renomear</button>
+    <button type="button" class="btn btn-voltar" id="btnCancelarEdicao">
+      Cancelar
+    </button>
+  </form>
 </div>
 
 <!-- Sumário e opção de ordenação -->
-{% set total_parentes = 0 %}
-{% set total_fotos = 0 %}
-{% for a in alunos %}
-{% set total_parentes = total_parentes + a.parentes|length %}
-{% set total_fotos = total_fotos + (a.parentes | selectattr('comprou_foto') | list | length) %}
-{% endfor %}
+{% set total_parentes = 0 %} {% set total_fotos = 0 %} {% for a in alunos %} {%
+set total_parentes = total_parentes + a.parentes|length %} {% set total_fotos =
+total_fotos + (a.parentes | selectattr('comprou_foto') | list | length) %} {%
+endfor %}
 <div class="turmas-summary">
-    Alunos: <span id="total-alunos">{{ alunos|length }}</span> |
-    Parentes: <span id="total-parentes">{{ total_parentes }}</span> |
-    Fotos Compradas: <span id="total-fotos">{{ total_fotos }}</span>
+  Alunos: <span id="total-alunos">{{ alunos|length }}</span> | Parentes:
+  <span id="total-parentes">{{ total_parentes }}</span> | Fotos Compradas:
+  <span id="total-fotos">{{ total_fotos }}</span>
 </div>
 <div class="sorting">
-    <button id="orderToggle" data-order="asc" class="btn">Ordenar A-Z</button>
+  <button id="orderToggle" data-order="asc" class="btn">Ordenar A-Z</button>
 </div>
 
 <!-- Tabela com a lista de alunos -->
 <div class="table-responsive">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Aluno</th>
-                <th style="text-align: right;">Ações</th>
-            </tr>
-        </thead>
-        <tbody id="alunosBody">
-            {% for a in alunos %}
-            <tr class="student-row" data-student-id="{{ a.id }}" data-student-name="{{ a.aluno|lower }}">
-                <td>
-                    <span class="student-name">{{ a.aluno }}</span><br>
-                    {% set fotos_count = a.parentes | selectattr('comprou_foto') | list | length %}
-                    <small class="parente-count" id="parente-count-{{ a.id }}" data-count="{{ a.parentes|length }}" data-fotos="{{ fotos_count }}">
-                        {{ a.parentes|length }} parente(s) | Fotos Compradas: {{ fotos_count }}
-                    </small>
-                </td>
-                <td style="text-align: right;">
-                    <span class="toggle-icon"></span>
-                    <a href="{{ url_for('turmas.excluir_aluno', id=a.id, active_page='turmas') }}" class="btn-excluir" title="Excluir" onclick="event.stopPropagation(); return confirm('Excluir este Aluno?');"></a>
-                </td>
-            </tr>
-            <tr class="parentes-row" data-student-id="{{ a.id }}">
-                <td colspan="2">
-                    <div class="parentes-container" id="parentes-container-{{ a.id }}">
-                        <p>Carregando parentes...</p>
-                    </div>
-                    <button class="btn" onclick="abrirModalParente('{{ a.id }}'); event.stopPropagation();">Adicionar Parente</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Aluno</th>
+        <th style="text-align: right">Ações</th>
+      </tr>
+    </thead>
+    <tbody id="alunosBody">
+      {% for a in alunos %}
+      <tr
+        class="student-row"
+        data-student-id="{{ a.id }}"
+        data-student-name="{{ a.aluno|lower }}"
+      >
+        <td>
+          <span class="student-name">{{ a.aluno }}</span><br />
+          {% set fotos_count = a.parentes | selectattr('comprou_foto') | list |
+          length %}
+          <small
+            class="parente-count"
+            id="parente-count-{{ a.id }}"
+            data-count="{{ a.parentes|length }}"
+            data-fotos="{{ fotos_count }}"
+          >
+            {{ a.parentes|length }} parente(s) | Fotos Compradas: {{ fotos_count
+            }}
+          </small>
+        </td>
+        <td style="text-align: right">
+          <span class="toggle-icon"></span>
+          <a
+            href="{{ url_for('turmas.excluir_aluno', id=a.id, active_page='turmas') }}"
+            class="btn-excluir"
+            title="Excluir"
+            onclick="event.stopPropagation(); return confirm('Excluir este Aluno?');"
+          ></a>
+        </td>
+      </tr>
+      <tr class="parentes-row" data-student-id="{{ a.id }}">
+        <td colspan="2">
+          <div class="parentes-container" id="parentes-container-{{ a.id }}">
+            <p>Carregando parentes...</p>
+          </div>
+          <button
+            class="btn"
+            onclick="abrirModalParente('{{ a.id }}'); event.stopPropagation();"
+          >
+            Adicionar Parente
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 <!-- Botões adicionais -->
 <div class="editar-turma-buttons">
-    <a href="{{ url_for('turmas.index', active_page='turmas') }}" class="btn btn-voltar">← Turmas</a>
-    <button type="button" class="btn" id="btnAbrirFormAluno">Adicionar novo aluno</button>
+  <a
+    href="{{ url_for('turmas.index', active_page='turmas') }}"
+    class="btn btn-voltar"
+    >← Turmas</a
+  >
+  <button type="button" class="btn" id="btnAbrirFormAluno">
+    Adicionar novo aluno
+  </button>
 </div>
 <div id="formNovoAluno" class="novo-aluno-form">
-    <form method="post" action="{{ url_for('turmas.adicionar_aluno', turma=turma_atual, active_page='turmas') }}" id="novoAlunoForm">
-        <div class="form-group">
-            <label for="aluno">Nome do aluno</label>
-            <input type="text" id="aluno" name="aluno" required placeholder="Digite o nome do aluno">
-        </div>
-        <div class="form-group">
-            <button type="submit" class="btn">Adicionar</button>
-            <button type="button" class="btn btn-voltar" id="btnCancelarAluno">Cancelar</button>
-        </div>
-    </form>
+  <form
+    method="post"
+    action="{{ url_for('turmas.adicionar_aluno', turma=turma_atual, active_page='turmas') }}"
+    id="novoAlunoForm"
+  >
+    <div class="form-group">
+      <label for="aluno">Nome do aluno</label>
+      <input
+        type="text"
+        id="aluno"
+        name="aluno"
+        required
+        placeholder="Digite o nome do aluno"
+      />
+    </div>
+    <div class="form-group">
+      <button type="submit" class="btn">Adicionar</button>
+      <button type="button" class="btn btn-voltar" id="btnCancelarAluno">
+        Cancelar
+      </button>
+    </div>
+  </form>
 </div>
 
 <!-- Modal para cadastro/edição de parente com validação e feedback -->
 <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-content">
-        <h2 id="modalTitle">Novo Parente</h2>
-        <form id="formCadastroParente" novalidate>
-            <!-- Nome do Parente (obrigatório) -->
-            <div class="form-group">
-                <label for="modalNome">Nome do Parente *</label>
-                <input type="text" id="modalNome" class="cadastro-parente-input" required placeholder="Digite o nome">
-                <span class="cadastro-parente-feedback" id="feedbackNome"></span>
-            </div>
-            <!-- Grau de Parentesco (obrigatório) -->
-            <div class="form-group">
-                <label for="modalGrau">Grau de Parentesco *</label>
-                <input type="text" id="modalGrau" class="cadastro-parente-input" required placeholder="Ex: Pai, Mãe, Tio">
-                <span class="cadastro-parente-feedback" id="feedbackGrau"></span>
-            </div>
-            <!-- Cidade (obrigatório) -->
-            <div class="form-group">
-                <label for="modalCidade">Cidade *</label>
-                <input type="text" id="modalCidade" class="cadastro-parente-input" required placeholder="Digite a cidade">
-                <span class="cadastro-parente-feedback" id="feedbackCidade"></span>
-            </div>
-            <!-- Outros campos opcionais -->
-            <div class="form-group">
-                <label for="modalData">Data de Nascimento</label>
-                <input type="date" id="modalData" class="cadastro-parente-input">
-            </div>
-            <div class="form-group">
-                <label for="modalProfissao">Profissão</label>
-                <input type="text" id="modalProfissao" class="cadastro-parente-input" placeholder="Digite a profissão">
-            </div>
-            <div class="form-group">
-                <label for="modalTelefone">Telefone</label>
-                <input type="text" id="modalTelefone" class="cadastro-parente-input" placeholder="(xx) xxxx-xxxx" pattern="\(\d{2}\) \d{4,5}-\d{4}">
-                <span class="cadastro-parente-feedback" id="feedbackTelefone"></span>
-            </div>
-            <div class="modal-switch-container">
-                <label class="switch-label">
-                    Comprou Foto
-                    <label class="switch">
-                        <input type="checkbox" id="modalComprou">
-                        <span class="slider"></span>
-                    </label>
-                </label>
-            </div>
-            <!-- Botões -->
-            <div class="modal-button-group">
-                <button type="button" id="modalClose" class="btn btn-voltar">Cancelar</button>
-                <button type="button" id="modalSave" class="btn cadastro-parente-btn-save" disabled>Salvar</button>
-            </div>
-        </form>
-    </div>
+  <div class="modal-content">
+    <h2 id="modalTitle">Novo Parente</h2>
+    <form id="formCadastroParente" novalidate>
+      <!-- Nome do Parente (obrigatório) -->
+      <div class="form-group">
+        <label for="modalNome">Nome do Parente *</label>
+        <input
+          type="text"
+          id="modalNome"
+          class="cadastro-parente-input"
+          required
+          placeholder="Digite o nome"
+        />
+        <span class="cadastro-parente-feedback" id="feedbackNome"></span>
+      </div>
+      <!-- Grau de Parentesco (obrigatório) -->
+      <div class="form-group">
+        <label for="modalGrau">Grau de Parentesco *</label>
+        <input
+          type="text"
+          id="modalGrau"
+          class="cadastro-parente-input"
+          required
+          placeholder="Ex: Pai, Mãe, Tio"
+        />
+        <span class="cadastro-parente-feedback" id="feedbackGrau"></span>
+      </div>
+      <!-- Cidade (obrigatório) -->
+      <div class="form-group">
+        <label for="modalCidade">Cidade *</label>
+        <input
+          type="text"
+          id="modalCidade"
+          class="cadastro-parente-input"
+          required
+          placeholder="Digite a cidade"
+        />
+        <span class="cadastro-parente-feedback" id="feedbackCidade"></span>
+      </div>
+      <!-- Outros campos opcionais -->
+      <div class="form-group">
+        <label for="modalData">Data de Nascimento</label>
+        <input type="date" id="modalData" class="cadastro-parente-input" />
+      </div>
+      <div class="form-group">
+        <label for="modalProfissao">Profissão</label>
+        <input
+          type="text"
+          id="modalProfissao"
+          class="cadastro-parente-input"
+          placeholder="Digite a profissão"
+        />
+      </div>
+      <div class="form-group">
+        <label for="modalTelefone">Telefone</label>
+        <input
+          type="text"
+          id="modalTelefone"
+          class="cadastro-parente-input"
+          placeholder="(xx) xxxx-xxxx"
+          pattern="\(\d{2}\) \d{4,5}-\d{4}"
+        />
+        <span class="cadastro-parente-feedback" id="feedbackTelefone"></span>
+      </div>
+      <div class="modal-switch-container">
+        <label class="switch-label">
+          Comprou Foto
+          <label class="switch">
+            <input type="checkbox" id="modalComprou" />
+            <span class="slider"></span>
+          </label>
+        </label>
+      </div>
+      <!-- Botões -->
+      <div class="modal-button-group">
+        <button type="button" id="modalClose" class="btn btn-voltar">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          id="modalSave"
+          class="btn cadastro-parente-btn-save"
+          disabled
+        >
+          Salvar
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- JavaScript para interatividade e validação -->
 <script>
-    // Variáveis globais para identificar o aluno selecionado e o parente em edição
-    var selectedStudentId = null;
-    var editingParenteId = null;
+  // Variáveis globais para identificar o aluno selecionado e o parente em edição
+  var selectedStudentId = null;
+  var editingParenteId = null;
 
-    // Atualiza o sumário (alunos, parentes, fotos) a partir dos atributos data
-    function updateSummary() {
-        var totalParentes = 0;
-        var totalFotos = 0;
-        document.querySelectorAll('.parente-count').forEach(function (el) {
-            var count = parseInt(el.getAttribute('data-count')) || 0;
-            var fotos = parseInt(el.getAttribute('data-fotos')) || 0;
-            totalParentes += count;
-            totalFotos += fotos;
-        });
-        document.getElementById('total-parentes').textContent = totalParentes;
-        document.getElementById('total-fotos').textContent = totalFotos;
-        var totalAlunos = document.querySelectorAll('.student-row').length;
-        document.getElementById('total-alunos').textContent = totalAlunos;
+  function updateSummary() {
+    var totalParentes = 0;
+    var totalFotos = 0;
+    document.querySelectorAll(".parente-count").forEach(function (el) {
+      var count = parseInt(el.getAttribute("data-count")) || 0;
+      var fotos = parseInt(el.getAttribute("data-fotos")) || 0;
+      totalParentes += count;
+      totalFotos += fotos;
+    });
+    document.getElementById("total-parentes").textContent = totalParentes;
+    document.getElementById("total-fotos").textContent = totalFotos;
+    var totalAlunos = document.querySelectorAll(".student-row").length;
+    document.getElementById("total-alunos").textContent = totalAlunos;
+  }
+
+  function toggleEditArea() {
+    var editDiv = document.getElementById("editarNomeTurma");
+    if (editDiv.classList.contains("visible")) {
+      editDiv.classList.remove("visible");
+    } else {
+      document.getElementById("novaTurma").value = document
+        .getElementById("nomeTurmaDisplay")
+        .textContent.trim();
+      editDiv.classList.add("visible");
     }
+  }
+  document
+    .getElementById("nomeTurmaDisplay")
+    .addEventListener("click", toggleEditArea);
+  document
+    .getElementById("btnToggleEdit")
+    .addEventListener("click", toggleEditArea);
+  document
+    .getElementById("btnCancelarEdicao")
+    .addEventListener("click", function () {
+      document.getElementById("novaTurma").value = "";
+      document.getElementById("editarNomeTurma").classList.remove("visible");
+    });
 
-    // Alterna a área de edição do nome da Turma
-    function toggleEditArea() {
-        var editDiv = document.getElementById('editarNomeTurma');
-        if (editDiv.classList.contains('visible')) {
-            editDiv.classList.remove('visible');
+  document.getElementById("orderToggle").addEventListener("click", function () {
+    var currentOrder = this.getAttribute("data-order");
+    var newOrder = currentOrder === "asc" ? "desc" : "asc";
+    sortStudentRows(newOrder);
+    this.setAttribute("data-order", newOrder);
+    this.textContent = newOrder === "asc" ? "Ordenar A-Z" : "Ordenar Z-A";
+  });
+  function sortStudentRows(order) {
+    var tbody = document.getElementById("alunosBody");
+    var rows = [];
+    var allRows = tbody.querySelectorAll("tr.student-row");
+    allRows.forEach(function (studentRow) {
+      var studentId = studentRow.getAttribute("data-student-id");
+      var parentRow = tbody.querySelector(
+        'tr.parentes-row[data-student-id="' + studentId + '"]'
+      );
+      rows.push({
+        studentRow: studentRow,
+        parentRow: parentRow,
+        name: studentRow.getAttribute("data-student-name"),
+      });
+    });
+    rows.sort(function (a, b) {
+      return order === "asc"
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name);
+    });
+    tbody.innerHTML = "";
+    rows.forEach(function (pair) {
+      tbody.appendChild(pair.studentRow);
+      tbody.appendChild(pair.parentRow);
+    });
+  }
+
+  document.querySelectorAll(".student-row").forEach(function (row) {
+    row.addEventListener("click", function () {
+      var studentId = this.getAttribute("data-student-id");
+      collapseOtherRows(studentId);
+      var parentRow = document.querySelector(
+        '.parentes-row[data-student-id="' + studentId + '"]'
+      );
+      var toggleIcon = this.querySelector(".toggle-icon");
+      if (
+        parentRow.style.display === "none" ||
+        parentRow.style.display === ""
+      ) {
+        parentRow.style.display = "table-row";
+        this.classList.add("expanded");
+        toggleIcon.style.transform = "rotate(180deg)";
+        carregarParentes(studentId);
+        this.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        parentRow.style.display = "none";
+        this.classList.remove("expanded");
+        toggleIcon.style.transform = "rotate(0deg)";
+      }
+    });
+  });
+  function collapseOtherRows(currentId) {
+    document.querySelectorAll(".student-row.expanded").forEach(function (row) {
+      var studentId = row.getAttribute("data-student-id");
+      if (studentId !== currentId) {
+        var parentRow = document.querySelector(
+          '.parentes-row[data-student-id="' + studentId + '"]'
+        );
+        parentRow.style.display = "none";
+        row.classList.remove("expanded");
+        var icon = row.querySelector(".toggle-icon");
+        if (icon) {
+          icon.style.transform = "rotate(0deg)";
+        }
+      }
+    });
+  }
+
+  function carregarParentes(studentId) {
+    fetch(`/turmas/listar_parents/${studentId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        var container = document.getElementById(
+          "parentes-container-" + studentId
+        );
+        var countEl = document.getElementById("parente-count-" + studentId);
+        var fotos_count = data.filter(function (p) {
+          return p.comprou_foto;
+        }).length;
+        countEl.setAttribute("data-count", data.length);
+        countEl.setAttribute("data-fotos", fotos_count);
+        countEl.textContent =
+          data.length + " parente(s) | Fotos Compradas: " + fotos_count;
+        if (data.length === 0) {
+          container.innerHTML = "<p>Sem parentes cadastrados.</p>";
         } else {
-            document.getElementById('novaTurma').value = document.getElementById('nomeTurmaDisplay').textContent.trim();
-            editDiv.classList.add('visible');
+          var html = "";
+          data.forEach(function (p) {
+            html += `<div class="parent-item">
+              <strong>${p.nome}</strong> - ${p.grau} - ${p.cidade}
+              [${p.comprou_foto ? "Comprou" : "Não comprou"}]
+              <button class="btn-editar" onclick="editarParente(${
+                p.id
+              }, ${studentId}, '${p.nome}', '${p.grau}', '${p.cidade}', '${
+              p.profissao
+            }', '${p.data_nascimento}', '${p.telefone}', ${
+              p.comprou_foto
+            }); event.stopPropagation();" title="Editar"></button>
+              <button class="btn-excluir" onclick="deleteParente(${
+                p.id
+              }, ${studentId}); event.stopPropagation();" title="Excluir"></button>
+            </div>`;
+          });
+          container.innerHTML = html;
         }
-    }
-    document.getElementById('nomeTurmaDisplay').addEventListener('click', toggleEditArea);
-    document.getElementById('btnToggleEdit').addEventListener('click', toggleEditArea);
-    document.getElementById('btnCancelarEdicao').addEventListener('click', function () {
-        document.getElementById('novaTurma').value = "";
-        document.getElementById('editarNomeTurma').classList.remove('visible');
-    });
-
-    // Ordenação dos alunos (A-Z ou Z-A)
-    document.getElementById('orderToggle').addEventListener('click', function () {
-        var currentOrder = this.getAttribute('data-order');
-        var newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
-        sortStudentRows(newOrder);
-        this.setAttribute('data-order', newOrder);
-        this.textContent = newOrder === 'asc' ? 'Ordenar A-Z' : 'Ordenar Z-A';
-    });
-    function sortStudentRows(order) {
-        var tbody = document.getElementById('alunosBody');
-        var rows = [];
-        var allRows = tbody.querySelectorAll('tr.student-row');
-        allRows.forEach(function (studentRow) {
-            var studentId = studentRow.getAttribute('data-student-id');
-            var parentRow = tbody.querySelector('tr.parentes-row[data-student-id="' + studentId + '"]');
-            rows.push({
-                studentRow: studentRow,
-                parentRow: parentRow,
-                name: studentRow.getAttribute('data-student-name')
-            });
-        });
-        rows.sort(function (a, b) {
-            return order === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
-        });
-        tbody.innerHTML = '';
-        rows.forEach(function (pair) {
-            tbody.appendChild(pair.studentRow);
-            tbody.appendChild(pair.parentRow);
-        });
-    }
-
-    // Gerencia a expansão e o colapso das linhas de alunos para exibir os parentes
-    document.querySelectorAll('.student-row').forEach(function (row) {
-        row.addEventListener('click', function () {
-            var studentId = this.getAttribute('data-student-id');
-            collapseOtherRows(studentId);
-            var parentRow = document.querySelector('.parentes-row[data-student-id="' + studentId + '"]');
-            var toggleIcon = this.querySelector('.toggle-icon');
-            if (parentRow.style.display === 'none' || parentRow.style.display === '') {
-                parentRow.style.display = 'table-row';
-                this.classList.add('expanded');
-                toggleIcon.style.transform = 'rotate(180deg)';
-                carregarParentes(studentId);
-                this.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } else {
-                parentRow.style.display = 'none';
-                this.classList.remove('expanded');
-                toggleIcon.style.transform = 'rotate(0deg)';
-            }
-        });
-    });
-    function collapseOtherRows(currentId) {
-        document.querySelectorAll('.student-row.expanded').forEach(function (row) {
-            var studentId = row.getAttribute('data-student-id');
-            if (studentId !== currentId) {
-                var parentRow = document.querySelector('.parentes-row[data-student-id="' + studentId + '"]');
-                parentRow.style.display = 'none';
-                row.classList.remove('expanded');
-                var icon = row.querySelector('.toggle-icon');
-                if (icon) { icon.style.transform = 'rotate(0deg)'; }
-            }
-        });
-    }
-
-    // Carrega a lista de parentes via AJAX e atualiza os contadores
-    function carregarParentes(studentId) {
-        fetch(`/turmas/listar_parents/${studentId}`)
-            .then(r => r.json())
-            .then(data => {
-                var container = document.getElementById('parentes-container-' + studentId);
-                var countEl = document.getElementById('parente-count-' + studentId);
-                var fotos_count = data.filter(function (p) { return p.comprou_foto; }).length;
-                countEl.setAttribute('data-count', data.length);
-                countEl.setAttribute('data-fotos', fotos_count);
-                countEl.textContent = data.length + " parente(s) | Fotos Compradas: " + fotos_count;
-                if (data.length === 0) {
-                    container.innerHTML = '<p>Sem parentes cadastrados.</p>';
-                } else {
-                    var html = '';
-                    data.forEach(function (p) {
-                        html += `<div class="parent-item">
-                            <strong>${p.nome}</strong> - ${p.grau} - ${p.cidade}
-                            [${p.comprou_foto ? 'Comprou' : 'Não comprou'}]
-                            <button class="btn-editar" onclick="editarParente(${p.id}, ${studentId}, '${p.nome}', '${p.grau}', '${p.cidade}', '${p.profissao}', '${p.data_nascimento}', '${p.telefone}', ${p.comprou_foto}); event.stopPropagation();" title="Editar"></button>
-                            <button class="btn-excluir" onclick="deleteParente(${p.id}, ${studentId}); event.stopPropagation();" title="Excluir"></button>
-                          </div>`;
-                    });
-                    container.innerHTML = html;
-                }
-                updateSummary();
-            });
-    }
-
-    // Abre o modal para cadastro/edição de parente
-    function abrirModalParente(studentId) {
-        selectedStudentId = studentId;
-        editingParenteId = null;
-        document.getElementById('modalTitle').textContent = 'Novo Parente';
-        document.getElementById('formCadastroParente').reset();
-        document.getElementById('modalSave').disabled = true;
-        document.getElementById('modalOverlay').style.display = 'flex';
-    }
-    // Fecha o modal
-    document.getElementById('modalClose').addEventListener('click', function () {
-        document.getElementById('modalOverlay').style.display = 'none';
-    });
-
-    // Função de validação do formulário de parente com feedbacks
-    function validarFormularioParente() {
-        let isValid = true;
-        const nomeInput = document.getElementById('modalNome');
-        const grauInput = document.getElementById('modalGrau');
-        const cidadeInput = document.getElementById('modalCidade');
-
-        const feedbackNome = document.getElementById('feedbackNome');
-        const feedbackGrau = document.getElementById('feedbackGrau');
-        const feedbackCidade = document.getElementById('feedbackCidade');
-
-        // Limpa feedbacks anteriores
-        feedbackNome.textContent = '';
-        feedbackGrau.textContent = '';
-        feedbackCidade.textContent = '';
-
-        if (!nomeInput.value.trim()) {
-            feedbackNome.textContent = 'O nome é obrigatório.';
-            isValid = false;
-        }
-        if (!grauInput.value.trim()) {
-            feedbackGrau.textContent = 'O grau de parentesco é obrigatório.';
-            isValid = false;
-        }
-        if (!cidadeInput.value.trim()) {
-            feedbackCidade.textContent = 'A cidade é obrigatória.';
-            isValid = false;
-        }
-        return isValid;
-    }
-    // Habilita/desabilita o botão Salvar com base na validação
-    function checkFormFields() {
-        const saveButton = document.getElementById('modalSave');
-        saveButton.disabled = !validarFormularioParente();
-    }
-    document.getElementById('modalNome').addEventListener('input', checkFormFields);
-    document.getElementById('modalGrau').addEventListener('input', checkFormFields);
-    document.getElementById('modalCidade').addEventListener('input', checkFormFields);
-
-    // Envia os dados do parente, realizando a validação antes
-    document.getElementById('modalSave').addEventListener('click', function () {
-        if (validarFormularioParente()) {
-            var body = {
-                formando_id: selectedStudentId,
-                nome: document.getElementById('modalNome').value,
-                grau: document.getElementById('modalGrau').value,
-                data_nascimento: document.getElementById('modalData').value,
-                profissao: document.getElementById('modalProfissao').value,
-                cidade: document.getElementById('modalCidade').value,
-                telefone: document.getElementById('modalTelefone').value,
-                comprou_foto: document.getElementById('modalComprou').checked
-            };
-            var url = editingParenteId ? `/turmas/editar_parente/${editingParenteId}` : '/turmas/criar_parente';
-            fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success === false && data.message) {
-                        alert(data.message);
-                    } else {
-                        carregarParentes(selectedStudentId);
-                        document.getElementById('modalOverlay').style.display = 'none';
-                        document.getElementById('formCadastroParente').reset();
-                        document.getElementById('modalSave').disabled = true;
-                    }
-                });
-        } else {
-            checkFormFields();
-        }
-    });
-
-    // Edição e exclusão de parente (funções chamadas nos botões dinâmicos)
-    function editarParente(id, studentId, nome, grau, cidade, profissao, dataNasc, telefone, comprou) {
-        editingParenteId = id;
-        selectedStudentId = studentId;
-        document.getElementById('modalTitle').textContent = 'Editar Parente';
-        document.getElementById('modalNome').value = nome;
-        document.getElementById('modalGrau').value = grau;
-        document.getElementById('modalCidade').value = cidade;
-        document.getElementById('modalProfissao').value = (profissao === 'null') ? '' : profissao;
-        document.getElementById('modalData').value = (dataNasc === 'null') ? '' : dataNasc;
-        document.getElementById('modalTelefone').value = (telefone === 'null') ? '' : telefone;
-        document.getElementById('modalComprou').checked = comprou;
-        document.getElementById('modalSave').disabled = false;
-        document.getElementById('modalOverlay').style.display = 'flex';
-    }
-    function deleteParente(id, studentId) {
-        if (!confirm('Excluir este parente?')) return;
-        fetch(`/turmas/excluir_parente/${id}`, { method: 'DELETE' })
-            .then(r => r.json())
-            .then(data => {
-                carregarParentes(studentId);
-            });
-    }
-
-    // Adição de novo aluno via AJAX (simulação)
-    document.getElementById('btnAbrirFormAluno').addEventListener('click', function () {
-        document.getElementById('formNovoAluno').classList.add('visible');
-        this.style.display = 'none';
-        document.getElementById('formNovoAluno').scrollIntoView({ behavior: 'smooth' });
-    });
-    document.getElementById('btnCancelarAluno').addEventListener('click', function () {
-        document.getElementById('formNovoAluno').classList.remove('visible');
-        document.getElementById('btnAbrirFormAluno').style.display = 'inline-block';
-    });
-    document.getElementById('novoAlunoForm').addEventListener('submit', function (event) {
-        event.preventDefault();
-        var alunoName = this.querySelector('#aluno').value.trim();
-        if (!alunoName) { alert("Nome do aluno é obrigatório."); return; }
-        var newId = Date.now();
-        var tbody = document.getElementById('alunosBody');
-        var trStudent = document.createElement('tr');
-        trStudent.className = 'student-row';
-        trStudent.setAttribute('data-student-id', newId);
-        trStudent.setAttribute('data-student-name', alunoName.toLowerCase());
-        trStudent.innerHTML = '<td><span class="student-name">' + alunoName + '</span><br><small class="parente-count" id="parente-count-' + newId + '" data-count="0" data-fotos="0">0 parente(s) | Fotos Compradas: 0</small></td><td style="text-align: right;"><span class="toggle-icon">&#9660;</span>&nbsp;<a href="#" class="btn-excluir" title="Excluir" onclick="event.stopPropagation(); if(confirm(\'Excluir este Aluno?\')) { this.closest(\'tr.student-row\').remove(); updateSummary(); } return false;"></a></td>';
-
-        var trParent = document.createElement('tr');
-        trParent.className = 'parentes-row';
-        trParent.setAttribute('data-student-id', newId);
-        trParent.innerHTML = '<td colspan="2"><div class="parentes-container" id="parentes-container-' + newId + '"><p>Sem parentes cadastrados.</p></div><button class="btn" onclick="abrirModalParente(' + newId + '); event.stopPropagation();">Adicionar Parente</button></td>';
-
-        tbody.appendChild(trStudent);
-        tbody.appendChild(trParent);
-        this.reset();
-        this.classList.remove('visible');
-        document.getElementById('btnAbrirFormAluno').style.display = 'inline-block';
         updateSummary();
-    });
+      });
+  }
 
-    // Inicializa o sumário e ordena as linhas ao carregar a página
-    window.addEventListener('load', function () {
-        var order = document.getElementById('orderToggle').getAttribute('data-order');
-        sortStudentRows(order);
-        updateSummary();
+  function abrirModalParente(studentId) {
+    selectedStudentId = studentId;
+    editingParenteId = null;
+    document.getElementById("modalTitle").textContent = "Novo Parente";
+    document.getElementById("formCadastroParente").reset();
+    document.getElementById("modalSave").disabled = true;
+    document.getElementById("modalOverlay").style.display = "flex";
+  }
+  document.getElementById("modalClose").addEventListener("click", function () {
+    document.getElementById("modalOverlay").style.display = "none";
+  });
+
+  function validarFormularioParente() {
+    let isValid = true;
+    const nomeInput = document.getElementById("modalNome");
+    const grauInput = document.getElementById("modalGrau");
+    const cidadeInput = document.getElementById("modalCidade");
+    const feedbackNome = document.getElementById("feedbackNome");
+    const feedbackGrau = document.getElementById("feedbackGrau");
+    const feedbackCidade = document.getElementById("feedbackCidade");
+    feedbackNome.textContent = "";
+    feedbackGrau.textContent = "";
+    feedbackCidade.textContent = "";
+    if (!nomeInput.value.trim()) {
+      feedbackNome.textContent = "O nome é obrigatório.";
+      isValid = false;
+    }
+    if (!grauInput.value.trim()) {
+      feedbackGrau.textContent = "O grau de parentesco é obrigatório.";
+      isValid = false;
+    }
+    if (!cidadeInput.value.trim()) {
+      feedbackCidade.textContent = "A cidade é obrigatória.";
+      isValid = false;
+    }
+    return isValid;
+  }
+  function checkFormFields() {
+    const saveButton = document.getElementById("modalSave");
+    saveButton.disabled = !validarFormularioParente();
+  }
+  document
+    .getElementById("modalNome")
+    .addEventListener("input", checkFormFields);
+  document
+    .getElementById("modalGrau")
+    .addEventListener("input", checkFormFields);
+  document
+    .getElementById("modalCidade")
+    .addEventListener("input", checkFormFields);
+  document.getElementById("modalSave").addEventListener("click", function () {
+    if (validarFormularioParente()) {
+      var body = {
+        formando_id: selectedStudentId,
+        nome: document.getElementById("modalNome").value,
+        grau: document.getElementById("modalGrau").value,
+        data_nascimento: document.getElementById("modalData").value,
+        profissao: document.getElementById("modalProfissao").value,
+        cidade: document.getElementById("modalCidade").value,
+        telefone: document.getElementById("modalTelefone").value,
+        comprou_foto: document.getElementById("modalComprou").checked,
+      };
+      var url = editingParenteId
+        ? `/turmas/editar_parente/${editingParenteId}`
+        : "/turmas/criar_parente";
+      fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success === false && data.message) {
+            alert(data.message);
+          } else {
+            carregarParentes(selectedStudentId);
+            document.getElementById("modalOverlay").style.display = "none";
+            document.getElementById("formCadastroParente").reset();
+            document.getElementById("modalSave").disabled = true;
+          }
+        });
+    } else {
+      checkFormFields();
+    }
+  });
+  function editarParente(
+    id,
+    studentId,
+    nome,
+    grau,
+    cidade,
+    profissao,
+    dataNasc,
+    telefone,
+    comprou
+  ) {
+    editingParenteId = id;
+    selectedStudentId = studentId;
+    document.getElementById("modalTitle").textContent = "Editar Parente";
+    document.getElementById("modalNome").value = nome;
+    document.getElementById("modalGrau").value = grau;
+    document.getElementById("modalCidade").value = cidade;
+    document.getElementById("modalProfissao").value =
+      profissao === "null" ? "" : profissao;
+    document.getElementById("modalData").value =
+      dataNasc === "null" ? "" : dataNasc;
+    document.getElementById("modalTelefone").value =
+      telefone === "null" ? "" : telefone;
+    document.getElementById("modalComprou").checked = comprou;
+    document.getElementById("modalSave").disabled = false;
+    document.getElementById("modalOverlay").style.display = "flex";
+  }
+  function deleteParente(id, studentId) {
+    if (!confirm("Excluir este parente?")) return;
+    fetch(`/turmas/excluir_parente/${id}`, { method: "DELETE" })
+      .then((r) => r.json())
+      .then((data) => {
+        carregarParentes(studentId);
+      });
+  }
+  document
+    .getElementById("btnAbrirFormAluno")
+    .addEventListener("click", function () {
+      document.getElementById("formNovoAluno").classList.add("visible");
+      this.style.display = "none";
+      document
+        .getElementById("formNovoAluno")
+        .scrollIntoView({ behavior: "smooth" });
     });
+  document
+    .getElementById("btnCancelarAluno")
+    .addEventListener("click", function () {
+      document.getElementById("formNovoAluno").classList.remove("visible");
+      document.getElementById("btnAbrirFormAluno").style.display =
+        "inline-block";
+    });
+  document
+    .getElementById("novoAlunoForm")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
+      var alunoName = this.querySelector("#aluno").value.trim();
+      if (!alunoName) {
+        alert("Nome do aluno é obrigatório.");
+        return;
+      }
+      var newId = Date.now();
+      var tbody = document.getElementById("alunosBody");
+      var trStudent = document.createElement("tr");
+      trStudent.className = "student-row";
+      trStudent.setAttribute("data-student-id", newId);
+      trStudent.setAttribute("data-student-name", alunoName.toLowerCase());
+      trStudent.innerHTML =
+        '<td><span class="student-name">' +
+        alunoName +
+        '</span><br><small class="parente-count" id="parente-count-' +
+        newId +
+        '" data-count="0" data-fotos="0">0 parente(s) | Fotos Compradas: 0</small></td><td style="text-align: right;"><span class="toggle-icon">&#9660;</span>&nbsp;<a href="#" class="btn-excluir" title="Excluir" onclick="event.stopPropagation(); if(confirm(\'Excluir este Aluno?\')) { this.closest(\'tr.student-row\').remove(); updateSummary(); } return false;"></a></td>';
+      var trParent = document.createElement("tr");
+      trParent.className = "parentes-row";
+      trParent.setAttribute("data-student-id", newId);
+      trParent.innerHTML =
+        '<td colspan="2"><div class="parentes-container" id="parentes-container-' +
+        newId +
+        '"><p>Sem parentes cadastrados.</p></div><button class="btn" onclick="abrirModalParente(' +
+        newId +
+        '); event.stopPropagation();">Adicionar Parente</button></td>';
+      tbody.appendChild(trStudent);
+      tbody.appendChild(trParent);
+      this.reset();
+      this.classList.remove("visible");
+      document.getElementById("btnAbrirFormAluno").style.display =
+        "inline-block";
+      updateSummary();
+    });
+  window.addEventListener("load", function () {
+    var order = document
+      .getElementById("orderToggle")
+      .getAttribute("data-order");
+    sortStudentRows(order);
+    updateSummary();
+  });
 </script>
 {% endblock %}
