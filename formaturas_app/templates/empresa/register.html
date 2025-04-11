@@ -1,0 +1,51 @@
+{% extends "login_base.html" %} {% block content %}
+<h2>Cadastro da Empresa</h2>
+<form method="post">
+  <div>
+    <label for="nome_empresa">Nome da Empresa</label>
+    <input
+      type="text"
+      id="nome_empresa"
+      name="nome_empresa"
+      placeholder="Nome da empresa"
+      required
+    />
+  </div>
+  <div>
+    <label for="email_admin">Email do Administrador</label>
+    <input
+      type="email"
+      id="email_admin"
+      name="email_admin"
+      placeholder="Email do responsável"
+      required
+    />
+  </div>
+  <div>
+    <label for="senha_admin">Senha do Administrador</label>
+    <input
+      type="password"
+      id="senha_admin"
+      name="senha_admin"
+      placeholder="Senha"
+      required
+    />
+  </div>
+  <div>
+    <label for="max_usuarios">Limite de Usuários (opcional)</label>
+    <input
+      type="number"
+      id="max_usuarios"
+      name="max_usuarios"
+      placeholder="Ex: 5"
+    />
+  </div>
+  <div>
+    <label for="assinatura_ativa_ate"
+      >Data de Expiração da Assinatura (opcional)</label
+    >
+    <input type="date" id="assinatura_ativa_ate" name="assinatura_ativa_ate" />
+  </div>
+  <button type="submit">Cadastrar Empresa</button>
+</form>
+{% endblock %}

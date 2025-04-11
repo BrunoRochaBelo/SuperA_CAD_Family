@@ -1,0 +1,98 @@
+{% extends "base.html" %} {% block content %}
+<h2>Editar Perfil</h2>
+
+<!-- Formulário para editar dados do perfil -->
+<form method="post" enctype="multipart/form-data">
+  <div>
+    <label for="nome">Nome Completo:</label>
+    <input
+      type="text"
+      name="nome"
+      id="nome"
+      value="{{ usuario.nome }}"
+      required
+    />
+  </div>
+  <div>
+    <label for="username">Nome de Usuário:</label>
+    <input
+      type="text"
+      name="username"
+      id="username"
+      value="{{ usuario.username or '' }}"
+      required
+    />
+  </div>
+  <div>
+    <label for="foto_perfil">Foto de Perfil:</label>
+    <input type="file" name="foto_perfil" id="foto_perfil" />
+    {% if usuario.foto_perfil %}
+    <p>Foto atual:</p>
+    <img
+      src="{{ url_for('static', filename=usuario.foto_perfil) }}"
+      alt="Foto de Perfil"
+      style="max-width: 100px"
+    />
+    {% endif %}
+  </div>
+  <button type="submit">Atualizar Perfil</button>
+</form>
+
+<!-- Botão para abrir o modal de alteração de senha -->
+<button id="openPasswordModal" type="button">Alterar Senha</button>
+
+<!-- Modal para alteração de senha -->
+<div id="passwordModal" class="modal">
+  <div class="modal-content">
+    <span class="modal-close" id="passwordModalClose">&times;</span>
+    <h2>Alterar Senha</h2>
+    <form method="post" action="{{ url_for('perfil.alterar_senha') }}">
+      <div>
+        <label for="current_password">Senha Atual:</label>
+        <input
+          type="password"
+          name="current_password"
+          id="current_password"
+          required
+        />
+      </div>
+      <div>
+        <label for="new_password">Nova Senha:</label>
+        <input type="password" name="new_password" id="new_password" required />
+      </div>
+      <div>
+        <label for="confirm_password">Confirmar Nova Senha:</label>
+        <input
+          type="password"
+          name="confirm_password"
+          id="confirm_password"
+          required
+        />
+      </div>
+      <button type="submit">Atualizar Senha</button>
+    </form>
+  </div>
+</div>
+
+<!-- Script para controle do modal de alteração de senha -->
+<script>
+  const openPasswordModal = document.getElementById("openPasswordModal");
+  const passwordModal = document.getElementById("passwordModal");
+  const passwordModalClose = document.getElementById("passwordModalClose");
+
+  openPasswordModal.addEventListener("click", function () {
+    passwordModal.style.display = "block";
+  });
+
+  passwordModalClose.addEventListener("click", function () {
+    passwordModal.style.display = "none";
+  });
+
+  // Fecha o modal quando o usuário clicar fora dele
+  window.addEventListener("click", function (event) {
+    if (event.target == passwordModal) {
+      passwordModal.style.display = "none";
+    }
+  });
+</script>
+{% endblock %}

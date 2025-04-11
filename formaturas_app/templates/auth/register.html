@@ -1,0 +1,46 @@
+<!-- formaturas_app/templates/auth/register.html -->
+
+{% extends "base.html" %} {% block content %}
+<h2>Cadastrar Novo Usuário</h2>
+<form method="post">
+  <div>
+    <label for="email">Email</label>
+    <input
+      type="email"
+      name="email"
+      id="email"
+      placeholder="Email do usuário"
+      required
+    />
+  </div>
+  <div>
+    <label for="nome">Nome Completo</label>
+    <input
+      type="text"
+      name="nome"
+      id="nome"
+      placeholder="Nome completo"
+      required
+    />
+  </div>
+  <div>
+    <label for="senha">Senha</label>
+    <input
+      type="password"
+      name="senha"
+      id="senha"
+      placeholder="Senha"
+      required
+    />
+  </div>
+  <div>
+    <label for="papel">Papel</label>
+    <select name="papel" id="papel" required>
+      <option value="ADM">Administrador</option>
+      <option value="EDITOR">Editor</option>
+      <option value="VISUALIZADOR">Visualizador</option>
+    </select>
+  </div>
+  <button type="submit">Cadastrar</button>
+</form>
+{% endblock %}

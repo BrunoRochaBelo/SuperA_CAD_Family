@@ -20,14 +20,23 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    
+    # Importa os modelos para registrar os callbacks do Flask-Login
+    from formaturas_app import models
 
     # Registro dos blueprints
     from formaturas_app.auth.routes import auth_bp
+    from formaturas_app.auth.cadastro import cadastro_bp
+    from formaturas_app.auth.perfil import perfil_bp
+    from formaturas_app.empresa.routes import empresa_bp
     from formaturas_app.home.routes import home_bp
     from formaturas_app.turmas.routes import turmas_bp
     from formaturas_app.relatorios.routes import relatorios_bp 
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(cadastro_bp, url_prefix='/auth/cadastro')
+    app.register_blueprint(perfil_bp, url_prefix='/auth')  # As rotas do perfil ficarão em /auth/editar_perfil, por exemplo.
+    app.register_blueprint(empresa_bp, url_prefix='/empresa')
     app.register_blueprint(home_bp, url_prefix='/')
     app.register_blueprint(turmas_bp, url_prefix='/turmas')
     app.register_blueprint(relatorios_bp, url_prefix='/relatorios')   
@@ -37,12 +46,9 @@ def create_app():
         return send_from_directory(os.path.join(app.root_path, 'static', 'img'),
                                    'favicon.svg', mimetype='image/svg+xml')
 
-    # Criação das tabelas se elas não existirem
     with app.app_context():
-        from formaturas_app import models
         db.create_all()
 
-    # Adiciona teardown para limpar a sessão ao final de cada request
     @app.teardown_appcontext
     def shutdown_session(exception=None):
         db.session.remove()
