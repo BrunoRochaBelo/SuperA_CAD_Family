@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>Formaturas App - Login</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div id="flash-messages">
+            {% for category, msg in messages %}
+            <div class="alert alert-{{ category }}">
+                <span class="alert-text">{{ msg }}</span>
+                <button class="alert-close" onclick="this.parentElement.style.display='none';">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="container-login">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script>
+        window.onload = function () {
+            // Auto-dismiss dos alerts: fade out e depois oculta o container
+            setTimeout(function () {
+                const flashDiv = document.getElementById('flash-messages');
+                if (flashDiv) {
+                    flashDiv.style.opacity = '0';
+                    setTimeout(function () {
+                        flashDiv.style.display = 'none';
+                    }, 500); // tempo para a transição
+                }
+            }, 5000);
+
+            // Adiciona a classe "fade-in" para que o main fique visível
+            document.querySelector("main").classList.add("fade-in");
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<h2>Gerenciamento de Turmas</h2>
+
+<!-- Summary geral -->
+<div class="turmas-summary">
+  Turmas: <span id="total-turmas">{{ total_turmas }}</span> |
+  Alunos: <span id="total-alunos">{{ total_alunos }}</span> |
+  Parentes: <span id="total-parentes">{{ total_parentes }}</span> |
+  Fotos Compradas: <span id="total-fotos">{{ total_fotos_compradas }}</span>
+</div>
+
+
+<!-- Ordenador de turmas -->
+<div class="sorting">
+  <button id="orderToggle" data-order="asc" class="btn">Ordenar A-Z</button>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Turma</th>
+        <th style="text-align: right;">Ações</th>
+      </tr>
+    </thead>
+    <tbody id="turmasBody">
+      {% for t in turmas %}
+      <tr class="turma-row" data-turma="{{ t.turma|lower }}" onclick="redirectToEdit('{{ t.turma }}')">
+        <td>
+          {{ t.turma }}<br>
+          <small class="turma-info" id="info-{{ t.turma }}">
+            Alunos: {{ t.alunos_count }} | Parentes: {{ t.parentes_count }} | Fotos: {{ t.fotos_compradas_count }}
+          </small>
+        </td>
+        <td style="text-align: right;" onclick="event.stopPropagation();">
+          <a href="{{ url_for('turmas.excluir_turma', turma=t.turma, active_page='turmas') }}" class="btn-excluir" title="Excluir" onclick="return confirm('Excluir esta Turma e todos seus Alunos?');"></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Botão para adicionar turma (relocado para o final) -->
+<div class="turmas-add-container">
+  <a href="{{ url_for('turmas.nova_turma', active_page='turmas') }}" class="btn btn-importar">+ Adicionar turma</a>
+</div>
+
+<script>
+  // Redireciona para a página de edição da turma
+  function redirectToEdit(turma) {
+    var url = "{{ url_for('turmas.editar_turma', turma='__turma__', active_page='turmas') }}".replace('__turma__', encodeURIComponent(turma));
+    window.location.href = url;
+  }
+
+  // Ordenação das turmas com base no atributo data-turma
+  document.getElementById('orderToggle').addEventListener('click', function () {
+    var currentOrder = this.getAttribute('data-order');
+    var newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+    sortTurmaRows(newOrder);
+    this.setAttribute('data-order', newOrder);
+    this.textContent = newOrder === 'asc' ? 'Ordenar A-Z' : 'Ordenar Z-A';
+  });
+  function sortTurmaRows(order) {
+    var tbody = document.getElementById('turmasBody');
+    var rows = Array.from(tbody.querySelectorAll('.turma-row'));
+    rows.sort(function (a, b) {
+      var nameA = a.getAttribute('data-turma');
+      var nameB = b.getAttribute('data-turma');
+      return order === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    });
+    rows.forEach(function (row) {
+      tbody.appendChild(row);
+    });
+  }
+</script>
+{% endblock %}

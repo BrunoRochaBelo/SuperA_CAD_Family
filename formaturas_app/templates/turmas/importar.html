@@ -1,0 +1,56 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<h2>Importar planilha para criar turma</h2>
+
+<!-- Exibição de exemplo visual para melhor entendimento do usuário -->
+<p>
+    <span class="alert-icon">⚠️</span>
+    Formato esperado:
+</p>
+
+<!-- Simulação visual da planilha -->
+<div class="planilha-simulada">
+    <table class="planilha-table">
+        <thead>
+            <tr>
+                <th>Turma</th>
+                <th>Aluno</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Nome da Turma</td>
+                <td>Nome do aluno</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <!-- Input de arquivo oculto; a label associada dispara o diálogo -->
+        <input type="file" id="arquivo" name="arquivo" accept=".csv, .xls, .xlsx" required class="input-hidden">
+        <label for="arquivo" class="custom-file-label btn">
+            Escolher arquivo (.csv, .xls, .xlsx)
+        </label>
+    </div>
+
+    <a href="{{ url_for('turmas.index', active_page='turmas') }}" class="btn btn-voltar">← Turmas</a>
+    <button type="submit" class="btn" id="btnImportar" disabled>Adicionar</button>
+</form>
+
+<script>
+    // Atualiza a label e habilita o botão "Importar" quando um arquivo for selecionado
+    document.getElementById('arquivo').addEventListener('change', function () {
+        const fileInput = this;
+        const label = document.querySelector('.custom-file-label');
+        if (fileInput.files.length > 0) {
+            label.textContent = fileInput.files[0].name;
+            document.getElementById('btnImportar').disabled = false;
+        } else {
+            label.textContent = 'Escolher arquivo (.csv, .xls, .xlsx)';
+            document.getElementById('btnImportar').disabled = true;
+        }
+    });
+</script>
+{% endblock %}

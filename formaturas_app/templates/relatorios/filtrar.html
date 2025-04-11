@@ -1,0 +1,268 @@
+﻿{% extends 'base.html' %}
+{% block content %}
+<h2>Montar Relatório</h2>
+
+<form method="post" id="relForm">
+    <!-- Seção para definir o nome do arquivo -->
+    <div class="filter-toolbar">
+        <h3>Nome do arquivo</h3>
+        <div class="filter-content">
+            <input type="text" name="file_name" id="fileName" placeholder='Se deixar em branco será "relatorio.tipo"'' oninput="updateGenerateButtonStatus();">
+        </div>
+    </div>
+
+    <!-- Seção Base de Dados -->
+    <div class="filter-toolbar">
+        <h3>Base de dados</h3>
+        <div class="filter-content">
+            <div>
+                <label>Turma</label>
+                <select name="turma" id="selectTurma" onchange="updateAlunos(); clearPreview(); previewData();">
+                    <option value="TODAS">TODAS</option>
+                    {% for t in turmas %}
+                    <option value="{{ t.turma }}">{{ t.turma }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label>Aluno</label>
+                <select name="aluno" id="selectAluno" onchange="clearPreview(); previewData();">
+                    <option value="TODOS">TODOS</option>
+                    {% for a in alunos %}
+                    <option value="{{ a[0] }}">{{ a[0] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label>Cidade</label>
+                <select name="cidade" onchange="clearPreview(); previewData();">
+                    <option value="TODAS">TODAS</option>
+                    {% for c in cidades %}
+                    <option value="{{ c[0] }}">{{ c[0] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label>Comprou foto?</label>
+                <select name="comprou_foto" onchange="clearPreview(); previewData();">
+                    <option value="Todas">Todas</option>
+                    <option value="Sim">Sim</option>
+                    <option value="Não">Não</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção Campos do relatório -->
+    <div class="filter-toolbar">
+        <h3>Campos do relatório</h3>
+        <div class="filter-content">
+            <div class="fields-toggle">
+                <label class="switch-label">
+                    Turma
+                    <label class="switch">
+                        <input type="checkbox" name="fields" value="turma" onchange="previewData(); updateGenerateButtonStatus();" {% if ' turma' in preview_fields %}checked{% endif %}>
+            <span class="slider"></span>
+            </label>
+            </label>
+            <label class="switch-label">
+                Aluno
+                <label class="switch">
+                    <input type="checkbox" name="fields" value="aluno" onchange="previewData(); updateGenerateButtonStatus();" {% if 'aluno' in preview_fields %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </label>
+            <label class="switch-label">
+                Parente
+                <label class="switch">
+                    <input type="checkbox" name="fields" value="parente" onchange="previewData(); updateGenerateButtonStatus();" {% if 'parente' in preview_fields %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </label>
+            <label class="switch-label">
+                Cidade
+                <label class="switch">
+                    <input type="checkbox" name="fields" value="cidade" onchange="previewData(); updateGenerateButtonStatus();" {% if 'cidade' in preview_fields %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </label>
+            <label class="switch-label">
+                Telefone
+                <label class="switch">
+                    <input type="checkbox" name="fields" value="telefone" onchange="previewData(); updateGenerateButtonStatus();" {% if 'telefone' in preview_fields %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </label>
+            <label class="switch-label">
+                Comprou Foto
+                <label class="switch">
+                    <input type="checkbox" name="fields" value="comprou_foto" onchange="previewData(); updateGenerateButtonStatus();" {% if 'comprou_foto' in preview_fields %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </label>
+            <label class="switch-label">
+                Grau
+                <label class="switch">
+                    <input type="checkbox" name="fields" value="grau" onchange="previewData(); updateGenerateButtonStatus();" {% if 'grau' in preview_fields %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </label>
+        </div>
+        <!-- Área de spinner e pré-visualização dentro dos campos -->
+        <div id="previewSpinner" style="display: none; margin-top:10px;">
+            <strong>Carregando...</strong>
+        </div>
+        <div id="previewTable" class="table-responsive relatorio-preview" style="display:none; max-height: 300px; overflow-y: auto;">
+            <h4>Pré-visualização (primeiras 3 linhas)</h4>
+            <table class="table" id="tablePreview"></table>
+        </div>
+    </div>
+    </div>
+
+    <!-- Seção Formato -->
+    <div class="filter-toolbar">
+        <h3>Formato</h3>
+        <div class="filter-content">
+            <div class="radio-buttons">
+                <label class="radio-button">
+                    <input type="radio" name="export_type" value="excel" onchange="updateGenerateButtonStatus();">
+                    <span>Planilha</span>
+                </label>
+                <label class="radio-button">
+                    <input type="radio" name="export_type" value="pdf" onchange="updateGenerateButtonStatus();">
+                    <span>PDF</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Botões de ação -->
+    <div class="relatorio-buttons">
+        <button type="button" class="btn btn-clear" onclick="clearFilters();">Limpar Filtros</button>
+        <button type="submit" class="btn" id="btnGenerate" disabled>Gerar Relatório</button>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        updateGenerateButtonStatus();
+    });
+
+    function clearPreview() {
+        // Limpa apenas o preview se ele estiver visível
+        document.getElementById('tablePreview').innerHTML = '';
+        document.getElementById('previewTable').style.display = 'none';
+    }
+
+    function clearFilters() {
+        document.getElementById('relForm').reset();
+        clearPreview();
+        updateGenerateButtonStatus();
+    }
+
+    function updateAlunos() {
+        const turma = document.getElementById('selectTurma').value;
+        const selectAluno = document.getElementById('selectAluno');
+        selectAluno.innerHTML = '<option value="TODOS">TODOS</option>';
+
+        fetch(`/relatorios/listar_alunos/${turma}`)
+            .then(r => r.json())
+            .then(data => {
+                data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.aluno;
+                    opt.textContent = item.aluno;
+                    selectAluno.appendChild(opt);
+                });
+            });
+    }
+
+    function previewData() {
+        const formData = new FormData(document.getElementById('relForm'));
+        const fields = formData.getAll('fields');
+
+        // Se nenhum campo estiver selecionado, limpa o preview e não faz a requisição
+        if (fields.length === 0) {
+            clearPreview();
+            return;
+        }
+
+        // Exibe o spinner de carregamento antes de chamar o preview
+        document.getElementById('previewSpinner').style.display = 'block';
+
+        const turma = formData.get('turma');
+        const aluno = formData.get('aluno');
+        const cidade = formData.get('cidade');
+        const comprou_foto = formData.get('comprou_foto');
+
+        fetch('/relatorios/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ turma, aluno, cidade, comprou_foto, fields })
+        })
+            .then(r => r.json())
+            .then(data => {
+                // Esconde o spinner após o retorno
+                document.getElementById('previewSpinner').style.display = 'none';
+
+                if (data.error) {
+                    console.error(data.error);
+                    return;
+                }
+                const preview = data.preview; // array de objetos
+                const tablePreview = document.getElementById('tablePreview');
+                tablePreview.innerHTML = '';
+
+                // Monta cabeçalho da tabela
+                let thead = '<thead><tr>';
+                fields.forEach(f => {
+                    thead += `<th>${f}</th>`;
+                });
+                thead += '</tr></thead>';
+                tablePreview.innerHTML += thead;
+
+                // Monta corpo da tabela
+                let tbody = '<tbody>';
+                preview.forEach(row => {
+                    tbody += '<tr>';
+                    fields.forEach(f => {
+                        tbody += `<td>${row[f] || ''}</td>`;
+                    });
+                    tbody += '</tr>';
+                });
+                tbody += '</tbody>';
+                tablePreview.innerHTML += tbody;
+
+                // Se houver dados, exibe o preview e ajusta o scroll
+                if (preview.length > 0) {
+                    document.getElementById('previewTable').style.display = 'block';
+                    document.getElementById('previewTable').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    document.getElementById('previewTable').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Erro no preview:', error);
+                document.getElementById('previewSpinner').style.display = 'none';
+            });
+    }
+
+    function updateGenerateButtonStatus() {
+        const formData = new FormData(document.getElementById('relForm'));
+        const fields = formData.getAll('fields');
+        const exportType = document.querySelector('input[name="export_type"]:checked');
+        // O nome do arquivo é opcional, logo não influencia no status do botão de gerar relatório.
+        const btnGenerate = document.getElementById('btnGenerate');
+        if (fields.length > 0 && exportType) {
+            btnGenerate.disabled = false;
+        } else {
+            btnGenerate.disabled = true;
+        }
+    }
+</script>
+{% endblock %}

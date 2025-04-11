@@ -1,0 +1,9 @@
+﻿Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Login
+python-dotenv
+Werkzeug
+pandas
+openpyxl
+reportlab
