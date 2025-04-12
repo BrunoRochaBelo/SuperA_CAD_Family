@@ -18,7 +18,7 @@
   /* Marca */
   --color-brand-primary: hsl(354, 65%, 50%);
   --color-brand-secondary: hsl(354, 50%, 40%);
-  --color-brand-soft: hsl(354, 12%, 22%);
+  --color-brand-soft: hsl(354, 20%, 22%);
 
   /* Navbar */
   --color-navbar-bg: hsl(354, 35%, 16%);
@@ -26,6 +26,7 @@
 
   /* Inputs */
   --color-input-bg: hsl(354, 4%, 22%);
+  --color-input-disabled-bg: hsl(354, 2%, 18%);
   --color-input-border: hsl(354, 4%, 38%);
   --color-input-focus: var(--color-brand-primary);
 
@@ -96,8 +97,7 @@ header {
   bottom: 0;
   left: 0;
   width: 100%;
-  z-index: 999;
-  border-radius: 12px 12px 0 0;
+  border-radius: 8px 8px 0 0;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5);
 }
 
@@ -107,7 +107,7 @@ header {
   align-items: center;
   background-color: var(--color-navbar-bg);
   padding: 10px 20px;
-  border-radius: 12px 12px 0 0;
+  border-radius: 8px 8px 0 0;
 }
 
 .navbar-profile {
@@ -188,6 +188,7 @@ header {
 ==================================== */
 
 .profile-modal-content {
+  position: relative;
   background-color: var(--color-modal-bg);
   width: 90%;
   max-width: 450px;
@@ -504,6 +505,27 @@ main.fade-in {
   align-items: center;
 }
 
+.input-readonly-wrapper {
+  position: relative;
+  display: flex;
+}
+
+.readonly-input {
+  background-color: var(--color-input-disabled-bg);
+  cursor: not-allowed; /* Mostra que não é editável */
+}
+
+/* Ícone de cadeado posicionado à direita */
+.icone-cadeado {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* Permite que o hover do wrapper ative a tooltip */
+  font-size: 1.2rem;
+  color: #888;
+}
+
 /* ====================================
        ESTILOS CUSTOMIZADOS PARA PARENTES
 ==================================== */
@@ -610,6 +632,7 @@ main.fade-in {
 
 .btn-voltar {
   display: inline-block;
+  gap: 5px;
   background-color: transparent;
   color: var(--color-btn-primary-bg);
   border: 2px solid var(--color-btn-primary-bg);
@@ -625,6 +648,17 @@ main.fade-in {
 .btn-voltar:hover {
   background-color: var(--color-btn-primary-bg);
   color: var(--color-text-1);
+}
+
+.btn-icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-icon-text span {
+  display: flex;
+  align-items: center;
 }
 
 #orderToggle {
@@ -928,7 +962,7 @@ label {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.7);
-  z-index: 1000;
+  z-index: 1000 !important;
   display: none;
   align-items: center;
   justify-content: center;
@@ -940,14 +974,21 @@ label {
 }
 
 .modal-content {
+  position: relative;
   background: var(--color-modal-bg);
   padding: 20px;
   border-radius: 12px;
   width: 100%;
   max-width: 600px;
+  max-height: 90%;
+  overflow: auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   transform: translateY(-20px);
   transition: transform 0.3s ease;
+}
+
+.modal-content::-webkit-scrollbar {
+  display: none;
 }
 
 .modal-overlay.show .modal-content {
@@ -1002,6 +1043,10 @@ label {
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 6px;
+}
+
+.form-editar-perfil .form-group {
+  margin: 8px 0;
 }
 
 .editar-perfil-btn-save:hover {
@@ -1064,13 +1109,16 @@ label {
 /* ====================================
       ESTILOS PARA GERENCIAMENTO E EDIÇÃO DE TURMAS
 ==================================== */
-.turmas-summary {
+.turmas-summary,
+.equipes-summary {
   margin-bottom: 10px;
   font-weight: bold;
   color: var(--color-text-3);
 }
 
-.turma-row {
+.turma-row,
+.ranking-row,
+.user-row {
   cursor: pointer;
   border-bottom: 1px solid var(--color-text-4);
 }
@@ -1128,7 +1176,8 @@ label {
 }
 
 .parente-count,
-.turma-info {
+.turma-info,
+.usuario-info {
   font-size: 0.8em;
   color: var(--color-text-4);
 }

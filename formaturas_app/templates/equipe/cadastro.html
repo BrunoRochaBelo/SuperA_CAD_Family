@@ -1,0 +1,106 @@
+<div class="perfil-wrapper"></div>
+{% extends 'base.html' %} {% block content %}
+<h2>Cadastrar Usuário</h2>
+<form
+  method="POST"
+  action="{{ url_for('equipe.cadastrar_usuario') }}"
+  id="formCadastrarUsuario"
+  novalidate
+>
+  <div class="form-group">
+    <label for="nome">Nome *</label>
+    <input
+      type="text"
+      id="nome"
+      name="nome"
+      class="form-control"
+      required
+      placeholder="Digite o nome"
+    />
+    <span class="feedback" id="feedbackNome" style="color: red"></span>
+  </div>
+  <div class="form-group">
+    <label for="email">Email *</label>
+    <input
+      type="email"
+      id="email"
+      name="email"
+      class="form-control"
+      required
+      placeholder="Digite o email"
+    />
+    <span class="feedback" id="feedbackEmail" style="color: red"></span>
+  </div>
+  <div class="form-group">
+    <label for="papel">Perfil de Acesso</label>
+    <select id="papel" name="papel" class="form-control">
+      <option value="ADM">ADM</option>
+      <option value="EDITOR">EDITOR</option>
+      <option value="VISUALIZARDOR">VISUALIZARDOR</option>
+    </select>
+  </div>
+  <a href="{{ url_for('equipe.index') }}" class="btn btn-voltar">← Equipe</a>
+  <button type="submit" class="btn btn-primary" id="btnCadastrar" disabled>
+    Cadastrar
+  </button>
+</form>
+
+<script>
+  // Função que valida os campos obrigatórios
+  function validarFormularioUsuario() {
+    let isValid = true;
+    const nomeInput = document.getElementById("nome");
+    const emailInput = document.getElementById("email");
+    const feedbackNome = document.getElementById("feedbackNome");
+    const feedbackEmail = document.getElementById("feedbackEmail");
+
+    // Limpa as mensagens de feedback
+    feedbackNome.textContent = "";
+    feedbackEmail.textContent = "";
+
+    // Validação do campo nome
+    if (!nomeInput.value.trim()) {
+      feedbackNome.textContent = "O nome é obrigatório.";
+      isValid = false;
+    }
+
+    // Validação do campo email com uma regex simples
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailInput.value.trim()) {
+      feedbackEmail.textContent = "O email é obrigatório.";
+      isValid = false;
+    } else if (!emailRegex.test(emailInput.value.trim())) {
+      feedbackEmail.textContent = "Digite um email válido.";
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  // Habilita ou desabilita o botão de cadastro com base na validação
+  function checkFormFields() {
+    const btnCadastrar = document.getElementById("btnCadastrar");
+    btnCadastrar.disabled = !validarFormularioUsuario();
+  }
+
+  // Adiciona os listeners para validação em tempo real
+  document.getElementById("nome").addEventListener("input", checkFormFields);
+  document.getElementById("email").addEventListener("input", checkFormFields);
+  document.getElementById("papel").addEventListener("change", checkFormFields);
+
+  // No submit, impede o envio se a validação não for satisfeita
+  document
+    .getElementById("formCadastrarUsuario")
+    .addEventListener("submit", function (e) {
+      if (!validarFormularioUsuario()) {
+        e.preventDefault();
+        checkFormFields();
+      }
+    });
+
+  // Inicializa a verificação quando a página carregar
+  window.addEventListener("load", function () {
+    checkFormFields();
+  });
+</script>
+{% endblock %}

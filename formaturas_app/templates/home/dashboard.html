@@ -4,322 +4,399 @@
 
 <!-- Filtros com Feedback -->
 <div class="filter-toolbar">
-    <div class="filter-content">
-        <form method="get" action="{{ url_for('home.index') }}" class="form-inline">
-            <div class="filter-group">
-                <div>
-                    <label for="turma">Turma:</label>
-                    <select name="turma" id="turma">
-                        <option value="">Todas</option>
-                        {% for t in all_turmas %}
-                        <option value="{{ t }}" {% if filtros.turma==t %}selected{% endif %}>{{ t }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label for="cidade">Cidade dos Parentes:</label>
-                    <select name="cidade" id="cidade">
-                        <option value="">Todas</option>
-                        {% for c in all_cidades %}
-                        <option value="{{ c }}" {% if filtros.cidade==c %}selected{% endif %}>{{ c }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            <div class="filter-buttons">
-                <a href="{{ url_for('home.index') }}" class="btn btn-voltar">Limpar Filtros</a>
-                <button type="submit" class="btn">Filtrar</button>
-            </div>
-        </form>
-
-        {% if filtros.turma or filtros.cidade %}
-        <div class="filter-feedback">
-            Filtro aplicado:
-            {% if filtros.turma %} Turma = "{{ filtros.turma }}" {% endif %}
-            {% if filtros.cidade %} | Cidade = "{{ filtros.cidade }}" {% endif %}
+  <div class="filter-content">
+    <form method="get" action="{{ url_for('home.index') }}" class="form-inline" id="filterForm">
+      <div class="filter-group">
+        <div>
+          <label for="turma">Turma:</label>
+          <select name="turma" id="turma" class="filter-select">
+            <option value="">Todas</option>
+            {% for t in all_turmas %}
+              <option value="{{ t }}" {% if filtros.turma == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
         </div>
-        {% endif %}
-    </div>
+        <div>
+          <label for="cidade">Cidade dos Parentes:</label>
+          <select name="cidade" id="cidade" class="filter-select">
+            <option value="">Todas</option>
+            {% for c in all_cidades %}
+              <option value="{{ c }}" {% if filtros.cidade == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-buttons">
+        <!-- Alterado de <a> para <button type="button"> para que o disabled funcione corretamente -->
+        <button type="button" class="btn btn-voltar" id="btnLimpar" disabled
+                onclick="window.location.href='{{ url_for('home.index') }}';">
+          Limpar Filtros
+        </button>
+        <button type="submit" class="btn btn-icon-text" id="btnFiltrar" disabled>
+          <span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              viewBox="0 0 24 24"
+            >
+              <path d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
+            </svg>
+          </span>
+          Filtrar
+        </button>
+      </div>
+    </form>
+
+    {% if filtros.turma or filtros.cidade %}
+      <div class="filter-feedback">
+        Filtro aplicado:
+        {% if filtros.turma %} Turma = "{{ filtros.turma }}" {% endif %}
+        {% if filtros.cidade %} | Cidade = "{{ filtros.cidade }}" {% endif %}
+      </div>
+    {% endif %}
+  </div>
 </div>
 
 <!-- Cards de Indicadores (Textos) -->
 <div class="card-container">
-    <div class="flex-respWrap">
-        <div class="card flex-row">
-            <h3>Total de Turmas</h3>
-            <p>{{ stats.turmas }}</p>
-            <a href="{{ url_for('turmas.index', active_page='turmas') }}" class="link">Ver turmas</a>
-        </div>
-        <div class="card">
-            <h3>Total de Alunos</h3>
-            <p>{{ stats.alunos }}</p>
-        </div>
-        <div class="card">
-            <h3>Total de Parentes</h3>
-            <p>{{ stats.parentes }}</p>
-        </div>
-        <div class="card">
-            <h3>Fotos Compradas</h3>
-            <p>{{ stats.compraram_foto }}</p>
-        </div>
+  <div class="flex-respWrap">
+    <div class="card flex-row">
+      <h3>Total de Turmas</h3>
+      <p>{{ stats.turmas }}</p>
+      <a href="{{ url_for('turmas.index', active_page='turmas') }}" class="link">Ver turmas</a>
     </div>
-    <div class="flex-nowrap">
-        <div class="card">
-            <h3>Média de Parentes por Aluno</h3>
-            <p>{{ stats.media_parentes | round(2) }}</p>
-            <canvas id="mediaChart" class="mini-chart"></canvas>
-        </div>
-        <div class="card">
-            <h3>Taxa de Alunos com Parente que Comprou Foto</h3>
-            <p>{{ stats.perc_alunos_foto | round(2) }}%</p>
-            <canvas id="taxaChart" class="mini-chart"></canvas>
-        </div>
+    <div class="card">
+      <h3>Total de Alunos</h3>
+      <p>{{ stats.alunos }}</p>
     </div>
+    <div class="card">
+      <h3>Total de Parentes</h3>
+      <p>{{ stats.parentes }}</p>
+    </div>
+    <div class="card">
+      <h3>Fotos Compradas</h3>
+      <p>{{ stats.compraram_foto }}</p>
+    </div>
+  </div>
+  <div class="flex-nowrap">
+    <div class="card">
+      <h3>Média de Parentes por Aluno</h3>
+      <p>{{ stats.media_parentes | round(2) }}</p>
+      <canvas id="mediaChart" class="mini-chart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Taxa de Alunos com Parente que Comprou Foto</h3>
+      <p>{{ stats.perc_alunos_foto | round(2) }}%</p>
+      <canvas id="taxaChart" class="mini-chart"></canvas>
+    </div>
+  </div>
 </div>
 
 <!-- Cards de Gráficos Principais -->
 <div class="card-container">
-    <div class="card chart-card">
-        <h3>Total de Alunos vs. Alunos com Foto</h3>
-        {% if chart_data.alunos_turma.total[0] %}
-        <canvas id="alunosGroupedChart"></canvas>
-        {% else %}
-        <div class="no-data">Nenhum dado para exibir</div>
-        {% endif %}
-    </div>
-    <div class="card chart-card">
-        <h3>Status de Compra da Foto</h3>
-        {% if stats.compraram_foto or stats.nao_compraram %}
-        <canvas id="fotosChart"></canvas>
-        {% else %}
-        <div class="no-data">Nenhum dado para exibir</div>
-        {% endif %}
-    </div>
-    <div class="card chart-card">
-        <h3>Parentes por Cidade</h3>
-        {% if chart_data.pais_cidade.data|length > 0 %}
-        <canvas id="paisCidadeChart"></canvas>
-        {% else %}
-        <div class="no-data">Nenhum dado para exibir</div>
-        {% endif %}
-    </div>
+  <div class="card chart-card">
+    <h3>Total de Alunos vs. Alunos com Foto</h3>
+    {% if chart_data.alunos_turma.total[0] %}
+      <canvas id="alunosGroupedChart"></canvas>
+    {% else %}
+      <div class="no-data">Nenhum dado para exibir</div>
+    {% endif %}
+  </div>
+  <div class="card chart-card">
+    <h3>Status de Compra da Foto</h3>
+    {% if stats.compraram_foto or stats.nao_compraram %}
+      <canvas id="fotosChart"></canvas>
+    {% else %}
+      <div class="no-data">Nenhum dado para exibir</div>
+    {% endif %}
+  </div>
+  <div class="card chart-card">
+    <h3>Parentes por Cidade</h3>
+    {% if chart_data.pais_cidade.data|length > 0 %}
+      <canvas id="paisCidadeChart"></canvas>
+    {% else %}
+      <div class="no-data">Nenhum dado para exibir</div>
+    {% endif %}
+  </div>
 </div>
 
 <!-- Ranking de Turmas -->
 <div class="card-container">
-    <div class="card table-card">
-        <h3>Ranking de Turmas por Taxa de Conversão</h3>
-        {% if ranking|length > 0 %}
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Turma</th>
-                    <th>Total de Alunos</th>
-                    <th>Alunos com Foto</th>
-                    <th>Taxa de Conversão (%)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in ranking %}
-                <tr>
-                    <td>{{ item.turma }}</td>
-                    <td>{{ item.total_alunos }}</td>
-                    <td>{{ item.alunos_com_foto }}</td>
-                    <td>{{ item.conversion_rate | round(2) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="no-data">Nenhuma informação disponível</div>
-        {% endif %}
-    </div>
+  <div class="card table-card">
+    <h3>Ranking de Turmas por Taxa de Conversão</h3>
+    {% if ranking|length > 0 %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Turma</th>
+          <th>Total de Alunos</th>
+          <th>Alunos com Foto</th>
+          <th>Taxa de Conversão (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in ranking %}
+        <tr class="ranking-row" data-turma="{{ item.turma|lower }}" onclick="redirectToTurma('{{ item.turma }}')">
+          <td>{{ item.turma }}</td>
+          <td>{{ item.total_alunos }}</td>
+          <td>{{ item.alunos_com_foto }}</td>
+          <td>{{ item.conversion_rate | round(2) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="no-data">Nenhuma informação disponível</div>
+    {% endif %}
+  </div>
 </div>
 
 <!-- Inclusão do Chart.js -->
 <script src="{{ url_for('static', filename='js/chart.umd.js') }}"></script>
 <script>
-    // Pega as cores dos gráficos definidas como variáveis CSS
-    const rootStyles = getComputedStyle(document.documentElement);
-    const chartTotalAlunosBg = rootStyles.getPropertyValue('--chart-total-alunos-bg').trim();
-    const chartTotalAlunosBorder = rootStyles.getPropertyValue('--chart-total-alunos-border').trim();
-    const chartAlunosComFotoBg = rootStyles.getPropertyValue('--chart-alunos-com-foto-bg').trim();
-    const chartAlunosComFotoBorder = rootStyles.getPropertyValue('--chart-alunos-com-foto-border').trim();
-    const chartCompraramBg = rootStyles.getPropertyValue('--chart-compraram-bg').trim();
-    const chartCompraramBorder = rootStyles.getPropertyValue('--chart-compraram-border').trim();
-    const chartNaoCompraramBg = rootStyles.getPropertyValue('--chart-nao-compraram-bg').trim();
-    const chartNaoCompraramBorder = rootStyles.getPropertyValue('--chart-nao-compraram-border').trim();
-    const chartPieBg1 = rootStyles.getPropertyValue('--chart-pie-bg-1').trim();
-    const chartPieBorder1 = rootStyles.getPropertyValue('--chart-pie-border-1').trim();
-    const chartPieBg2 = rootStyles.getPropertyValue('--chart-pie-bg-2').trim();
-    const chartPieBorder2 = rootStyles.getPropertyValue('--chart-pie-border-2').trim();
-    const chartPieBg3 = rootStyles.getPropertyValue('--chart-pie-bg-3').trim();
-    const chartPieBorder3 = rootStyles.getPropertyValue('--chart-pie-border-3').trim();
-    const chartPieBg4 = rootStyles.getPropertyValue('--chart-pie-bg-4').trim();
-    const chartPieBorder4 = rootStyles.getPropertyValue('--chart-pie-border-4').trim();
-    const chartPieBg5 = rootStyles.getPropertyValue('--chart-pie-bg-5').trim();
-    const chartPieBorder5 = rootStyles.getPropertyValue('--chart-pie-border-5').trim();
-    const chartMiniParentesBorder = rootStyles.getPropertyValue('--chart-mini-parentes-border').trim();
-    const chartMiniTaxaBorder = rootStyles.getPropertyValue('--chart-mini-taxa-border').trim();
+  // Pega as cores dos gráficos definidas como variáveis CSS
+  const rootStyles = getComputedStyle(document.documentElement);
+  const chartTotalAlunosBg = rootStyles.getPropertyValue('--chart-total-alunos-bg').trim();
+  const chartTotalAlunosBorder = rootStyles.getPropertyValue('--chart-total-alunos-border').trim();
+  const chartAlunosComFotoBg = rootStyles.getPropertyValue('--chart-alunos-com-foto-bg').trim();
+  const chartAlunosComFotoBorder = rootStyles.getPropertyValue('--chart-alunos-com-foto-border').trim();
+  const chartCompraramBg = rootStyles.getPropertyValue('--chart-compraram-bg').trim();
+  const chartCompraramBorder = rootStyles.getPropertyValue('--chart-compraram-border').trim();
+  const chartNaoCompraramBg = rootStyles.getPropertyValue('--chart-nao-compraram-bg').trim();
+  const chartNaoCompraramBorder = rootStyles.getPropertyValue('--chart-nao-compraram-border').trim();
+  const chartPieBg1 = rootStyles.getPropertyValue('--chart-pie-bg-1').trim();
+  const chartPieBorder1 = rootStyles.getPropertyValue('--chart-pie-border-1').trim();
+  const chartPieBg2 = rootStyles.getPropertyValue('--chart-pie-bg-2').trim();
+  const chartPieBorder2 = rootStyles.getPropertyValue('--chart-pie-border-2').trim();
+  const chartPieBg3 = rootStyles.getPropertyValue('--chart-pie-bg-3').trim();
+  const chartPieBorder3 = rootStyles.getPropertyValue('--chart-pie-border-3').trim();
+  const chartPieBg4 = rootStyles.getPropertyValue('--chart-pie-bg-4').trim();
+  const chartPieBorder4 = rootStyles.getPropertyValue('--chart-pie-border-4').trim();
+  const chartPieBg5 = rootStyles.getPropertyValue('--chart-pie-bg-5').trim();
+  const chartPieBorder5 = rootStyles.getPropertyValue('--chart-pie-border-5').trim();
+  const chartMiniParentesBorder = rootStyles.getPropertyValue('--chart-mini-parentes-border').trim();
+  const chartMiniTaxaBorder = rootStyles.getPropertyValue('--chart-mini-taxa-border').trim();
 
-    // Gráfico Agrupado: Alunos vs. Alunos com Foto
-    const ctxGrouped = document.getElementById('alunosGroupedChart') && document.getElementById('alunosGroupedChart').getContext('2d');
-    if (ctxGrouped) {
-        new Chart(ctxGrouped, {
-            type: 'bar',
-            data: {
-                labels: {{ chart_data.alunos_turma.labels | tojson }},
-    datasets: [
-        {
-            label: 'Total de Alunos',
-            data: {{ chart_data.alunos_turma.total | tojson }},
-        backgroundColor: chartTotalAlunosBg,
-        borderColor: chartTotalAlunosBorder,
-        borderWidth: 1
-                    },
-        {
-            label: 'Alunos com Foto',
-            data: {{ chart_data.alunos_turma.com_foto | tojson }},
-        backgroundColor: chartAlunosComFotoBg,
-        borderColor: chartAlunosComFotoBorder,
-        borderWidth: 1
-                    }
-    ]
-            },
-    options: {
-        responsive: true,
-            scales: {
-            x: { stacked: false },
-            y: { beginAtZero: true, ticks: { precision: 0 } }
-        }
-    }
-        });
-    }
+  // Lógica para controle de botões de filtro
+  document.addEventListener('DOMContentLoaded', function() {
+      const filterForm = document.getElementById('filterForm');
+      const btnFiltrar = document.getElementById('btnFiltrar');
+      const btnLimpar = document.getElementById('btnLimpar');
+      const turmaSelect = document.getElementById('turma');
+      const cidadeSelect = document.getElementById('cidade');
+      
+      // Armazena os valores originais dos selects
+      const originalValues = {
+          turma: turmaSelect.value,
+          cidade: cidadeSelect.value
+      };
+      
+      // Valores atuais dos selects
+      let currentValues = {
+          turma: turmaSelect.value,
+          cidade: cidadeSelect.value
+      };
+      
+      // Verifica se há filtros aplicados (diferentes do padrão "")
+      function hasAppliedFilters() {
+          return currentValues.turma !== "" || currentValues.cidade !== "";
+      }
+      
+      // Verifica se os valores atuais são diferentes dos originais
+      function hasChangedFilters() {
+          return currentValues.turma !== originalValues.turma ||
+                 currentValues.cidade !== originalValues.cidade;
+      }
+      
+      // Atualiza o estado dos botões
+      function updateButtonStates() {
+          btnLimpar.disabled = !hasAppliedFilters();
+          btnFiltrar.disabled = !hasChangedFilters();
+      }
+      
+      // Inicializa o estado dos botões
+      updateButtonStates();
+      
+      // Adiciona listeners para os selects
+      turmaSelect.addEventListener('change', function() {
+          currentValues.turma = this.value;
+          updateButtonStates();
+      });
+      
+      cidadeSelect.addEventListener('change', function() {
+          currentValues.cidade = this.value;
+          updateButtonStates();
+      });
+  });
 
-    // Gráfico Doughnut: Status de Compra da Foto
-    const ctxDonut = document.getElementById('fotosChart') && document.getElementById('fotosChart').getContext('2d');
-    if (ctxDonut) {
-        new Chart(ctxDonut, {
-            type: 'doughnut',
-            data: {
-                labels: ['Compraram Foto', 'Não Compraram'],
-                datasets: [{
-                    label: 'Status de Compra',
-                    data: [{{ stats.compraram_foto }}, {{ stats.nao_compraram }}],
-            backgroundColor: [chartCompraramBg, chartNaoCompraramBg],
-            borderColor: [chartCompraramBorder, chartNaoCompraramBorder],
-            borderWidth: 1
-        }]
-            },
-    options: { }
-        });
-    }
+  // Gráfico Agrupado: Alunos vs. Alunos com Foto
+  const ctxGrouped = document.getElementById('alunosGroupedChart') && document.getElementById('alunosGroupedChart').getContext('2d');
+  if (ctxGrouped) {
+      new Chart(ctxGrouped, {
+          type: 'bar',
+          data: {
+              labels: {{ chart_data.alunos_turma.labels | tojson }},
+              datasets: [
+                  {
+                      label: 'Total de Alunos',
+                      data: {{ chart_data.alunos_turma.total | tojson }},
+                      backgroundColor: chartTotalAlunosBg,
+                      borderColor: chartTotalAlunosBorder,
+                      borderWidth: 1
+                  },
+                  {
+                      label: 'Alunos com Foto',
+                      data: {{ chart_data.alunos_turma.com_foto | tojson }},
+                      backgroundColor: chartAlunosComFotoBg,
+                      borderColor: chartAlunosComFotoBorder,
+                      borderWidth: 1
+                  }
+              ]
+          },
+          options: {
+              responsive: true,
+              scales: {
+                  x: { stacked: false },
+                  y: { beginAtZero: true, ticks: { precision: 0 } }
+              }
+          }
+      });
+  }
 
-    // Gráfico de Pizza: Parentes por Cidade
-    // Gráfico de Pizza: Parentes por Cidade com gradiente automático
-    const ctxPie = document.getElementById('paisCidadeChart') && document.getElementById('paisCidadeChart').getContext('2d');
-    if (ctxPie) {
-        // Pega a cor da marca definida na variável CSS
-        const baseColor = rootStyles.getPropertyValue('--color-brand-primary').trim();
+  // Gráfico Doughnut: Status de Compra da Foto
+  const ctxDonut = document.getElementById('fotosChart') && document.getElementById('fotosChart').getContext('2d');
+  if (ctxDonut) {
+      new Chart(ctxDonut, {
+          type: 'doughnut',
+          data: {
+              labels: ['Compraram Foto', 'Não Compraram'],
+              datasets: [{
+                  label: 'Status de Compra',
+                  data: [{{ stats.compraram_foto }}, {{ stats.nao_compraram }}],
+                  backgroundColor: [chartCompraramBg, chartNaoCompraramBg],
+                  borderColor: [chartCompraramBorder, chartNaoCompraramBorder],
+                  borderWidth: 1
+              }]
+          },
+          options: { }
+      });
+  }
 
-        // Função pra converter uma cor HSL de volta para string
-        function hslString(h, s, l) {
-            return `hsl(${h}, ${s}%, ${l}%)`;
-        }
+  // Gráfico de Pizza: Parentes por Cidade com gradiente automático
+  const ctxPie = document.getElementById('paisCidadeChart') && document.getElementById('paisCidadeChart').getContext('2d');
+  if (ctxPie) {
+      // Pega a cor da marca definida na variável CSS
+      const baseColor = rootStyles.getPropertyValue('--color-brand-primary').trim();
 
-        // Tenta extrair os valores H, S e L da baseColor
-        const hslMatch = baseColor.match(/hsl\((\d+),\s*(\d+)%\s*,\s*(\d+)%\)/);
-        // Valores padrão se não conseguir extrair (ou seja, baseColor não estiver no formato HSL esperado)
-        let hue = 354, saturation = 65, lightness = 50;
-        if (hslMatch) {
-            hue = parseInt(hslMatch[1]);
-            saturation = parseInt(hslMatch[2]);
-            lightness = parseInt(hslMatch[3]);
-        }
+      // Função pra converter uma cor HSL de volta para string
+      function hslString(h, s, l) {
+          return `hsl(${h}, ${s}%, ${l}%)`;
+      }
 
-        // Cria arrays dinâmicos de cores para background e borda de cada fatia
-        const cityLabels = {{ chart_data.pais_cidade.labels | tojson
-    }};
-    const citiesCount = cityLabels.length;
-    const backgroundColors = [];
-    const borderColors = [];
+      // Tenta extrair os valores H, S e L da baseColor
+      const hslMatch = baseColor.match(/hsl\((\d+),\s*(\d+)%\s*,\s*(\d+)%\)/);
+      // Valores padrão se não conseguir extrair (ou seja, baseColor não estiver no formato HSL esperado)
+      let hue = 354, saturation = 65, lightness = 50;
+      if (hslMatch) {
+          hue = parseInt(hslMatch[1]);
+          saturation = parseInt(hslMatch[2]);
+          lightness = parseInt(hslMatch[3]);
+      }
 
-    // Define um range de luminosidade. Aqui, por exemplo, as cores vão variar do 30% ao 70% de luminosidade.
-    for (let i = 0; i < citiesCount; i++) {
-        // Calcula o novo valor de luminosidade de forma proporcional à posição da cidade
-        // Se só tiver uma cidade, newLightness será 30 mesmo.
-        let newLightness = 30;
-        if (citiesCount > 1) {
-            newLightness = 30 + (40 * i / (citiesCount - 1)); // Varia de 30 a 70
-        }
-        backgroundColors.push(hslString(hue, saturation, newLightness));
-        borderColors.push(hslString(hue, saturation, newLightness));
-    }
+      // Cria arrays dinâmicos de cores para background e borda de cada fatia
+      const cityLabels = {{ chart_data.pais_cidade.labels | tojson }};
+      const citiesCount = cityLabels.length;
+      const backgroundColors = [];
+      const borderColors = [];
 
-    // Cria o gráfico de pizza com as cores geradas dinamicamente
-    new Chart(ctxPie, {
-        type: 'pie',
-        data: {
-            labels: cityLabels,
-            datasets: [{
-                label: 'Parentes por Cidade',
-                data: {{ chart_data.pais_cidade.data | tojson }},
-        backgroundColor: backgroundColors,
-        borderColor: borderColors,
-        borderWidth: 1
-    }]
-        },
-        options: {}
-    });
-}
+      // Define um range de luminosidade. Aqui, por exemplo, as cores vão variar do 30% ao 70% de luminosidade.
+      for (let i = 0; i < citiesCount; i++) {
+          let newLightness = 30;
+          if (citiesCount > 1) {
+              newLightness = 30 + (40 * i / (citiesCount - 1));
+          }
+          backgroundColors.push(hslString(hue, saturation, newLightness));
+          borderColors.push(hslString(hue, saturation, newLightness));
+      }
 
+      // Cria o gráfico de pizza com as cores geradas dinamicamente
+      new Chart(ctxPie, {
+          type: 'pie',
+          data: {
+              labels: cityLabels,
+              datasets: [{
+                  label: 'Parentes por Cidade',
+                  data: {{ chart_data.pais_cidade.data | tojson }},
+                  backgroundColor: backgroundColors,
+                  borderColor: borderColors,
+                  borderWidth: 1
+              }]
+          },
+          options: {}
+      });
+  }
 
-    // Mini Sparkline para Média de Parentes por Aluno
-    const mediaValue = {{ stats.media_parentes | round(2) }};
-    const mediaCtx = document.getElementById('mediaChart') && document.getElementById('mediaChart').getContext('2d');
-    if (mediaCtx) {
-        new Chart(mediaCtx, {
-            type: 'line',
-            data: {
-                labels: ["", "", "", ""],
-                datasets: [{
-                    data: [mediaValue * 0.8, mediaValue, mediaValue * 1.2, mediaValue],
-                    borderColor: chartTotalAlunosBorder,
-                    borderWidth: 2,
-                    fill: false,
-                    pointRadius: 0
-                }]
-            },
-            options: {
-                responsive: false,
-                plugins: { legend: { display: false } },
-                scales: { x: { display: false }, y: { display: false } }
-            }
-        });
-    }
+  // Mini Sparkline para Média de Parentes por Aluno
+  const mediaValue = {{ stats.media_parentes | round(2) }};
+  const mediaCtx = document.getElementById('mediaChart') && document.getElementById('mediaChart').getContext('2d');
+  if (mediaCtx) {
+      new Chart(mediaCtx, {
+          type: 'line',
+          data: {
+              labels: ["", "", "", ""],
+              datasets: [{
+                  data: [mediaValue * 0.8, mediaValue, mediaValue * 1.2, mediaValue],
+                  borderColor: chartTotalAlunosBorder,
+                  borderWidth: 2,
+                  fill: false,
+                  pointRadius: 0
+              }]
+          },
+          options: {
+              responsive: false,
+              plugins: { legend: { display: false } },
+              scales: { x: { display: false }, y: { display: false } }
+          }
+      });
+  }
 
-    // Mini Sparkline para Taxa de Alunos com Parente que Comprou Foto
-    const taxaValue = {{ stats.perc_alunos_foto | round(2) }};
-    const taxaCtx = document.getElementById('taxaChart') && document.getElementById('taxaChart').getContext('2d');
-    if (taxaCtx) {
-        new Chart(taxaCtx, {
-            type: 'line',
-            data: {
-                labels: ["", "", "", ""],
-                datasets: [{
-                    data: [taxaValue * 0.95, taxaValue, taxaValue * 1.05, taxaValue],
-                    borderColor: chartMiniTaxaBorder,
-                    borderWidth: 2,
-                    fill: false,
-                    pointRadius: 0
-                }]
-            },
-            options: {
-                responsive: false,
-                plugins: { legend: { display: false } },
-                scales: { x: { display: false }, y: { display: false } }
-            }
-        });
-    }
+  // Mini Sparkline para Taxa de Alunos com Parente que Comprou Foto
+  const taxaValue = {{ stats.perc_alunos_foto | round(2) }};
+  const taxaCtx = document.getElementById('taxaChart') && document.getElementById('taxaChart').getContext('2d');
+  if (taxaCtx) {
+      new Chart(taxaCtx, {
+          type: 'line',
+          data: {
+              labels: ["", "", "", ""],
+              datasets: [{
+                  data: [taxaValue * 0.95, taxaValue, taxaValue * 1.05, taxaValue],
+                  borderColor: chartMiniTaxaBorder,
+                  borderWidth: 2,
+                  fill: false,
+                  pointRadius: 0
+              }]
+          },
+          options: {
+              responsive: false,
+              plugins: { legend: { display: false } },
+              scales: { x: { display: false }, y: { display: false } }
+          }
+      });
+  }
+</script>
+
+<!-- Função para redirecionar para a página de edição da turma ao clicar na linha do ranking -->
+<script>
+  function redirectToTurma(turma) {
+    var url = "{{ url_for('turmas.editar_turma', turma='__turma__', active_page='turmas') }}".replace('__turma__', encodeURIComponent(turma));
+    window.location.href = url;
+  }
 </script>
 {% endblock %}

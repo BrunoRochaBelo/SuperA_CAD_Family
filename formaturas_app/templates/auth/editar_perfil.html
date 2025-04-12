@@ -1,12 +1,11 @@
 <div class="perfil-wrapper"></div>
 {% extends 'base.html' %} {% block content %}
-<!-- Adicione um wrapper com margem extra para empurrar o conteúdo pra baixo -->
-
+<!-- Cabeçalho -->
 <h2>Editar Perfil</h2>
 
 <!-- Formulário para editar dados do perfil -->
 <form method="post" enctype="multipart/form-data" class="form-editar-perfil">
-  <!-- Foto de Perfil no topo -->
+  <!-- Foto de Perfil e Tag de Acesso -->
   <div class="perfil-upload-container">
     <label for="foto_perfil" class="perfil-foto-label">
       {% if usuario.foto_perfil %}
@@ -29,9 +28,9 @@
     />
   </div>
 
-  <!-- Campos de texto -->
+  <!-- Campos de texto: Apenas Nome e Email (email somente leitura) -->
   <div class="form-group">
-    <label for="nome">Nome Completo:</label>
+    <label for="nome">Nome:</label>
     <input
       type="text"
       name="nome"
@@ -43,15 +42,22 @@
   </div>
 
   <div class="form-group">
-    <label for="username">Nome de Usuário:</label>
-    <input
-      type="text"
-      name="username"
-      id="username"
-      class="form-editar-perfil-input"
-      value="{{ usuario.username or '' }}"
-      required
-    />
+    <label for="email">Email (não editável)</label>
+    <div
+      class="input-readonly-wrapper"
+      title="Este email é fixo e não pode ser alterado."
+    >
+      <input
+        type="email"
+        name="email"
+        id="email"
+        class="form-editar-perfil-input readonly-input"
+        value="{{ usuario.email }}"
+        required
+        readonly
+      />
+      <span class="icone-cadeado" aria-hidden="true">&#128274;</span>
+    </div>
   </div>
 
   <!-- Botões -->
@@ -59,20 +65,21 @@
     <button type="submit" class="btn editar-perfil-btn-save" disabled>
       Atualizar Perfil
     </button>
-    <!-- Botão para abrir o modal de alteração de senha -->
     <button id="openPasswordModal" type="button" class="btn">
       Alterar Senha
     </button>
   </div>
 </form>
 
-<!-- FIM DO WRAPPER -->
-
-<!-- Modal para alteração de senha (fora do form) -->
+<!-- Modal para Alteração de Senha -->
 <div id="passwordModal" class="modal-overlay">
   <div class="modal-content">
     <h2>Alterar Senha</h2>
-    <form method="post" action="{{ url_for('perfil.alterar_senha') }}">
+    <form
+      method="post"
+      action="{{ url_for('perfil.alterar_senha') }}"
+      id="passwordForm"
+    >
       <div class="form-group">
         <label for="current_password">Senha Atual:</label>
         <input
@@ -95,13 +102,21 @@
           required
         />
       </div>
-      <!-- Feedback para o formulário de senha -->
-      <div id="passwordFeedback" style="color: red; font-size: 0.9rem"></div>
+      <!-- Feedback aprimorado para o formulário de senha -->
+      <div
+        id="passwordFeedback"
+        style="color: red; font-size: 0.9rem; margin-top: 0.5rem"
+      ></div>
       <div class="modal-button-group">
         <button type="button" id="passwordModalClose" class="btn btn-voltar">
           Cancelar
         </button>
-        <button type="submit" class="btn cadastro-parente-btn-save">
+        <button
+          type="submit"
+          id="modalAtualizarBtn"
+          class="btn cadastro-parente-btn-save"
+          disabled
+        >
           Atualizar
         </button>
       </div>
@@ -115,23 +130,19 @@
     /* --- Lógica para o Formulário de Editar Perfil --- */
     const editarPerfilBtn = document.querySelector(".editar-perfil-btn-save");
     const nomeInput = document.getElementById("nome");
-    const usernameInput = document.getElementById("username");
+    const emailInput = document.getElementById("email");
     const fotoInput = document.getElementById("foto_perfil");
 
     // Guarda os valores iniciais para comparação
     const initialNome = nomeInput.value;
-    const initialUsername = usernameInput.value;
+    const initialEmail = emailInput.value;
     let fotoChanged = false;
 
-    // Botão desabilitado inicialmente
     editarPerfilBtn.disabled = true;
 
     function checkPerfilFormChanged() {
-      if (
-        nomeInput.value !== initialNome ||
-        usernameInput.value !== initialUsername ||
-        fotoChanged
-      ) {
+      // Como o campo email é readonly, a comparação fica apenas com o nome e a foto
+      if (nomeInput.value !== initialNome || fotoChanged) {
         editarPerfilBtn.disabled = false;
       } else {
         editarPerfilBtn.disabled = true;
@@ -139,7 +150,6 @@
     }
 
     nomeInput.addEventListener("input", checkPerfilFormChanged);
-    usernameInput.addEventListener("input", checkPerfilFormChanged);
     fotoInput.addEventListener("change", function () {
       fotoChanged = true;
       checkPerfilFormChanged();
@@ -149,47 +159,51 @@
     const openPasswordModal = document.getElementById("openPasswordModal");
     const passwordModal = document.getElementById("passwordModal");
     const passwordModalClose = document.getElementById("passwordModalClose");
-    const passwordForm = passwordModal.querySelector("form");
+    const passwordForm = document.getElementById("passwordForm");
     const currentPasswordInput = document.getElementById("current_password");
     const newPasswordInput = document.getElementById("new_password");
     const confirmPasswordInput = document.getElementById("confirm_password");
-    const modalAtualizarBtn = passwordForm.querySelector(
-      'button[type="submit"]'
-    );
+    const modalAtualizarBtn = document.getElementById("modalAtualizarBtn");
     const passwordFeedback = document.getElementById("passwordFeedback");
 
-    // Inicializa o botão de atualizar senha como desabilitado
     modalAtualizarBtn.disabled = true;
 
     function validatePasswordForm() {
       let valid = true;
-      let errorMessage = "";
+      let errors = [];
 
-      // Verifica se os três campos estão preenchidos
+      // Verifica se todos os campos estão preenchidos
       if (
         currentPasswordInput.value.trim() === "" ||
         newPasswordInput.value.trim() === "" ||
         confirmPasswordInput.value.trim() === ""
       ) {
         valid = false;
+        errors.push("Preencha todos os campos.");
       }
-
+      // Verifica se nova senha tem no mínimo 6 caracteres
+      if (
+        newPasswordInput.value.length > 0 &&
+        newPasswordInput.value.length < 6
+      ) {
+        valid = false;
+        errors.push("A nova senha deve ter no mínimo 6 caracteres.");
+      }
       // Verifica se as novas senhas conferem
       if (newPasswordInput.value !== confirmPasswordInput.value) {
         valid = false;
-        errorMessage = "As novas senhas não conferem.";
+        errors.push("As novas senhas não conferem.");
       }
-
-      // Verifica se a nova senha é diferente da senha atual
+      // Verifica se a nova senha é diferente da atual
       if (
         currentPasswordInput.value.trim() !== "" &&
         newPasswordInput.value === currentPasswordInput.value
       ) {
         valid = false;
-        errorMessage = "A nova senha deve ser diferente da atual.";
+        errors.push("A nova senha deve ser diferente da atual.");
       }
 
-      passwordFeedback.textContent = errorMessage;
+      passwordFeedback.textContent = errors.join(" ");
       modalAtualizarBtn.disabled = !valid;
     }
 
@@ -197,7 +211,6 @@
       input.addEventListener("input", validatePasswordForm);
     });
 
-    // Validação assíncrona da senha atual via AJAX ao sair do campo
     currentPasswordInput.addEventListener("blur", function () {
       const currentPass = currentPasswordInput.value.trim();
       if (currentPass === "") return;
@@ -222,29 +235,29 @@
     });
 
     // Abre o modal de alteração de senha
-    if (openPasswordModal) {
-      openPasswordModal.addEventListener("click", () => {
-        passwordModal.style.display = "flex";
-        passwordModal.classList.add("show");
-      });
-    }
+    openPasswordModal.addEventListener("click", () => {
+      passwordModal.style.display = "flex";
+      passwordModal.classList.add("show");
+    });
 
-    // Fecha o modal ao clicar no botão Cancelar
-    if (passwordModalClose) {
-      passwordModalClose.addEventListener("click", () => {
-        passwordModal.classList.remove("show");
-        setTimeout(() => {
-          passwordModal.style.display = "none";
-        }, 300);
-      });
-    }
-
-    // Fecha o modal se clicar fora do conteúdo
+    // Fecha o modal ao clicar em "Cancelar" ou fora do conteúdo
+    passwordModalClose.addEventListener("click", () => {
+      passwordModal.classList.remove("show");
+      setTimeout(() => {
+        passwordModal.style.display = "none";
+        passwordForm.reset();
+        passwordFeedback.textContent = "";
+        modalAtualizarBtn.disabled = true;
+      }, 300);
+    });
     window.addEventListener("click", function (event) {
       if (event.target === passwordModal) {
         passwordModal.classList.remove("show");
         setTimeout(() => {
           passwordModal.style.display = "none";
+          passwordForm.reset();
+          passwordFeedback.textContent = "";
+          modalAtualizarBtn.disabled = true;
         }, 300);
       }
     });

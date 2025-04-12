@@ -32,10 +32,11 @@ class Empresa(db.Model):
 class Usuario(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)  # Usado para login
-    nome = db.Column(db.String(50), nullable=False)  
-    username = db.Column(db.String(50), unique=True, nullable=True) 
-    foto_perfil = db.Column(db.String(200), nullable=True) 
+    nome = db.Column(db.String(50), nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=True)
+    foto_perfil = db.Column(db.String(200), nullable=True)
     senha_hash = db.Column(db.String(200), nullable=False)
+    # O campo 'papel' é definido como enum para garantir consistência
     papel = db.Column(db.Enum(PapelEnum), nullable=False)
     empresa_id = db.Column(db.Integer, db.ForeignKey('empresa.id'), nullable=False)
 
@@ -48,6 +49,12 @@ class Usuario(db.Model, UserMixin):
     @property
     def papel_str(self) -> str:
         return self.papel.value
+
+    @validates('email')
+    def validate_email(self, key, email):
+        if not email:
+            raise ValueError("Email é obrigatório")
+        return email.lower()  # Padroniza o email para lowercase
 
     def __repr__(self):
         return f"<Usuario {self.email}>"

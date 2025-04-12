@@ -92,7 +92,7 @@ endfor %}
             class="btn"
             onclick="abrirModalParente('{{ a.id }}'); event.stopPropagation();"
           >
-            Adicionar Parente
+            + Adicionar parente
           </button>
         </td>
       </tr>
@@ -152,7 +152,11 @@ endfor %}
           required
           placeholder="Digite o nome"
         />
-        <span class="cadastro-parente-feedback" id="feedbackNome"></span>
+        <span
+          class="cadastro-parente-feedback"
+          id="feedbackNome"
+          style="color: red"
+        ></span>
       </div>
       <!-- Grau de Parentesco (obrigatório) -->
       <div class="form-group">
@@ -164,7 +168,11 @@ endfor %}
           required
           placeholder="Ex: Pai, Mãe, Tio"
         />
-        <span class="cadastro-parente-feedback" id="feedbackGrau"></span>
+        <span
+          class="cadastro-parente-feedback"
+          id="feedbackGrau"
+          style="color: red"
+        ></span>
       </div>
       <!-- Cidade (obrigatório) -->
       <div class="form-group">
@@ -176,7 +184,11 @@ endfor %}
           required
           placeholder="Digite a cidade"
         />
-        <span class="cadastro-parente-feedback" id="feedbackCidade"></span>
+        <span
+          class="cadastro-parente-feedback"
+          id="feedbackCidade"
+          style="color: red"
+        ></span>
       </div>
       <!-- Outros campos opcionais -->
       <div class="form-group">
@@ -201,7 +213,11 @@ endfor %}
           placeholder="(xx) xxxx-xxxx"
           pattern="\(\d{2}\) \d{4,5}-\d{4}"
         />
-        <span class="cadastro-parente-feedback" id="feedbackTelefone"></span>
+        <span
+          class="cadastro-parente-feedback"
+          id="feedbackTelefone"
+          style="color: red"
+        ></span>
       </div>
       <div class="modal-switch-container">
         <label class="switch-label">
@@ -391,6 +407,7 @@ endfor %}
       });
   }
 
+  // Ao abrir o modal, exibe a validação imediatamente para mostrar as mensagens de erro
   function abrirModalParente(studentId) {
     selectedStudentId = studentId;
     editingParenteId = null;
@@ -398,6 +415,7 @@ endfor %}
     document.getElementById("formCadastroParente").reset();
     document.getElementById("modalSave").disabled = true;
     document.getElementById("modalOverlay").style.display = "flex";
+    checkFormFields(); // Chama a verificação imediatamente para exibir os feedbacks
   }
   document.getElementById("modalClose").addEventListener("click", function () {
     document.getElementById("modalOverlay").style.display = "none";

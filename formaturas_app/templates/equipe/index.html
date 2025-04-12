@@ -11,8 +11,8 @@ total_editor = users|selectattr("papel_str", "equalto", "EDITOR")|list|length %}
 
 <div class="equipes-summary">
   Usuários: <span id="total-usuarios">{{ total_users }}</span> | ADM:
-  <span id="total-adm">{{ total_adm }}</span> | EDITOR:
-  <span id="total-editor">{{ total_editor }}</span> | VISUALIZADOR:
+  <span id="total-adm">{{ total_adm }}</span> | Editor:
+  <span id="total-editor">{{ total_editor }}</span> | Visualizador:
   <span id="total-visualizador">{{ total_visualizador }}</span>
 </div>
 
@@ -21,13 +21,12 @@ total_editor = users|selectattr("papel_str", "equalto", "EDITOR")|list|length %}
   <button id="orderToggle" data-order="asc" class="btn">Ordenar A-Z</button>
 </div>
 
-<!-- Tabela com a lista de usuários -->
+<!-- Tabela com a lista de usuários ajustada -->
 <div class="table-responsive">
   <table class="table" id="usuariosTable">
     <thead>
       <tr>
-        <th>Nome</th>
-        <th>Email</th>
+        <th>Usuário</th>
         <th>Perfil de acesso</th>
         <th style="text-align: right">Ações</th>
       </tr>
@@ -41,8 +40,10 @@ total_editor = users|selectattr("papel_str", "equalto", "EDITOR")|list|length %}
         data-user-email="{{ user.email }}"
         data-user-papel="{{ user.papel_str }}"
       >
-        <td>{{ user.nome }}</td>
-        <td>{{ user.email }}</td>
+        <td>
+          {{ user.nome }}<br />
+          <small class="usuario-info">{{ user.email }}</small>
+        </td>
         <td>{{ user.papel_str }}</td>
         <td style="text-align: right" onclick="event.stopPropagation();">
           <button
@@ -59,36 +60,45 @@ total_editor = users|selectattr("papel_str", "equalto", "EDITOR")|list|length %}
 
 <!-- Botão para adicionar novo usuário -->
 <div class="equipe-controls">
-  <a href="{{ url_for('cadastro.cadastrar_usuario') }}" class="btn btn-primary"
+  <a href="{{ url_for('equipe.cadastrar_usuario') }}" class="btn btn-primary"
     >+ Adicionar usuário</a
   >
 </div>
 
-<!-- Modal para Edição de Usuário (abre ao clicar na linha, exceto o ícone de exclusão) -->
+<!-- Modal para Edição de Usuário -->
 <div class="modal-overlay" id="modalEditarUsuario" style="display: none">
   <div class="modal-content">
     <h2>Editar Usuário</h2>
-    <form id="formEditarUsuario">
+    <form id="formEditarUsuario" novalidate>
       <input type="hidden" name="id" id="editUserId" />
       <div class="form-group">
-        <label for="editUserNome">Nome</label>
+        <label for="editUserNome">Nome *</label>
         <input
           type="text"
           name="nome"
           id="editUserNome"
           class="form-control"
           required
+          placeholder="Digite o nome"
         />
+        <span class="feedback" id="feedbackEditNome" style="color: red"></span>
       </div>
       <div class="form-group">
-        <label for="editUserEmail">Email</label>
-        <input
-          type="email"
-          name="email"
-          id="editUserEmail"
-          class="form-control"
-          required
-        />
+        <label for="editUserEmail">Email (não pode ser alterado)</label>
+        <div
+          class="input-readonly-wrapper"
+          title="Este email é fixo e não pode ser alterado"
+        >
+          <input
+            type="email"
+            name="email"
+            id="editUserEmail"
+            class="form-control readonly-input"
+            required
+            readonly
+          />
+          <span class="icone-cadeado" aria-hidden="true">&#128274;</span>
+        </div>
       </div>
       <div class="form-group">
         <label for="editUserPapel">Perfil de Acesso</label>
@@ -102,7 +112,12 @@ total_editor = users|selectattr("papel_str", "equalto", "EDITOR")|list|length %}
         <button type="button" id="btnFecharModalEditar" class="btn btn-voltar">
           Cancelar
         </button>
-        <button type="submit" id="btnSalvarModalEditar" class="btn btn-primary">
+        <button
+          type="submit"
+          id="btnSalvarModalEditar"
+          class="btn btn-primary"
+          disabled
+        >
           Salvar
         </button>
       </div>
@@ -130,6 +145,80 @@ total_editor = users|selectattr("papel_str", "equalto", "EDITOR")|list|length %}
 </div>
 
 <script>
+  // Função para atualizar a lista e o resumo via API
+  function updateUserList() {
+    fetch("{{ url_for('equipe.api_users') }}")
+      .then((response) => response.json())
+      .then((data) => {
+        document.getElementById("total-usuarios").textContent =
+          data.summary.total_users;
+        document.getElementById("total-adm").textContent =
+          data.summary.total_adm;
+        document.getElementById("total-editor").textContent =
+          data.summary.total_editor;
+        document.getElementById("total-visualizador").textContent =
+          data.summary.total_visualizador;
+        const tbody = document.getElementById("usuariosBody");
+        tbody.innerHTML = "";
+        data.users.forEach((user) => {
+          const row = document.createElement("tr");
+          row.className = "user-row";
+          row.setAttribute("data-user-id", user.id);
+          row.setAttribute("data-user-name", user.nome.toLowerCase());
+          row.setAttribute("data-user-email", user.email);
+          row.setAttribute("data-user-papel", user.papel_str);
+          row.innerHTML = `
+            <td>
+              ${user.nome}<br>
+              <small class="usuario-info">${user.email}</small>
+            </td>
+            <td>${user.papel_str}</td>
+            <td style="text-align: right">
+              <button class="btn-excluir" data-user-id="${user.id}" title="Excluir"></button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+        attachUserRowEvents();
+      });
+  }
+
+  function attachUserRowEvents() {
+    document.querySelectorAll(".user-row").forEach(function (row) {
+      row.addEventListener("click", function (e) {
+        if (!e.target.closest(".btn-excluir")) {
+          var userId = this.getAttribute("data-user-id");
+          var userNome = this.getAttribute("data-user-name");
+          var userEmail = this.getAttribute("data-user-email");
+          var userPapel = this.getAttribute("data-user-papel");
+          document.getElementById("editUserId").value = userId;
+          document.getElementById("editUserNome").value = userNome;
+          document.getElementById("editUserEmail").value = userEmail;
+          document.getElementById("editUserPapel").value = userPapel;
+          originalNome = userNome;
+          originalPapel = userPapel;
+          document.getElementById("feedbackEditNome").textContent = "";
+          document.getElementById("btnSalvarModalEditar").disabled = true;
+          document.getElementById("modalEditarUsuario").style.display = "flex";
+        }
+      });
+    });
+    // Eventos para os botões de exclusão
+    document.querySelectorAll(".btn-excluir").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var userId = btn.getAttribute("data-user-id");
+        var row = btn.closest("tr");
+        var userNome = row.children[0].textContent.trim();
+        document.getElementById("excluirUsuarioNome").textContent = userNome;
+        document
+          .getElementById("modalExcluirUsuario")
+          .setAttribute("data-user-id", userId);
+        document.getElementById("modalExcluirUsuario").style.display = "flex";
+      });
+    });
+  }
+
   // Ordenação dos usuários
   document.getElementById("orderToggle").addEventListener("click", function () {
     var currentOrder = this.getAttribute("data-order");
@@ -154,68 +243,83 @@ total_editor = users|selectattr("papel_str", "equalto", "EDITOR")|list|length %}
     });
   }
 
-  // Abre o modal de edição ao clicar em uma linha (exceto se clicar no botão de exclusão)
+  // Variáveis globais para o modal de edição
+  let originalNome = "";
+  let originalPapel = "";
+
   document.querySelectorAll(".user-row").forEach(function (row) {
     row.addEventListener("click", function (e) {
-      // Se o clique não tiver sido no botão de exclusão
       if (!e.target.closest(".btn-excluir")) {
         var userId = this.getAttribute("data-user-id");
         var userNome = this.getAttribute("data-user-name");
-        var userEmail =
-          this.getAttribute("data-user-email") ||
-          this.cells[1].textContent.trim();
-        var userPapel =
-          this.getAttribute("data-user-papel") ||
-          this.cells[2].textContent.trim();
-
+        var userEmail = this.getAttribute("data-user-email");
+        var userPapel = this.getAttribute("data-user-papel");
         document.getElementById("editUserId").value = userId;
         document.getElementById("editUserNome").value = userNome;
         document.getElementById("editUserEmail").value = userEmail;
         document.getElementById("editUserPapel").value = userPapel;
-
+        originalNome = userNome;
+        originalPapel = userPapel;
+        document.getElementById("feedbackEditNome").textContent = "";
+        document.getElementById("btnSalvarModalEditar").disabled = true;
         document.getElementById("modalEditarUsuario").style.display = "flex";
       }
     });
   });
 
-  // Configura o botão de exclusão para abrir o modal de exclusão
-  document.querySelectorAll(".btn-excluir").forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation(); // Impede que o clique dispare o evento da linha
-      var userId = btn.getAttribute("data-user-id");
-      var row = btn.closest("tr");
-      var userNome = row.children[0].textContent.trim();
-      document.getElementById("excluirUsuarioNome").textContent = userNome;
-      document
-        .getElementById("modalExcluirUsuario")
-        .setAttribute("data-user-id", userId);
-      document.getElementById("modalExcluirUsuario").style.display = "flex";
-    });
-  });
+  function validateEditForm() {
+    let valid = true;
+    const nomeField = document.getElementById("editUserNome");
+    const feedback = document.getElementById("feedbackEditNome");
+    feedback.textContent = "";
+    if (!nomeField.value.trim()) {
+      feedback.textContent = "O nome é obrigatório.";
+      valid = false;
+    }
+    return valid;
+  }
 
-  // Fechar modais
+  function checkEditFormFields() {
+    const currentNome = document.getElementById("editUserNome").value.trim();
+    const currentPapel = document.getElementById("editUserPapel").value;
+    const saveBtn = document.getElementById("btnSalvarModalEditar");
+    if (
+      validateEditForm() &&
+      (currentNome !== originalNome || currentPapel !== originalPapel)
+    ) {
+      saveBtn.disabled = false;
+    } else {
+      saveBtn.disabled = true;
+    }
+  }
+
+  document
+    .getElementById("editUserNome")
+    .addEventListener("input", checkEditFormFields);
+  document
+    .getElementById("editUserPapel")
+    .addEventListener("change", checkEditFormFields);
+
   document
     .getElementById("btnFecharModalEditar")
     .addEventListener("click", function () {
       document.getElementById("modalEditarUsuario").style.display = "none";
     });
-  document
-    .getElementById("btnFecharModalExcluir")
-    .addEventListener("click", function () {
-      document.getElementById("modalExcluirUsuario").style.display = "none";
-    });
 
-  // Envio do formulário de edição (AJAX)
+  // Submissão do formulário de edição via AJAX
   document
     .getElementById("formEditarUsuario")
     .addEventListener("submit", function (e) {
       e.preventDefault();
+      if (!validateEditForm()) {
+        checkEditFormFields();
+        return;
+      }
       var userId = document.getElementById("editUserId").value;
-      var userNome = document.getElementById("editUserNome").value;
+      var userNome = document.getElementById("editUserNome").value.trim();
       var userEmail = document.getElementById("editUserEmail").value;
       var userPapel = document.getElementById("editUserPapel").value;
-
-      fetch("/auth/editar_usuario/" + userId, {
+      fetch("/equipe/editar_usuario/" + userId, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -227,29 +331,108 @@ total_editor = users|selectattr("papel_str", "equalto", "EDITOR")|list|length %}
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            location.reload();
+            flashMessage("Usuário atualizado com sucesso!", "success");
+            updateUserList();
+            document.getElementById("modalEditarUsuario").style.display =
+              "none";
           } else {
             alert("Erro ao atualizar usuário: " + data.message);
           }
         });
     });
 
-  // Confirmação de exclusão (AJAX)
+  // Modal para Exclusão de Usuário
+  document.querySelectorAll(".btn-excluir").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var userId = btn.getAttribute("data-user-id");
+      var row = btn.closest("tr");
+      var userNome = row.children[0].textContent.trim();
+      document.getElementById("excluirUsuarioNome").textContent = userNome;
+      document
+        .getElementById("modalExcluirUsuario")
+        .setAttribute("data-user-id", userId);
+      document.getElementById("modalExcluirUsuario").style.display = "flex";
+    });
+  });
+
+  document
+    .getElementById("btnFecharModalExcluir")
+    .addEventListener("click", function () {
+      document.getElementById("modalExcluirUsuario").style.display = "none";
+    });
+
   document
     .getElementById("btnConfirmarExclusao")
     .addEventListener("click", function () {
       var userId = document
         .getElementById("modalExcluirUsuario")
         .getAttribute("data-user-id");
-      fetch("/auth/excluir_usuario/" + userId, { method: "DELETE" })
+      // Verifica se o usuário a ser excluído é um ADM
+      var userRow = document.querySelector(
+        `.user-row[data-user-id="${userId}"]`
+      );
+      if (userRow) {
+        var userPapel = userRow.getAttribute("data-user-papel");
+        if (userPapel === "ADM") {
+          var totalAdm = parseInt(
+            document.getElementById("total-adm").textContent
+          );
+          if (totalAdm <= 1) {
+            alert("Não é possível excluir o único ADM da conta.");
+            document.getElementById("modalExcluirUsuario").style.display =
+              "none";
+            return;
+          }
+        }
+      }
+      fetch("/equipe/excluir_usuario/" + userId, { method: "DELETE" })
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            location.reload();
+            flashMessage("Usuário excluído com sucesso!", "success");
+            updateUserList();
+            document.getElementById("modalExcluirUsuario").style.display =
+              "none";
           } else {
             alert("Erro ao excluir usuário: " + data.message);
           }
         });
     });
+
+  function flashMessage(message, category) {
+    let flashContainer = document.getElementById("flash-messages");
+    if (!flashContainer) {
+      flashContainer = document.createElement("div");
+      flashContainer.id = "flash-messages";
+      document.body.appendChild(flashContainer);
+    }
+    flashContainer.style.display = "block";
+    flashContainer.style.opacity = "1";
+    const flashDiv = document.createElement("div");
+    flashDiv.className =
+      "alert alert-" + (category === "success" ? "success" : category);
+    flashDiv.innerHTML = `<span class="alert-text">${message}</span>
+      <button class="alert-close" onclick="this.parentElement.remove();">×</button>`;
+    flashContainer.appendChild(flashDiv);
+    setTimeout(() => {
+      flashDiv.style.opacity = "0";
+      setTimeout(() => {
+        flashDiv.remove();
+        if (flashContainer.children.length === 0) {
+          flashContainer.style.opacity = "0";
+          flashContainer.style.display = "none";
+        }
+      }, 500);
+    }, 3000);
+  }
+
+  window.addEventListener("load", function () {
+    var order = document
+      .getElementById("orderToggle")
+      .getAttribute("data-order");
+    sortUserRows(order);
+    updateUserList();
+  });
 </script>
 {% endblock %}

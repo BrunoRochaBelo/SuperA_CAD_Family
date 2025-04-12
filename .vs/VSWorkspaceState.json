@@ -6,6 +6,6 @@
     "\\formaturas_app\\templates\\turmas",
     "\\formaturas_app\\turmas"
   ],
-  "SelectedNode": "\\run.py",
+  "SelectedNode": "\\formaturas_app\\templates\\base.html",
   "PreviewInSolutionExplorer": false
 }
