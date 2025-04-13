@@ -18,7 +18,10 @@
       <div class="perfil-foto-placeholder">Selecionar Foto</div>
       {% endif %}
     </label>
-    <span class="perfil-access-tag">{{ usuario.papel.value }}</span>
+    <span class="perfil-access-tag {{ usuario.papel.value|lower }}">
+      {{ usuario.papel.value }}
+    </span>
+
     <input
       type="file"
       name="foto_perfil"

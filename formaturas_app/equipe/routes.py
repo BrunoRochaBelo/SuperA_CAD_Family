@@ -15,7 +15,7 @@ def index():
 @login_required
 def cadastrar_usuario():
     if current_user.papel_str != 'ADM':
-        flash("Acesso não autorizado!", "error")
+        flash("Acesso não autorizado!", "danger")
         return redirect(url_for('equipe.index'))
     
     if request.method == 'POST':
@@ -23,12 +23,18 @@ def cadastrar_usuario():
         email = request.form.get('email')
         papel = request.form.get('papel')
         
+        # Verifica se o e-mail já está cadastrado
+        usuario_existente = Usuario.query.filter_by(email=email).first()
+        if usuario_existente:
+            flash("O e-mail informado já está cadastrado. Por favor, utilize outro!", "danger")
+            return redirect(url_for('equipe.cadastrar_usuario'))
+        
         novo_usuario = Usuario(nome=nome, email=email, papel=PapelEnum(papel))
         # Define uma senha padrão para o usuário (pode ser alterada depois)
         novo_usuario.set_password("default123")
         # Associa o novo usuário à empresa do ADM logado
         novo_usuario.empresa_id = current_user.empresa_id
-        
+
         db.session.add(novo_usuario)
         db.session.commit()
         

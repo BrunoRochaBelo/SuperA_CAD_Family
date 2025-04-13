@@ -29,11 +29,18 @@
             id="profileIcon"
             data-tippy-content="Meu Perfil"
           >
+            {% if current_user.foto_perfil %}
             <img
-              src="{% if current_user.foto_perfil %}{{ url_for('static', filename=current_user.foto_perfil) }}{% else %}{{ url_for('static', filename='img/default_avatar.png') }}{% endif %}"
+              src="{{ url_for('static', filename=current_user.foto_perfil) }}"
               alt="Foto de Perfil"
             />
+            {% else %}
+            <div class="navbar-profile-initial">
+              {{ current_user.nome[0].upper() }}
+            </div>
+            {% endif %}
           </div>
+
           {% endif %}
         </div>
         <div class="navbar-center">
@@ -202,7 +209,9 @@
             {% endif %}
           </div>
           <div class="profile-access-section-tag profile-animate">
-            <span class="profile-access-value-tag">
+            <span
+              class="profile-access-value-tag {{ current_user.papel.value|lower }}"
+            >
               {{ current_user.papel.value }}
             </span>
           </div>

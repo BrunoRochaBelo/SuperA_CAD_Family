@@ -24,6 +24,11 @@
   --color-navbar-bg: hsl(354, 35%, 16%);
   --color-navbar-active: hsl(354, 80%, 62%);
 
+  /* Perfil de Acesso */
+  --access-color-adm: var(--color-brand-primary);
+  --access-color-editor: hsl(210, 30%, 45%);
+  --access-color-viewer: hsl(0, 0%, 35%);
+
   /* Inputs */
   --color-input-bg: hsl(354, 4%, 22%);
   --color-input-disabled-bg: hsl(354, 2%, 18%);
@@ -114,12 +119,25 @@ header {
   margin-right: 1rem;
   cursor: pointer;
 }
+.navbar-profile-initial {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e3e9ff;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 18px;
+  color: #4a77e5;
+  font-weight: 400;
+}
 .navbar-profile img {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--color-text-2);
+  border: 2px solid var(--color-text-2); /* fallback */
   box-sizing: border-box;
 }
 .navbar-profile.editing-indicator img {
@@ -348,13 +366,12 @@ header {
 }
 .profile-access-value-tag {
   display: inline-block;
-  padding: 4px 12px;
-  font-size: 14px;
-  color: var(--color-text-1);
-  background-color: var(--color-modal-bg);
-  border: 1px solid var(--color-input-border);
-  border-radius: 20px;
-  margin-bottom: 10px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
 }
 
 /* Animação de entrada para os elementos do modal */
@@ -527,7 +544,7 @@ main.fade-in {
 }
 
 /* ====================================
-       ESTILOS CUSTOMIZADOS PARA PARENTES
+       ESTILOS CUSTOMIZADOS
 ==================================== */
 #parent-list {
   margin-top: 40px;
@@ -540,6 +557,50 @@ main.fade-in {
 /* Margem superior para o botão "Adicionar Parente" */
 #btnAddParente {
   margin-top: 35px;
+}
+
+#cadastrar_usuario .filter-toolbar,
+#cadastrar_usuario .card {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 1;
+  color: #fff;
+}
+
+/* ADM */
+.badge-adm,
+.perfil-access-tag.adm,
+.profile-access-value-tag.adm,
+.navbar-profile.adm img {
+  background-color: var(--access-color-adm);
+  color: var(--color-text-1);
+}
+
+/* EDITOR */
+.badge-editor,
+.perfil-access-tag.editor,
+.profile-access-value-tag.editor,
+.navbar-profile.editor img {
+  background-color: var(--access-color-editor);
+  color: var(--color-text-1);
+}
+
+/* VISUALIZADOR */
+.badge-viewer,
+.perfil-access-tag.visualizador,
+.profile-access-value-tag.visualizador,
+.navbar-profile.visualizador img {
+  background-color: var(--access-color-viewer);
+  color: var(--color-text-1);
 }
 
 /* ====================================
@@ -1061,13 +1122,13 @@ label {
 }
 .perfil-access-tag {
   display: inline-block;
-  padding: 4px 12px;
-  font-size: 14px;
-  color: var(--color-text-1);
-  background-color: var(--color-modal-bg);
-  border: 1px solid var(--color-input-border);
-  border-radius: 20px;
-  margin-bottom: 10px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
 }
 .perfil-foto-label {
   cursor: pointer;

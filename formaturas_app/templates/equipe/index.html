@@ -10,9 +10,12 @@ total_editor = users|selectattr("papel_str", "equalto", "EDITOR")|list|length %}
 "VISUALIZADOR")|list|length %}
 
 <div class="equipes-summary">
-  Usuários: <span id="total-usuarios">{{ total_users }}</span> | ADM:
-  <span id="total-adm">{{ total_adm }}</span> | Editor:
-  <span id="total-editor">{{ total_editor }}</span> | Visualizador:
+  Usuários: <span id="total-usuarios">{{ total_users }}</span> |
+  <span class="badge badge-adm">ADM</span> -
+  <span id="total-adm">{{ total_adm }}</span> |
+  <span class="badge badge-editor">EDITOR</span> -
+  <span id="total-editor">{{ total_editor }}</span> |
+  <span class="badge badge-viewer">VISUALIZADOR</span> -
   <span id="total-visualizador">{{ total_visualizador }}</span>
 </div>
 
