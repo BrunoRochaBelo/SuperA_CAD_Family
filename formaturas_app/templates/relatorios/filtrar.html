@@ -146,14 +146,17 @@
           </label>
         </label>
       </div>
-      <!-- Área de spinner e pré-visualização dentro dos campos -->
-      <div id="previewSpinner" style="display: none; margin-top: 10px">
+      <!-- Área de spinner e pré-visualização fora do fields-toggle -->
+      <div
+        id="previewSpinner"
+        style="display: none; margin-top: 10px; width: 100%"
+      >
         <strong>Carregando...</strong>
       </div>
       <div
         id="previewTable"
         class="table-responsive relatorio-preview"
-        style="display: none; max-height: 300px; overflow-y: auto"
+        style="display: none; max-height: 300px; overflow-y: auto; width: 100%"
       >
         <h4>Pré-visualização (primeiras 3 linhas)</h4>
         <table class="table" id="tablePreview"></table>

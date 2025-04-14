@@ -1,5 +1,33 @@
-﻿/* ====================================
-   VARIÁVEIS & PALETA DE CORES
+﻿/*
+ÍNDICE E ORGANIZAÇÃO DO CSS
+   TABELA DE CONTEÚDOS
+   1. Variáveis & Paleta de Cores
+   2. Reset & Estilos Globais
+   3. Barra de Rolagem
+   4. Header & Navegação
+   5. Modal Menu
+   6. Containers & Layout
+   7. Cards
+   8. Layouts Flexbox
+   9. Alertas
+   10. Botões & Ações
+   11. Elementos de Formulário
+   12. Tabelas
+   13. Barra de Ferramentas
+   14. Switches & Toggles
+   15. Radio Buttons
+   16. Botões de Ação
+   17. Modais & Overlays
+   18. Tags de Perfil
+   19. Gestão de Turmas
+   20. Importação de Planilhas
+   21. Relatórios
+   22. Media Queries
+   23. Dashboard
+   */
+
+/* ====================================
+         1. VARIÁVEIS & PALETA DE CORES
 ==================================== */
 :root {
   /* Base */
@@ -79,7 +107,7 @@
 }
 
 /* ====================================
-         RESET & ESTILOS GLOBAIS
+         2. RESET & ESTILOS GLOBAIS
 ==================================== */
 * {
   box-sizing: border-box;
@@ -95,7 +123,38 @@ body {
 }
 
 /* ====================================
-         HEADER & NAVEGAÇÃO (MOBILE-FIRST)
+           3. BARRA DE ROLAGEM
+==================================== */
+/* Estilização padrão para navegadores Webkit */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-container-bg);
+  border-radius: 8px;
+  margin: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-input-border);
+  border-radius: 8px;
+  border: 2px solid var(--color-container-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-btn-primary-hover);
+}
+
+/* Estilização para Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-input-border) var(--color-container-bg);
+}
+
+/* ====================================
+         4. HEADER & NAVEGAÇÃO
 ==================================== */
 header {
   position: fixed;
@@ -127,10 +186,9 @@ header {
   justify-content: center;
   background-color: #e3e9ff;
   border-radius: 50%;
-  font-weight: bold;
+  font-weight: 400;
   font-size: 18px;
   color: #4a77e5;
-  font-weight: 400;
 }
 .navbar-profile img {
   width: 40px;
@@ -202,9 +260,8 @@ header {
 }
 
 /* ====================================
-      ESTILOS PARA O MODAL MENU
+            5. MODAL MENU
 ==================================== */
-
 .profile-modal-content {
   position: relative;
   background-color: var(--color-modal-bg);
@@ -364,6 +421,7 @@ header {
   justify-content: center;
   margin: 0 auto 10px;
 }
+
 .profile-access-value-tag {
   display: inline-block;
   padding: 4px 10px;
@@ -407,7 +465,7 @@ header {
 }
 
 /* ====================================
-         CONTAINERS & LAYOUT
+         6. CONTAINERS & LAYOUT
 ==================================== */
 .container-login {
   width: 90%;
@@ -438,16 +496,8 @@ main.fade-in {
   overflow-y: auto;
 }
 
-.container-floating::-webkit-scrollbar {
-  display: none;
-}
-
-.container-floating {
-  scrollbar-width: none;
-}
-
 /* ====================================
-         Cards
+              7. CARDS
 ==================================== */
 .card {
   display: flex;
@@ -469,7 +519,7 @@ main.fade-in {
 }
 
 /* ====================================
-     Classes para layout flex
+         8. LAYOUTS FLEXBOX
 ==================================== */
 /* Estilo do formulário para organizar os blocos em colunas */
 .form-inline {
@@ -493,7 +543,7 @@ main.fade-in {
   align-items: center;
 }
 
-/* Feedback (fica logo abaixo dos botões) */
+/* Feedback (logo abaixo dos botões) */
 .filter-feedback {
   width: 100%;
   display: block;
@@ -529,82 +579,22 @@ main.fade-in {
 
 .readonly-input {
   background-color: var(--color-input-disabled-bg);
-  cursor: not-allowed; /* Mostra que não é editável */
+  cursor: not-allowed;
 }
 
-/* Ícone de cadeado posicionado à direita */
+/* Ícone de cadeado */
 .icone-cadeado {
   position: absolute;
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  pointer-events: none; /* Permite que o hover do wrapper ative a tooltip */
+  pointer-events: none;
   font-size: 1.2rem;
   color: #888;
 }
 
 /* ====================================
-       ESTILOS CUSTOMIZADOS
-==================================== */
-#parent-list {
-  margin-top: 40px;
-}
-
-.parentes-container {
-  margin-bottom: 30px;
-}
-
-/* Margem superior para o botão "Adicionar Parente" */
-#btnAddParente {
-  margin-top: 35px;
-}
-
-#cadastrar_usuario .filter-toolbar,
-#cadastrar_usuario .card {
-  display: block;
-  margin-bottom: 20px;
-}
-
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  line-height: 1;
-  color: #fff;
-}
-
-/* ADM */
-.badge-adm,
-.perfil-access-tag.adm,
-.profile-access-value-tag.adm,
-.navbar-profile.adm img {
-  background-color: var(--access-color-adm);
-  color: var(--color-text-1);
-}
-
-/* EDITOR */
-.badge-editor,
-.perfil-access-tag.editor,
-.profile-access-value-tag.editor,
-.navbar-profile.editor img {
-  background-color: var(--access-color-editor);
-  color: var(--color-text-1);
-}
-
-/* VISUALIZADOR */
-.badge-viewer,
-.perfil-access-tag.visualizador,
-.profile-access-value-tag.visualizador,
-.navbar-profile.visualizador img {
-  background-color: var(--access-color-viewer);
-  color: var(--color-text-1);
-}
-
-/* ====================================
-             ALERTS
+           9. ALERTAS
 ==================================== */
 #flash-messages {
   position: fixed;
@@ -651,7 +641,7 @@ main.fade-in {
 }
 
 /* ====================================
-           BOTÕES & AÇÕES
+         10. BOTÕES & AÇÕES
 ==================================== */
 .btn {
   display: inline-block;
@@ -738,7 +728,6 @@ main.fade-in {
 
 #orderToggle:hover {
   color: var(--color-link-hover);
-  box-shadow: none;
 }
 
 .btn-voltar:disabled,
@@ -755,7 +744,7 @@ main.fade-in {
 .link {
   text-decoration: none;
   color: var(--color-link);
-  margin-left: auto; /* joga o link pro final da linha */
+  margin-left: auto;
 }
 
 .link::after {
@@ -771,11 +760,12 @@ main.fade-in {
 .link:hover::after {
   transform: translateX(3px);
 }
+
 /* ====================================
-         ELEMENTOS DE FORMULÁRIO
+        11. ELEMENTOS DE FORMULÁRIO
 ==================================== */
 .form-group {
-  margin: 15px 0px;
+  margin: 15px 0;
 }
 
 input,
@@ -805,7 +795,7 @@ label {
 }
 
 /* ====================================
-            TABELAS
+              12. TABELAS
 ==================================== */
 .table {
   width: 100%;
@@ -844,7 +834,7 @@ label {
 }
 
 /* ====================================
-       BARRA DE FERRAMENTAS (FILTER TOOLBAR)
+          13. BARRA DE FERRAMENTAS
 ==================================== */
 .filter-toolbar {
   display: flex;
@@ -874,7 +864,7 @@ label {
 }
 
 /* ====================================
-           SWITCH TOGGLES
+         14. SWITCHES & TOGGLES
 ==================================== */
 .switch {
   position: relative;
@@ -929,7 +919,7 @@ label {
 }
 
 /* ====================================
-          RADIO BUTTONS
+            15. RADIO BUTTONS
 ==================================== */
 .radio-buttons {
   display: flex;
@@ -969,7 +959,7 @@ label {
 }
 
 /* ====================================
-      BOTÕES DE AÇÃO (EDITAR / EXCLUIR)
+         16. BOTÕES DE AÇÃO
 ==================================== */
 .btn-editar,
 .btn-excluir {
@@ -1012,7 +1002,7 @@ label {
 }
 
 /* ====================================
-          MODAL & OVERLAYS
+         17. MODAIS & OVERLAYS
 ==================================== */
 .modal-overlay {
   position: fixed;
@@ -1048,8 +1038,22 @@ label {
   transition: transform 0.3s ease;
 }
 
+/* Estilos para a scrollbar na .modal-content */
 .modal-content::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+  height: 8px;
+}
+.modal-content::-webkit-scrollbar-track {
+  background: var(--color-container-bg);
+  border-radius: 8px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+  background-color: var(--color-input-border);
+  border-radius: 8px;
+  border: 2px solid var(--color-container-bg);
+}
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-btn-primary-hover);
 }
 
 .modal-overlay.show .modal-content {
@@ -1069,13 +1073,13 @@ label {
   background: var(--color-btn-danger-hover);
 }
 
-/* Estilo para o switch container no modal */
+/* Switch container dentro do modal */
 .modal-switch-container {
   margin-top: 10px;
   margin-bottom: 20px;
 }
 
-/* Agrupa os botões do modal */
+/* Agrupamento dos botões do modal */
 .modal-button-group {
   display: flex;
   gap: 15px;
@@ -1090,7 +1094,7 @@ label {
 }
 
 /* ====================================
-       ESTILOS PARA A TAG DE PERFIL DE ACESSO
+         18. TAGS DE PERFIL
 ==================================== */
 .form-editar-perfil {
   max-width: 600px;
@@ -1168,7 +1172,7 @@ label {
 }
 
 /* ====================================
-      ESTILOS PARA GERENCIAMENTO E EDIÇÃO DE TURMAS
+         19. GESTÃO DE TURMAS
 ==================================== */
 .turmas-summary,
 .equipes-summary {
@@ -1280,7 +1284,7 @@ label {
 }
 
 /* ====================================
-             IMPORTAR PLANILHA
+         20. IMPORTAÇÃO DE PLANILHAS
 ==================================== */
 .alert-icon {
   margin-right: 5px;
@@ -1312,8 +1316,21 @@ label {
 }
 
 /* ====================================
-          ESTILOS PARA RELATÓRIOS
+           21. RELATÓRIOS
 ==================================== */
+
+#previewTable.table-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+#tablePreview {
+  min-width: 100%;
+  width: auto;
+}
+
 .relatorio-buttons {
   margin-top: 15px;
   display: flex;
@@ -1343,8 +1360,9 @@ label {
 }
 
 /* ====================================
-             MEDIA QUERIES
+          22. MEDIA QUERIES
 ==================================== */
+
 /* MOBILE (Ajustes para dar "cara" de app) */
 @media (max-width: 650px) {
   body {
@@ -1361,9 +1379,26 @@ label {
     overflow: auto;
     transition: opacity 0.5s ease-in;
   }
+  /* Estilos para a scrollbar em .flex-respWrap e main */
   .flex-respWrap::-webkit-scrollbar,
   main::-webkit-scrollbar {
-    display: none;
+    width: 8px;
+    height: 8px;
+  }
+  .flex-respWrap::-webkit-scrollbar-track,
+  main::-webkit-scrollbar-track {
+    background: var(--color-container-bg);
+    border-radius: 8px;
+  }
+  .flex-respWrap::-webkit-scrollbar-thumb,
+  main::-webkit-scrollbar-thumb {
+    background-color: var(--color-input-border);
+    border-radius: 8px;
+    border: 2px solid var(--color-container-bg);
+  }
+  .flex-respWrap::-webkit-scrollbar-thumb:hover,
+  main::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-btn-primary-hover);
   }
 
   .container-floating {
@@ -1419,6 +1454,19 @@ label {
   .flex-nowrap .card {
     flex: 1 1 100%;
   }
+  .relatorio-preview {
+    margin-top: 15px;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  #previewTable {
+    padding-bottom: 10px;
+  }
+
+  .filter-content {
+    width: 100%;
+  }
 }
 
 /* TABLETS & DESKTOPS */
@@ -1458,7 +1506,7 @@ label {
 }
 
 /* ====================================
-         DASHBOARD STYLES
+          23. DASHBOARD
 ==================================== */
 .filter-feedback {
   margin-top: 10px;
