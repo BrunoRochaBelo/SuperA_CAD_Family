@@ -1,32 +1,4 @@
-﻿/*
-ÍNDICE E ORGANIZAÇÃO DO CSS
-   TABELA DE CONTEÚDOS
-   1. Variáveis & Paleta de Cores
-   2. Reset & Estilos Globais
-   3. Barra de Rolagem
-   4. Header & Navegação
-   5. Modal Menu
-   6. Containers & Layout
-   7. Cards
-   8. Layouts Flexbox
-   9. Alertas
-   10. Botões & Ações
-   11. Elementos de Formulário
-   12. Tabelas
-   13. Barra de Ferramentas
-   14. Switches & Toggles
-   15. Radio Buttons
-   16. Botões de Ação
-   17. Modais & Overlays
-   18. Tags de Perfil
-   19. Gestão de Turmas
-   20. Importação de Planilhas
-   21. Relatórios
-   22. Media Queries
-   23. Dashboard
-   */
-
-/* ====================================
+﻿/* ====================================
          1. VARIÁVEIS & PALETA DE CORES
 ==================================== */
 :root {
@@ -125,7 +97,7 @@ body {
 /* ====================================
            3. BARRA DE ROLAGEM
 ==================================== */
-/* Estilização padrão para navegadores Webkit */
+/* Estilos globais para navegadores Webkit */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -134,6 +106,7 @@ body {
 ::-webkit-scrollbar-track {
   background: var(--color-container-bg);
   border-radius: 8px;
+  /* Adiciona margem interna para que as pontas fiquem arredondadas */
   margin: 4px;
 }
 
@@ -147,15 +120,37 @@ body {
   background-color: var(--color-btn-primary-hover);
 }
 
-/* Estilização para Firefox */
+/* Estilos para Firefox */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-input-border) var(--color-container-bg);
 }
 
-/* ====================================
-         4. HEADER & NAVEGAÇÃO
-==================================== */
+/* Exemplo de customização específica para container flutuante */
+.container-floating::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.container-floating::-webkit-scrollbar-track {
+  background: var(--color-container-bg);
+  border-radius: 8px;
+  margin: 4px;
+}
+
+.container-floating::-webkit-scrollbar-thumb {
+  background-color: var(--color-input-border);
+  border-radius: 8px;
+  border: 2px solid var(--color-container-bg);
+}
+
+.container-floating::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-btn-primary-hover);
+}
+
+/* ================================
+        4. HEADER & NAVEGAÇÃO
+================================ */
 header {
   position: fixed;
   bottom: 0;
@@ -178,6 +173,7 @@ header {
   margin-right: 1rem;
   cursor: pointer;
 }
+
 .navbar-profile-initial {
   width: 40px;
   height: 40px;
@@ -190,14 +186,16 @@ header {
   font-size: 18px;
   color: #4a77e5;
 }
+
 .navbar-profile img {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--color-text-2); /* fallback */
+  border: 2px solid var(--color-text-2);
   box-sizing: border-box;
 }
+
 .navbar-profile.editing-indicator img {
   filter: brightness(0.5);
   border-color: var(--color-navbar-active);
@@ -259,9 +257,9 @@ header {
   display: inline-block;
 }
 
-/* ====================================
-            5. MODAL MENU
-==================================== */
+/* ================================
+             5. MODAL MENU
+================================ */
 .profile-modal-content {
   position: relative;
   background-color: var(--color-modal-bg);
@@ -464,9 +462,9 @@ header {
   animation-delay: 0.4s;
 }
 
-/* ====================================
-         6. CONTAINERS & LAYOUT
-==================================== */
+/* ================================
+       6. CONTAINERS & LAYOUT
+================================ */
 .container-login {
   width: 90%;
   margin: 80px auto;
@@ -496,9 +494,14 @@ main.fade-in {
   overflow-y: auto;
 }
 
-/* ====================================
+/* Exemplo de ajuste para container de parentes */
+.parentes-container {
+  margin-bottom: 30px;
+}
+
+/* ================================
               7. CARDS
-==================================== */
+================================ */
 .card {
   display: flex;
   flex-wrap: wrap;
@@ -518,17 +521,15 @@ main.fade-in {
   color: var(--color-text-2);
 }
 
-/* ====================================
+/* ================================
          8. LAYOUTS FLEXBOX
-==================================== */
-/* Estilo do formulário para organizar os blocos em colunas */
+================================ */
 .form-inline {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* Linha dos campos de filtro */
 .filter-group {
   display: flex;
   gap: 20px;
@@ -536,14 +537,12 @@ main.fade-in {
   flex-wrap: wrap;
 }
 
-/* Linha dos botões */
 .filter-buttons {
   display: flex;
   gap: 20px;
   align-items: center;
 }
 
-/* Feedback (logo abaixo dos botões) */
 .filter-feedback {
   width: 100%;
   display: block;
@@ -557,11 +556,13 @@ main.fade-in {
   flex-wrap: nowrap;
   gap: 20px;
 }
+
 .flex-nowrap {
   display: flex;
   flex-wrap: nowrap;
   gap: 20px;
 }
+
 .flex-nowrap .card p {
   margin-right: 20px;
 }
@@ -582,7 +583,6 @@ main.fade-in {
   cursor: not-allowed;
 }
 
-/* Ícone de cadeado */
 .icone-cadeado {
   position: absolute;
   right: 10px;
@@ -593,9 +593,9 @@ main.fade-in {
   color: #888;
 }
 
-/* ====================================
+/* ================================
            9. ALERTAS
-==================================== */
+================================ */
 #flash-messages {
   position: fixed;
   top: 50px;
@@ -640,9 +640,9 @@ main.fade-in {
   cursor: pointer;
 }
 
-/* ====================================
+/* ================================
          10. BOTÕES & AÇÕES
-==================================== */
+================================ */
 .btn {
   display: inline-block;
   background-color: var(--color-btn-primary-bg);
@@ -761,9 +761,9 @@ main.fade-in {
   transform: translateX(3px);
 }
 
-/* ====================================
+/* ================================
         11. ELEMENTOS DE FORMULÁRIO
-==================================== */
+================================ */
 .form-group {
   margin: 15px 0;
 }
@@ -794,9 +794,9 @@ label {
   font-weight: 500;
 }
 
-/* ====================================
+/* ================================
               12. TABELAS
-==================================== */
+================================ */
 .table {
   width: 100%;
   border-collapse: separate;
@@ -833,9 +833,9 @@ label {
   width: 100%;
 }
 
-/* ====================================
+/* ================================
           13. BARRA DE FERRAMENTAS
-==================================== */
+================================ */
 .filter-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -863,9 +863,9 @@ label {
   align-items: center;
 }
 
-/* ====================================
+/* ================================
          14. SWITCHES & TOGGLES
-==================================== */
+================================ */
 .switch {
   position: relative;
   display: inline-block;
@@ -918,9 +918,9 @@ label {
   font-weight: 500;
 }
 
-/* ====================================
+/* ================================
             15. RADIO BUTTONS
-==================================== */
+================================ */
 .radio-buttons {
   display: flex;
   gap: 15px;
@@ -958,9 +958,9 @@ label {
   color: var(--color-text-2);
 }
 
-/* ====================================
+/* ================================
          16. BOTÕES DE AÇÃO
-==================================== */
+================================ */
 .btn-editar,
 .btn-excluir {
   display: inline-flex;
@@ -980,7 +980,6 @@ label {
 .btn-editar:hover,
 .btn-excluir:hover {
   background: hsla(354, 70%, 70%, 0.2);
-  border-radius: 50%;
 }
 
 .btn-editar::before,
@@ -1001,9 +1000,9 @@ label {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%23ff6b6b' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5-4h4a1 1 0 0 1 1 1v1H9V4a1 1 0 0 1 1-1z'/%3E%3C/svg%3E");
 }
 
-/* ====================================
+/* ================================
          17. MODAIS & OVERLAYS
-==================================== */
+================================ */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1038,20 +1037,24 @@ label {
   transition: transform 0.3s ease;
 }
 
-/* Estilos para a scrollbar na .modal-content */
+/* Scrollbar específica para .modal-content */
 .modal-content::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
 .modal-content::-webkit-scrollbar-track {
   background: var(--color-container-bg);
   border-radius: 8px;
+  margin: 4px;
 }
+
 .modal-content::-webkit-scrollbar-thumb {
   background-color: var(--color-input-border);
   border-radius: 8px;
   border: 2px solid var(--color-container-bg);
 }
+
 .modal-content::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-btn-primary-hover);
 }
@@ -1073,13 +1076,11 @@ label {
   background: var(--color-btn-danger-hover);
 }
 
-/* Switch container dentro do modal */
 .modal-switch-container {
   margin-top: 10px;
   margin-bottom: 20px;
 }
 
-/* Agrupamento dos botões do modal */
 .modal-button-group {
   display: flex;
   gap: 15px;
@@ -1093,87 +1094,51 @@ label {
   text-align: center;
 }
 
-/* ====================================
-         18. TAGS DE PERFIL
-==================================== */
-.form-editar-perfil {
-  max-width: 600px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.form-editar-perfil-input {
-  padding: 10px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-.form-editar-perfil .form-group {
-  margin: 8px 0;
-}
-
-.editar-perfil-btn-save:hover {
-  background-color: var(--color-btn-primary-hover, #0056b3);
-}
-
-.perfil-upload-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-}
-.perfil-access-tag {
+/* ================================
+       18. TAGS DE PERFIL & CUSTOMIZADOS
+================================ */
+/* Estilos para badges (rótulos) */
+.badge {
   display: inline-block;
-  margin-top: 8px;
-  padding: 4px 10px;
-  border-radius: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
   font-size: 0.75rem;
-  font-weight: bold;
+  font-weight: 600;
   text-transform: uppercase;
+  line-height: 1;
   color: #fff;
 }
-.perfil-foto-label {
-  cursor: pointer;
-  display: inline-block;
-  position: relative;
+
+/* ADM */
+.badge-adm,
+.perfil-access-tag.adm,
+.profile-access-value-tag.adm,
+.navbar-profile.adm img {
+  background-color: var(--access-color-adm);
+  color: var(--color-text-1);
 }
 
-.perfil-foto-preview {
-  width: 120px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 2px solid var(--color-border, #ccc);
-  transition: 0.3s ease;
+/* EDITOR */
+.badge-editor,
+.perfil-access-tag.editor,
+.profile-access-value-tag.editor,
+.navbar-profile.editor img {
+  background-color: var(--access-color-editor);
+  color: var(--color-text-1);
 }
 
-.perfil-foto-placeholder {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background-color: #eee;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  color: #666;
-  border: 2px dashed #ccc;
+/* VISUALIZADOR */
+.badge-viewer,
+.perfil-access-tag.visualizador,
+.profile-access-value-tag.visualizador,
+.navbar-profile.visualizador img {
+  background-color: var(--access-color-viewer);
+  color: var(--color-text-1);
 }
 
-.perfil-foto-label:hover .perfil-foto-preview {
-  opacity: 0.8;
-  filter: brightness(0.9);
-}
-
-.perfil-file-input {
-  display: none;
-}
-
-/* ====================================
+/* ================================
          19. GESTÃO DE TURMAS
-==================================== */
+================================ */
 .turmas-summary,
 .equipes-summary {
   margin-bottom: 10px;
@@ -1283,9 +1248,9 @@ label {
   display: block !important;
 }
 
-/* ====================================
+/* ================================
          20. IMPORTAÇÃO DE PLANILHAS
-==================================== */
+================================ */
 .alert-icon {
   margin-right: 5px;
 }
@@ -1315,10 +1280,9 @@ label {
   display: none;
 }
 
-/* ====================================
+/* ================================
            21. RELATÓRIOS
-==================================== */
-
+================================ */
 #previewTable.table-responsive {
   width: 100%;
   max-width: 100%;
@@ -1359,11 +1323,10 @@ label {
   min-width: 300px;
 }
 
-/* ====================================
+/* ================================
           22. MEDIA QUERIES
-==================================== */
-
-/* MOBILE (Ajustes para dar "cara" de app) */
+================================ */
+/* MOBILE (estilo "app") */
 @media (max-width: 650px) {
   body {
     background: var(--color-container-bg);
@@ -1379,7 +1342,7 @@ label {
     overflow: auto;
     transition: opacity 0.5s ease-in;
   }
-  /* Estilos para a scrollbar em .flex-respWrap e main */
+  /* Scrollbar para .flex-respWrap e main */
   .flex-respWrap::-webkit-scrollbar,
   main::-webkit-scrollbar {
     width: 8px;
@@ -1389,6 +1352,7 @@ label {
   main::-webkit-scrollbar-track {
     background: var(--color-container-bg);
     border-radius: 8px;
+    margin: 4px;
   }
   .flex-respWrap::-webkit-scrollbar-thumb,
   main::-webkit-scrollbar-thumb {
@@ -1435,25 +1399,30 @@ label {
     min-width: 80px;
     text-align: center;
   }
+
   .card {
     min-width: 175px;
     max-width: 100%;
   }
+
   .flex-respWrap {
     display: flex;
     flex-wrap: nowrap;
     overflow: auto;
     gap: 20px;
   }
+
   .flex-nowrap {
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
     gap: 20px;
   }
+
   .flex-nowrap .card {
     flex: 1 1 100%;
   }
+
   .relatorio-preview {
     margin-top: 15px;
     max-width: 100%;
@@ -1505,9 +1474,9 @@ label {
   }
 }
 
-/* ====================================
+/* ================================
           23. DASHBOARD
-==================================== */
+================================ */
 .filter-feedback {
   margin-top: 10px;
   font-style: italic;
