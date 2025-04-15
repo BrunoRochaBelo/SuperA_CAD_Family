@@ -1089,7 +1089,7 @@ label {
 
 .form-group.form-btns {
   display: flex;
-  gap: 20px;
+  gap: 15px;
   margin-top: 20px;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -1583,7 +1583,7 @@ label {
   text-align: center;
   padding: 40px;
   font-size: 1.2em;
-  color: #888;
+  color: var(--color-text-4);
 }
 
 .dashboard-charts {
@@ -1598,4 +1598,46 @@ label {
   max-width: 750px;
   min-height: 300px;
   margin: 0 auto;
+}
+
+.input-feedback {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  min-height: 1.2rem;
+}
+
+.success-feedback {
+  color: #28a745;
+}
+
+.error-feedback {
+  color: #dc3545;
+}
+
+.password-requirements {
+  font-size: 0.85rem;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-input-bg);
+}
+
+.password-requirements p {
+  margin: 0 0 0.5rem 0;
+  font-weight: bold;
+}
+
+.password-requirements ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.password-requirements li {
+  margin-bottom: 0.25rem;
+}
+
+.requirement-met {
+  color: #28a745;
+  text-decoration: line-through;
 }

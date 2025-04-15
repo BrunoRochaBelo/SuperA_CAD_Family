@@ -1,51 +1,94 @@
-{% extends "login_base.html" %} {% block content %}
-<h2>Cadastro da Empresa</h2>
-<form method="post">
-  <div>
-    <label for="nome_empresa">Nome da Empresa</label>
-    <input
-      type="text"
-      id="nome_empresa"
-      name="nome_empresa"
-      placeholder="Nome da empresa"
-      required
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cadastro de Empresa</title>
+    <!-- CSS customizado -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
     />
-  </div>
-  <div>
-    <label for="email_admin">Email do Administrador</label>
-    <input
-      type="email"
-      id="email_admin"
-      name="email_admin"
-      placeholder="Email do responsável"
-      required
-    />
-  </div>
-  <div>
-    <label for="senha_admin">Senha do Administrador</label>
-    <input
-      type="password"
-      id="senha_admin"
-      name="senha_admin"
-      placeholder="Senha"
-      required
-    />
-  </div>
-  <div>
-    <label for="max_usuarios">Limite de Usuários (opcional)</label>
-    <input
-      type="number"
-      id="max_usuarios"
-      name="max_usuarios"
-      placeholder="Ex: 5"
-    />
-  </div>
-  <div>
-    <label for="assinatura_ativa_ate"
-      >Data de Expiração da Assinatura (opcional)</label
-    >
-    <input type="date" id="assinatura_ativa_ate" name="assinatura_ativa_ate" />
-  </div>
-  <button type="submit" class="btn">Cadastrar Empresa</button>
-</form>
-{% endblock %}
+    <!-- Tippy.js CSS para tooltips -->
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
+  </head>
+  <body>
+    <div class="perfil-wrapper" style="margin-top: 20px"></div>
+    <div class="container-floating">
+      <div class="container">
+        <h2>Cadastro de Empresa</h2>
+        <form action="{{ url_for('empresa.cadastrar_empresa') }}" method="POST">
+          <div class="form-group">
+            <label for="nome_empresa">Nome da Empresa *</label>
+            <input
+              type="text"
+              id="nome_empresa"
+              name="nome_empresa"
+              class="form-control"
+              required
+              placeholder="Digite o nome da empresa"
+            />
+          </div>
+          <div class="form-group">
+            <label for="email_admin">Email do Administrador *</label>
+            <input
+              type="email"
+              id="email_admin"
+              name="email_admin"
+              class="form-control"
+              required
+              placeholder="Digite o email do administrador"
+            />
+          </div>
+          <div class="form-group">
+            <label for="senha_admin">Senha do Administrador *</label>
+            <input
+              type="password"
+              id="senha_admin"
+              name="senha_admin"
+              class="form-control"
+              required
+              placeholder="Digite a senha do administrador"
+            />
+          </div>
+          <div class="form-group">
+            <label for="max_usuarios">Máximo de Usuários</label>
+            <input
+              type="number"
+              id="max_usuarios"
+              name="max_usuarios"
+              class="form-control"
+              placeholder="Ex: 5"
+              value="5"
+            />
+          </div>
+          <div class="form-group">
+            <label for="assinatura_ativa_ate">Assinatura ativa até</label>
+            <input
+              type="date"
+              id="assinatura_ativa_ate"
+              name="assinatura_ativa_ate"
+              class="form-control"
+            />
+          </div>
+          <div class="form-group">
+            <label for="status">Situação da Empresa</label>
+            <select id="status" name="status" class="form-control">
+              <option value="Ativa">Ativa</option>
+              <option value="Inativa">Inativa</option>
+            </select>
+          </div>
+          <div class="form-group form-btns">
+            <a
+              href="{{ url_for('empresa.index', active_page='empresa') }}"
+              class="btn btn-voltar"
+              >← Empresas</a
+            >
+            <button type="submit" class="btn btn-primary">
+              Cadastrar Empresa
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

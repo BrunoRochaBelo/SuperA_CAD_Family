@@ -11,15 +11,21 @@ class PapelEnum(enum.Enum):
     EDITOR = "EDITOR"
     VISUALIZADOR = "VISUALIZADOR"
 
+# Novo Enum para definir a situação da empresa (SaaS)
+class StatusEnum(enum.Enum):
+    ATIVA = "Ativa"
+    INATIVA = "Inativa"
+
 class Empresa(db.Model):
     """
     Modelo para representar uma empresa cliente.
-    Possui um nome único, a data até quando a assinatura está ativa e o limite de usuários permitidos.
+    Possui um nome único, data de expiração da assinatura, limite de usuários e a situação da empresa.
     """
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), unique=True, nullable=False)
     assinatura_ativa_ate = db.Column(db.Date, nullable=False)
     max_usuarios = db.Column(db.Integer, nullable=False, default=5)  # Limite de usuários com fallback padrão
+    status = db.Column(db.Enum(StatusEnum), nullable=False, default=StatusEnum.ATIVA)
     usuarios = db.relationship('Usuario', backref='empresa', lazy=True)
 
     def assinatura_valida(self) -> bool:
@@ -27,7 +33,7 @@ class Empresa(db.Model):
         return self.assinatura_ativa_ate >= datetime.date.today()
 
     def __repr__(self):
-        return f"<Empresa {self.nome}>"
+        return f"<Empresa {self.nome} - {self.status.value}>"
 
 class Usuario(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)

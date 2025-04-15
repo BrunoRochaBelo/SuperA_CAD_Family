@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gerenciamento de Empresas</title>
+    <!-- CSS customizado -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <!-- Tippy.js CSS para tooltips -->
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
+  </head>
+  <body>
+    <div class="perfil-wrapper" style="margin-top: 20px"></div>
+    <div class="container-floating">
+      <div class="container">
+        <h2>Gerenciamento de Empresas</h2>
+
+        <!-- Resumo de Empresas -->
+        <div class="empresas-summary">
+          Total de Empresas:
+          <span id="total-empresas">{{ empresas|length }}</span>
+        </div>
+
+        <!-- Botão de ordenação -->
+        <div class="sorting">
+          <button id="orderToggle" data-order="asc" class="btn">
+            Ordenar A-Z
+          </button>
+        </div>
+
+        <!-- Tabela com a lista de empresas -->
+        <div class="table-responsive">
+          <table class="table" id="empresasTable">
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Situação</th>
+                <th style="text-align: right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="empresasBody">
+              {% for emp in empresas %}
+              <tr
+                class="empresa-row"
+                data-empresa-id="{{ emp.id }}"
+                data-empresa-nome="{{ emp.nome|lower }}"
+                data-empresa-status="{{ emp.status }}"
+              >
+                <td>
+                  {{ emp.nome }}<br />
+                  <small class="empresa-info">{{ emp.admin_email }}</small>
+                </td>
+                <td>{{ emp.status }}</td>
+                <td
+                  style="text-align: right"
+                  onclick="event.stopPropagation();"
+                >
+                  <button
+                    class="btn-editar"
+                    data-empresa-id="{{ emp.id }}"
+                    title="Editar"
+                  ></button>
+                  <button
+                    class="btn-excluir"
+                    data-empresa-id="{{ emp.id }}"
+                    title="Excluir"
+                  ></button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Botão para adicionar nova empresa -->
+        <div class="profile-button-group">
+          <div class="empresa-controls">
+            <a
+              href="{{ url_for('empresa.cadastrar_empresa') }}"
+              class="btn btn-primary"
+              >+ Adicionar empresa</a
+            >
+          </div>
+          <a
+            href="{{ url_for('auth.logout') }}"
+            class="profile-btn btn-voltar btn-icon-text"
+          >
+            <span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </span>
+            Encerrar sessão
+          </a>
+        </div>
+
+        <!-- Modal para Edição de Empresa -->
+        <div
+          class="modal-overlay"
+          id="modalEditarEmpresa"
+          style="display: none"
+        >
+          <div class="modal-content">
+            <h2>Editar Empresa</h2>
+            <form id="formEditarEmpresa" novalidate>
+              <input type="hidden" name="id" id="editEmpresaId" />
+              <div class="form-group">
+                <label for="editEmpresaNome">Nome da Empresa *</label>
+                <input
+                  type="text"
+                  name="nome"
+                  id="editEmpresaNome"
+                  class="form-control"
+                  required
+                  placeholder="Digite o nome da empresa"
+                />
+                <span
+                  class="feedback"
+                  id="feedbackEditNome"
+                  style="color: red"
+                ></span>
+              </div>
+              <div class="form-group">
+                <label for="editEmpresaStatus">Situação</label>
+                <select
+                  name="status"
+                  id="editEmpresaStatus"
+                  class="form-control"
+                >
+                  <option value="Ativa">Ativa</option>
+                  <option value="Inativa">Inativa</option>
+                </select>
+              </div>
+              <div class="modal-button-group">
+                <button
+                  type="button"
+                  id="btnFecharModalEditarEmpresa"
+                  class="btn btn-voltar"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  id="btnSalvarModalEditarEmpresa"
+                  class="btn btn-primary"
+                  disabled
+                >
+                  Salvar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Modal para Exclusão de Empresa -->
+        <div
+          class="modal-overlay"
+          id="modalExcluirEmpresa"
+          style="display: none"
+        >
+          <div class="modal-content">
+            <h2>Excluir Empresa</h2>
+            <p>
+              Tem certeza que deseja excluir a empresa
+              <span id="excluirEmpresaNome"></span>?
+            </p>
+            <div class="modal-button-group">
+              <button
+                type="button"
+                id="btnFecharModalExcluirEmpresa"
+                class="btn btn-voltar"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                id="btnConfirmarExclusaoEmpresa"
+                class="btn btn-danger"
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Fim container -->
+    </div>
+
+    <script>
+      // Atualiza a lista de empresas via API
+      function updateEmpresaList() {
+        fetch("{{ url_for('empresa.api_empresas') }}")
+          .then((response) => response.json())
+          .then((data) => {
+            const empresas = data.empresas;
+            document.getElementById("total-empresas").textContent =
+              empresas.length;
+            const tbody = document.getElementById("empresasBody");
+            tbody.innerHTML = "";
+            empresas.forEach((emp) => {
+              const row = document.createElement("tr");
+              row.className = "empresa-row";
+              row.setAttribute("data-empresa-id", emp.id);
+              row.setAttribute("data-empresa-nome", emp.nome.toLowerCase());
+              row.setAttribute("data-empresa-status", emp.status);
+              row.innerHTML = `
+            <td>
+              ${emp.nome}<br>
+              <small class="empresa-info">${emp.admin_email}</small>
+            </td>
+            <td>${emp.status}</td>
+            <td style="text-align: right">
+              <button class="btn-editar" data-empresa-id="${emp.id}" title="Editar"></button>
+              <button class="btn-excluir" data-empresa-id="${emp.id}" title="Excluir"></button>
+            </td>
+          `;
+              tbody.appendChild(row);
+            });
+            attachEmpresaRowEvents();
+          });
+      }
+
+      function attachEmpresaRowEvents() {
+        document.querySelectorAll(".empresa-row").forEach(function (row) {
+          row.addEventListener("click", function (e) {
+            if (
+              !e.target.closest(".btn-editar") &&
+              !e.target.closest(".btn-excluir")
+            ) {
+              var empresaId = this.getAttribute("data-empresa-id");
+              var empresaNome = this.getAttribute("data-empresa-nome");
+              var empresaStatus = this.getAttribute("data-empresa-status");
+              document.getElementById("editEmpresaId").value = empresaId;
+              document.getElementById("editEmpresaNome").value = empresaNome;
+              document.getElementById("editEmpresaStatus").value =
+                empresaStatus;
+              originalNome = empresaNome;
+              originalStatus = empresaStatus;
+              document.getElementById("feedbackEditNome").textContent = "";
+              document.getElementById(
+                "btnSalvarModalEditarEmpresa"
+              ).disabled = true;
+              document.getElementById("modalEditarEmpresa").style.display =
+                "flex";
+            }
+          });
+        });
+        // Eventos para botões de exclusão
+        document.querySelectorAll(".btn-excluir").forEach(function (btn) {
+          btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var empresaId = btn.getAttribute("data-empresa-id");
+            var row = btn.closest("tr");
+            var empresaNome = row.children[0].textContent.trim();
+            document.getElementById("excluirEmpresaNome").textContent =
+              empresaNome;
+            document
+              .getElementById("modalExcluirEmpresa")
+              .setAttribute("data-empresa-id", empresaId);
+            document.getElementById("modalExcluirEmpresa").style.display =
+              "flex";
+          });
+        });
+      }
+
+      // Ordenação das empresas
+      document
+        .getElementById("orderToggle")
+        .addEventListener("click", function () {
+          var currentOrder = this.getAttribute("data-order");
+          var newOrder = currentOrder === "asc" ? "desc" : "asc";
+          sortEmpresaRows(newOrder);
+          this.setAttribute("data-order", newOrder);
+          this.textContent = newOrder === "asc" ? "Ordenar A-Z" : "Ordenar Z-A";
+        });
+
+      function sortEmpresaRows(order) {
+        var tbody = document.getElementById("empresasBody");
+        var rows = Array.from(tbody.querySelectorAll(".empresa-row"));
+        rows.sort(function (a, b) {
+          var nameA = a.getAttribute("data-empresa-nome");
+          var nameB = b.getAttribute("data-empresa-nome");
+          return order === "asc"
+            ? nameA.localeCompare(nameB)
+            : nameB.localeCompare(nameA);
+        });
+        rows.forEach(function (row) {
+          tbody.appendChild(row);
+        });
+      }
+
+      // Variáveis globais para modal de edição
+      let originalNome = "";
+      let originalStatus = "";
+
+      document
+        .getElementById("editEmpresaNome")
+        .addEventListener("input", checkEditEmpresaFormFields);
+      document
+        .getElementById("editEmpresaStatus")
+        .addEventListener("change", checkEditEmpresaFormFields);
+
+      function validateEditEmpresaForm() {
+        let valid = true;
+        const nomeField = document.getElementById("editEmpresaNome");
+        const feedback = document.getElementById("feedbackEditNome");
+        feedback.textContent = "";
+        if (!nomeField.value.trim()) {
+          feedback.textContent = "O nome da empresa é obrigatório.";
+          valid = false;
+        }
+        return valid;
+      }
+
+      function checkEditEmpresaFormFields() {
+        const currentNome = document
+          .getElementById("editEmpresaNome")
+          .value.trim();
+        const currentStatus =
+          document.getElementById("editEmpresaStatus").value;
+        const saveBtn = document.getElementById("btnSalvarModalEditarEmpresa");
+        if (
+          validateEditEmpresaForm() &&
+          (currentNome !== originalNome || currentStatus !== originalStatus)
+        ) {
+          saveBtn.disabled = false;
+        } else {
+          saveBtn.disabled = true;
+        }
+      }
+
+      document
+        .getElementById("btnFecharModalEditarEmpresa")
+        .addEventListener("click", function () {
+          document.getElementById("modalEditarEmpresa").style.display = "none";
+        });
+
+      // Submissão do formulário de edição via AJAX
+      document
+        .getElementById("formEditarEmpresa")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!validateEditEmpresaForm()) {
+            checkEditEmpresaFormFields();
+            return;
+          }
+          var empresaId = document.getElementById("editEmpresaId").value;
+          var empresaNome = document
+            .getElementById("editEmpresaNome")
+            .value.trim();
+          var empresaStatus =
+            document.getElementById("editEmpresaStatus").value;
+          fetch("/empresa/editar_empresa/" + empresaId, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nome: empresaNome,
+              status: empresaStatus,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                flashMessage("Empresa atualizada com sucesso!", "success");
+                updateEmpresaList();
+                document.getElementById("modalEditarEmpresa").style.display =
+                  "none";
+              } else {
+                alert("Erro ao atualizar empresa: " + data.message);
+              }
+            });
+        });
+
+      // Modal para Exclusão de Empresa
+      document
+        .getElementById("btnFecharModalExcluirEmpresa")
+        .addEventListener("click", function () {
+          document.getElementById("modalExcluirEmpresa").style.display = "none";
+        });
+
+      document
+        .getElementById("btnConfirmarExclusaoEmpresa")
+        .addEventListener("click", function () {
+          var empresaId = document
+            .getElementById("modalExcluirEmpresa")
+            .getAttribute("data-empresa-id");
+          fetch("/empresa/excluir_empresa/" + empresaId, { method: "DELETE" })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                flashMessage("Empresa excluída com sucesso!", "success");
+                updateEmpresaList();
+                document.getElementById("modalExcluirEmpresa").style.display =
+                  "none";
+              } else {
+                alert("Erro ao excluir empresa: " + data.message);
+              }
+            });
+        });
+
+      function flashMessage(message, category) {
+        let flashContainer = document.getElementById("flash-messages");
+        if (!flashContainer) {
+          flashContainer = document.createElement("div");
+          flashContainer.id = "flash-messages";
+          document.body.appendChild(flashContainer);
+        }
+        flashContainer.style.display = "block";
+        flashContainer.style.opacity = "1";
+        const flashDiv = document.createElement("div");
+        flashDiv.className =
+          "alert alert-" + (category === "success" ? "success" : category);
+        flashDiv.innerHTML = `<span class="alert-text">${message}</span>
+        <button class="alert-close" onclick="this.parentElement.remove();">×</button>`;
+        flashContainer.appendChild(flashDiv);
+        setTimeout(() => {
+          flashDiv.style.opacity = "0";
+          setTimeout(() => {
+            flashDiv.remove();
+            if (flashContainer.children.length === 0) {
+              flashContainer.style.opacity = "0";
+              flashContainer.style.display = "none";
+            }
+          }, 500);
+        }, 3000);
+      }
+
+      window.addEventListener("load", function () {
+        var order = document
+          .getElementById("orderToggle")
+          .getAttribute("data-order");
+        sortEmpresaRows(order);
+        updateEmpresaList();
+      });
+    </script>
+  </body>
+</html>

@@ -91,10 +91,12 @@
           id="current_password"
           required
         />
+        <div class="input-feedback" id="currentPasswordFeedback"></div>
       </div>
       <div class="form-group">
         <label for="new_password">Nova Senha:</label>
         <input type="password" name="new_password" id="new_password" required />
+        <div class="input-feedback" id="newPasswordFeedback"></div>
       </div>
       <div class="form-group">
         <label for="confirm_password">Confirmar Nova Senha:</label>
@@ -104,12 +106,16 @@
           id="confirm_password"
           required
         />
+        <div class="input-feedback" id="confirmPasswordFeedback"></div>
       </div>
-      <!-- Feedback aprimorado para o formulário de senha -->
-      <div
-        id="passwordFeedback"
-        style="color: red; font-size: 0.9rem; margin-top: 0.5rem"
-      ></div>
+      <div class="password-requirements">
+        <p>A senha deve conter:</p>
+        <ul>
+          <li id="req-length">Mínimo de 6 caracteres</li>
+          <li id="req-letter">Pelo menos uma letra</li>
+          <li id="req-number">Pelo menos um número</li>
+        </ul>
+      </div>
       <div class="modal-button-group">
         <button type="button" id="passwordModalClose" class="btn btn-voltar">
           Cancelar
@@ -167,56 +173,176 @@
     const newPasswordInput = document.getElementById("new_password");
     const confirmPasswordInput = document.getElementById("confirm_password");
     const modalAtualizarBtn = document.getElementById("modalAtualizarBtn");
-    const passwordFeedback = document.getElementById("passwordFeedback");
+
+    // Seletores para os elementos de feedback específicos
+    const currentPasswordFeedback = document.getElementById(
+      "currentPasswordFeedback"
+    );
+    const newPasswordFeedback = document.getElementById("newPasswordFeedback");
+    const confirmPasswordFeedback = document.getElementById(
+      "confirmPasswordFeedback"
+    );
+
+    // Seletores para os requisitos de senha
+    const reqLength = document.getElementById("req-length");
+    const reqLetter = document.getElementById("req-letter");
+    const reqNumber = document.getElementById("req-number");
+
+    // Estado global da validação
+    let currentPasswordValid = false;
+    let newPasswordValid = false;
+    let confirmPasswordValid = false;
 
     modalAtualizarBtn.disabled = true;
 
-    function validatePasswordForm() {
-      let valid = true;
-      let errors = [];
+    // Função para limpar todos os feedbacks
+    function clearAllFeedbacks() {
+      currentPasswordFeedback.textContent = "";
+      currentPasswordFeedback.className = "input-feedback";
 
-      // Verifica se todos os campos estão preenchidos
-      if (
-        currentPasswordInput.value.trim() === "" ||
-        newPasswordInput.value.trim() === "" ||
-        confirmPasswordInput.value.trim() === ""
-      ) {
-        valid = false;
-        errors.push("Preencha todos os campos.");
-      }
-      // Verifica se nova senha tem no mínimo 6 caracteres
-      if (
-        newPasswordInput.value.length > 0 &&
-        newPasswordInput.value.length < 6
-      ) {
-        valid = false;
-        errors.push("A nova senha deve ter no mínimo 6 caracteres.");
-      }
-      // Verifica se as novas senhas conferem
-      if (newPasswordInput.value !== confirmPasswordInput.value) {
-        valid = false;
-        errors.push("As novas senhas não conferem.");
-      }
-      // Verifica se a nova senha é diferente da atual
-      if (
-        currentPasswordInput.value.trim() !== "" &&
-        newPasswordInput.value === currentPasswordInput.value
-      ) {
-        valid = false;
-        errors.push("A nova senha deve ser diferente da atual.");
-      }
+      newPasswordFeedback.textContent = "";
+      newPasswordFeedback.className = "input-feedback";
 
-      passwordFeedback.textContent = errors.join(" ");
-      modalAtualizarBtn.disabled = !valid;
+      confirmPasswordFeedback.textContent = "";
+      confirmPasswordFeedback.className = "input-feedback";
+
+      // Resetar requisitos de senha
+      reqLength.className = "";
+      reqLetter.className = "";
+      reqNumber.className = "";
+
+      // Resetar estado de validação
+      currentPasswordValid = false;
+      newPasswordValid = false;
+      confirmPasswordValid = false;
     }
 
-    [newPasswordInput, confirmPasswordInput].forEach((input) => {
-      input.addEventListener("input", validatePasswordForm);
+    // Função para verificar os requisitos da senha
+    function checkPasswordRequirements(password) {
+      const requirements = {
+        length: password.length >= 6,
+        letter: /[a-zA-Z]/.test(password),
+        number: /[0-9]/.test(password),
+      };
+
+      // Atualiza visualmente os requisitos
+      reqLength.className = requirements.length ? "requirement-met" : "";
+      reqLetter.className = requirements.letter ? "requirement-met" : "";
+      reqNumber.className = requirements.number ? "requirement-met" : "";
+
+      return requirements.length && requirements.letter && requirements.number;
+    }
+
+    // Função para atualizar o estado do botão com base nas validações
+    function updateButtonState() {
+      modalAtualizarBtn.disabled = !(
+        currentPasswordValid &&
+        newPasswordValid &&
+        confirmPasswordValid
+      );
+    }
+
+    // Adiciona eventos de validação para cada campo
+    currentPasswordInput.addEventListener("input", function () {
+      const currentPass = currentPasswordInput.value.trim();
+
+      if (currentPass === "") {
+        currentPasswordFeedback.textContent = "Preencha a senha atual.";
+        currentPasswordFeedback.className = "input-feedback error-feedback";
+        currentPasswordValid = false;
+      } else if (currentPasswordValid) {
+        // Manter o estado válido se já foi validado pelo servidor
+        currentPasswordFeedback.textContent = "✓";
+        currentPasswordFeedback.className = "input-feedback success-feedback";
+      } else {
+        currentPasswordFeedback.textContent = "";
+        currentPasswordFeedback.className = "input-feedback";
+        // O estado permanece falso até a validação do servidor
+      }
+
+      updateButtonState();
     });
 
+    newPasswordInput.addEventListener("input", function () {
+      const newPass = newPasswordInput.value.trim();
+      const currentPass = currentPasswordInput.value.trim();
+
+      // Verifica os requisitos enquanto digita
+      const requirementsMet = checkPasswordRequirements(newPass);
+
+      if (newPass === "") {
+        newPasswordFeedback.textContent = "Informe uma nova senha.";
+        newPasswordFeedback.className = "input-feedback error-feedback";
+        newPasswordValid = false;
+      } else if (!requirementsMet) {
+        newPasswordFeedback.textContent = "A senha não atende aos requisitos.";
+        newPasswordFeedback.className = "input-feedback error-feedback";
+        newPasswordValid = false;
+      } else if (newPass === currentPass && currentPass !== "") {
+        newPasswordFeedback.textContent =
+          "A nova senha deve ser diferente da atual.";
+        newPasswordFeedback.className = "input-feedback error-feedback";
+        newPasswordValid = false;
+      } else {
+        newPasswordFeedback.textContent = "✓";
+        newPasswordFeedback.className = "input-feedback success-feedback";
+        newPasswordValid = true;
+      }
+
+      // Se a senha nova mudou, precisamos validar a confirmação novamente
+      const confirmPass = confirmPasswordInput.value.trim();
+      if (confirmPass !== "") {
+        if (confirmPass === newPass && requirementsMet) {
+          confirmPasswordFeedback.textContent = "✓";
+          confirmPasswordFeedback.className = "input-feedback success-feedback";
+          confirmPasswordValid = true;
+        } else {
+          confirmPasswordFeedback.textContent = "As senhas não conferem.";
+          confirmPasswordFeedback.className = "input-feedback error-feedback";
+          confirmPasswordValid = false;
+        }
+      }
+
+      updateButtonState();
+    });
+
+    confirmPasswordInput.addEventListener("input", function () {
+      const confirmPass = confirmPasswordInput.value.trim();
+      const newPass = newPasswordInput.value.trim();
+      const requirementsMet = checkPasswordRequirements(newPass);
+
+      if (confirmPass === "") {
+        confirmPasswordFeedback.textContent = "Confirme a nova senha.";
+        confirmPasswordFeedback.className = "input-feedback error-feedback";
+        confirmPasswordValid = false;
+      } else if (confirmPass !== newPass) {
+        confirmPasswordFeedback.textContent = "As senhas não conferem.";
+        confirmPasswordFeedback.className = "input-feedback error-feedback";
+        confirmPasswordValid = false;
+      } else if (confirmPass === newPass && requirementsMet) {
+        confirmPasswordFeedback.textContent = "✓";
+        confirmPasswordFeedback.className = "input-feedback success-feedback";
+        confirmPasswordValid = true;
+      }
+
+      updateButtonState();
+    });
+
+    // Validação da senha atual com o servidor
     currentPasswordInput.addEventListener("blur", function () {
       const currentPass = currentPasswordInput.value.trim();
-      if (currentPass === "") return;
+      if (currentPass === "") {
+        currentPasswordFeedback.textContent = "Preencha a senha atual.";
+        currentPasswordFeedback.className = "input-feedback error-feedback";
+        currentPasswordValid = false;
+        updateButtonState();
+        return;
+      }
+
+      // Mostra feedback de verificação em andamento
+      currentPasswordFeedback.textContent = "Verificando...";
+      currentPasswordFeedback.className = "input-feedback";
+
       fetch('{{ url_for("perfil.validar_senha") }}', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -225,15 +351,24 @@
         .then((response) => response.json())
         .then((data) => {
           if (!data.valid) {
-            passwordFeedback.textContent = "Senha atual incorreta.";
-            modalAtualizarBtn.disabled = true;
+            currentPasswordFeedback.textContent = "Senha atual incorreta.";
+            currentPasswordFeedback.className = "input-feedback error-feedback";
+            currentPasswordValid = false;
           } else {
-            passwordFeedback.textContent = "";
-            validatePasswordForm();
+            currentPasswordFeedback.textContent = "✓";
+            currentPasswordFeedback.className =
+              "input-feedback success-feedback";
+            currentPasswordValid = true;
           }
+          updateButtonState();
         })
         .catch((error) => {
           console.error("Erro na validação da senha atual:", error);
+          currentPasswordFeedback.textContent =
+            "Erro ao validar senha. Tente novamente.";
+          currentPasswordFeedback.className = "input-feedback error-feedback";
+          currentPasswordValid = false;
+          updateButtonState();
         });
     });
 
@@ -241,6 +376,9 @@
     openPasswordModal.addEventListener("click", () => {
       passwordModal.style.display = "flex";
       passwordModal.classList.add("show");
+      clearAllFeedbacks();
+      passwordForm.reset();
+      modalAtualizarBtn.disabled = true;
     });
 
     // Fecha o modal ao clicar em "Cancelar" ou fora do conteúdo
@@ -249,17 +387,18 @@
       setTimeout(() => {
         passwordModal.style.display = "none";
         passwordForm.reset();
-        passwordFeedback.textContent = "";
+        clearAllFeedbacks();
         modalAtualizarBtn.disabled = true;
       }, 300);
     });
+
     window.addEventListener("click", function (event) {
       if (event.target === passwordModal) {
         passwordModal.classList.remove("show");
         setTimeout(() => {
           passwordModal.style.display = "none";
           passwordForm.reset();
-          passwordFeedback.textContent = "";
+          clearAllFeedbacks();
           modalAtualizarBtn.disabled = true;
         }, 300);
       }
