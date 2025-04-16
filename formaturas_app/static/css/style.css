@@ -170,7 +170,8 @@ header {
   border: 2px solid var(--color-text-2);
   box-sizing: border-box;
 }
-.navbar-profile.editing-indicator img {
+.navbar-profile.editing-indicator img,
+.navbar-profile.editing-indicator .navbar-profile-initial {
   filter: brightness(0.5);
   border-color: var(--color-navbar-active);
 }
@@ -466,6 +467,15 @@ main.fade-in {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   overflow-y: auto;
+}
+
+.mai-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+  padding: 25px;
+  border-radius: 6px;
+  background: var(--color-card-bg);
 }
 
 /* ====================================
@@ -764,6 +774,48 @@ select:focus {
 label {
   margin: 8px 0 4px;
   font-weight: 500;
+}
+
+.input-feedback {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  min-height: 1.2rem;
+}
+
+.success-feedback {
+  color: #28a745;
+}
+
+.error-feedback {
+  color: #dc3545;
+}
+
+.password-requirements {
+  font-size: 0.85rem;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-input-bg);
+}
+
+.password-requirements p {
+  margin: 0 0 0.5rem 0;
+  font-weight: bold;
+}
+
+.password-requirements ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.password-requirements li {
+  margin-bottom: 0.25rem;
+}
+
+.requirement-met {
+  color: #28a745;
+  text-decoration: line-through;
 }
 
 /* ====================================
@@ -1156,7 +1208,7 @@ label {
 /* Badges de perfil */
 .badge {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -1192,9 +1244,8 @@ label {
   color: var(--color-text-1);
 }
 
-/* Adicione estes estilos CSS ao seu arquivo de estilos existente */
+/* Estilos para o container da foto do perfil com máscara circular translúcida. */
 
-/* Estilos para o container de foto do perfil */
 .foto-perfil-container {
   width: 120px;
   height: 120px;
@@ -1211,23 +1262,26 @@ label {
 
 .foto-perfil-container:hover {
   opacity: 0.9;
-  transform: scale(1.02);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
 }
 
 .foto-perfil-container::after {
-  content: "\f030"; /* Camera icon from Font Awesome */
-  font-family: "Font Awesome 5 Free";
-  font-weight: 900;
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2rem;
-  color: rgba(255, 255, 255, 0.8);
+  width: 48px;
+  height: 48px;
+  background-color: rgba(127, 44, 44, 0.878);
+  border-radius: 50%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'><path d='M12 9a3 3 0 100 6 3 3 0 000-6zm0-2a5 5 0 110 10 5 5 0 010-10zm7-3h-2.586l-1.707-1.707A1 1 0 0014.586 2H9.414a1 1 0 00-.707.293L7 4H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zM5 18V6h2.586l1.707-1.707A1 1 0 0110.414 4h3.172a1 1 0 01.707.293L16.414 6H19v12H5z'/></svg>");
+  background-size: 60% 60%;
+  background-position: center;
+  background-repeat: no-repeat;
   opacity: 0;
   transition: opacity 0.3s ease;
-  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
 }
 
 .foto-perfil-container:hover::after {
@@ -1258,7 +1312,7 @@ label {
   color: #aaa;
 }
 
-/* Modal de Editor de Foto */
+/* Modal de Editor de Foto com máscara circular translúcida */
 .photo-editor-modal {
   max-width: 600px;
   width: 90%;
@@ -1279,8 +1333,10 @@ label {
   border-radius: 8px;
   overflow: hidden;
   position: relative;
+  /* Para que a área de edição seja sempre 300x300 */
+  width: 300px;
   height: 300px;
-  margin-bottom: 1rem;
+  margin: 0 auto 1rem; /* Centraliza horizontalmente */
 }
 
 #photo-editor-area {
@@ -1293,12 +1349,34 @@ label {
   position: relative;
 }
 
+/* Remove a camada anterior para evitar opacidade no centro */
+#photo-editor-area::before {
+  content: none;
+}
+
+/* Cria o "furo" no centro com radial-gradient, deixando o meio transparente */
+#photo-editor-area::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(
+    circle 150px at center,
+    transparent 149px,
+    rgba(0, 0, 0, 0.6) 150px
+  );
+}
+
 #photo-editor-image {
+  /* Max para não iniciar grande demais, ainda permitindo zoom dinâmico via transform. */
   max-width: 100%;
   max-height: 100%;
   display: block;
   user-select: none;
   transition: transform 0.05s ease-out;
+  z-index: 1;
+  position: relative;
 }
 
 #photo-editor-placeholder {
@@ -1335,9 +1413,11 @@ label {
   gap: 10px;
 }
 
+/* Estilo base */
 .zoom-btn {
-  background: #f0f0f0;
-  border: 1px solid #ddd;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  border: none;
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -1346,10 +1426,25 @@ label {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 60%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .zoom-btn:hover {
-  background: #e0e0e0;
+  transform: scale(1.1);
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Zoom OUT - lupa com cabo menor */
+#zoom-out-btn {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'><circle cx='11' cy='11' r='7'/><line x1='8' y1='11' x2='14' y2='11'/><line x1='18' y1='18' x2='15.5' y2='15.5'/></svg>");
+}
+
+/* Zoom IN - lupa com cabo menor */
+#zoom-in-btn {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'><circle cx='11' cy='11' r='7'/><line x1='11' y1='8' x2='11' y2='14'/><line x1='8' y1='11' x2='14' y2='11'/><line x1='18' y1='18' x2='15.5' y2='15.5'/></svg>");
 }
 
 #zoom-slider {
@@ -1362,27 +1457,6 @@ label {
   justify-content: flex-end;
   gap: 10px;
   margin-top: auto;
-}
-
-/* Animação para o modal */
-.modal-overlay {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s;
-}
-
-.modal-overlay.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-.modal-content {
-  transform: translateY(20px);
-  transition: transform 0.3s ease;
-}
-
-.modal-overlay.show .modal-content {
-  transform: translateY(0);
 }
 
 /* ====================================
@@ -1697,6 +1771,17 @@ label {
     margin-top: 25px;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
   }
+
+  #flash-messages {
+    width: 85%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .alert {
+    margin: 10px 0;
+    width: 100%;
+  }
 }
 
 /* TABLETS & DESKTOPS */
@@ -1791,46 +1876,4 @@ label {
   max-width: 750px;
   min-height: 300px;
   margin: 0 auto;
-}
-
-.input-feedback {
-  color: #dc3545;
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
-  min-height: 1.2rem;
-}
-
-.success-feedback {
-  color: #28a745;
-}
-
-.error-feedback {
-  color: #dc3545;
-}
-
-.password-requirements {
-  font-size: 0.85rem;
-  margin: 1rem 0;
-  padding: 0.75rem;
-  border-radius: 6px;
-  border: 1px solid var(--color-input-bg);
-}
-
-.password-requirements p {
-  margin: 0 0 0.5rem 0;
-  font-weight: bold;
-}
-
-.password-requirements ul {
-  margin: 0;
-  padding-left: 1.5rem;
-}
-
-.password-requirements li {
-  margin-bottom: 0.25rem;
-}
-
-.requirement-met {
-  color: #28a745;
-  text-decoration: line-through;
 }

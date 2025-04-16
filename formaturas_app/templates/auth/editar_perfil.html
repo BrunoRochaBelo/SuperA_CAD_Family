@@ -6,10 +6,6 @@
 <!-- Formulário para editar dados do perfil -->
 <form method="post" enctype="multipart/form-data" class="form-editar-perfil">
   <!-- Foto de Perfil e Tag de Acesso -->
-  <!-- Arquivo: templates/auth/editar_perfil.html -->
-  <!-- Substitua o HTML da seção de upload de foto pelo seguinte: -->
-
-  <!-- Foto de Perfil -->
   <div class="perfil-upload-container">
     <div id="foto-perfil-container" class="foto-perfil-container">
       {% if usuario.foto_perfil %}
@@ -38,7 +34,6 @@
         {% if usuario.foto_perfil %}Ajustar Foto{% else %}Adicionar Foto{% endif
         %}
       </h2>
-
       <div class="photo-editor-container">
         <div class="photo-editor-wrapper">
           <div id="photo-editor-area">
@@ -63,7 +58,6 @@
           </p>
         </div>
       </div>
-
       <div class="photo-editor-controls">
         <div class="zoom-controls">
           <button
@@ -71,9 +65,7 @@
             id="zoom-out-btn"
             class="zoom-btn"
             title="Diminuir zoom"
-          >
-            <i class="fas fa-search-minus"></i>
-          </button>
+          ></button>
           <input
             type="range"
             id="zoom-slider"
@@ -86,12 +78,9 @@
             id="zoom-in-btn"
             class="zoom-btn"
             title="Aumentar zoom"
-          >
-            <i class="fas fa-search-plus"></i>
-          </button>
+          ></button>
         </div>
       </div>
-
       <div class="photo-editor-actions">
         <input
           type="file"
@@ -99,10 +88,8 @@
           accept="image/*"
           style="display: none"
         />
-
-        <!-- Botões diferentes baseados no estado do usuário -->
         {% if usuario.foto_perfil %}
-        <button type="button" id="delete-photo-btn" class="btn btn-danger">
+        <button type="button" id="delete-photo-btn" class="btn btn-voltar">
           <i class="fas fa-trash"></i> Excluir Foto
         </button>
         {% else %}
@@ -110,8 +97,7 @@
           <i class="fas fa-upload"></i> Selecionar Imagem
         </button>
         {% endif %}
-
-        <button type="button" id="photo-modal-cancel" class="btn btn-outline">
+        <button type="button" id="photo-modal-cancel" class="btn btn-voltar">
           Cancelar
         </button>
         <button
@@ -129,7 +115,7 @@
   <!-- Campo oculto para armazenar os dados da imagem processada -->
   <input type="hidden" name="cropped_image_data" id="cropped_image_data" />
 
-  <!-- Campos de texto: Apenas Nome e Email (email somente leitura) -->
+  <!-- Campos de texto: Nome e Email (não editável) -->
   <div class="form-group">
     <label for="nome">Nome:</label>
     <input
@@ -171,6 +157,45 @@
     </button>
   </div>
 </form>
+<div class="mai-footer">
+  <a
+    href="{{ url_for('auth.logout') }}"
+    class="profile-btn btn-voltar btn-icon-text"
+  >
+    <span>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+    </span>
+    Encerrar sessão
+  </a>
+</div>
+<!-- Modal para Confirmação de Exclusão da Imagem -->
+<div id="confirmDeleteModal" class="modal-overlay">
+  <div class="modal-content">
+    <h2>Confirmar Exclusão</h2>
+    <p>Tem certeza que deseja excluir sua foto de perfil?</p>
+    <div class="modal-button-group">
+      <button type="button" id="confirmDeleteBtn" class="btn btn-danger">
+        Sim, excluir
+      </button>
+      <button type="button" id="cancelDeleteBtn" class="btn btn-secondary">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- Modal para Alteração de Senha -->
 <div id="passwordModal" class="modal-overlay">
@@ -350,91 +375,6 @@
   </div>
 </div>
 
-<!-- Modal para Gerenciamento de Foto -->
-<div id="photoModal" class="modal-overlay">
-  <div class="modal-content photo-editor-modal">
-    <h2 id="photo-modal-title">
-      {% if usuario.foto_perfil %}Ajustar Foto{% else %}Adicionar Foto{% endif
-      %}
-    </h2>
-    <div class="photo-editor-container">
-      <div class="photo-editor-wrapper">
-        <div id="photo-editor-area">
-          {% if usuario.foto_perfil %}
-          <img
-            id="photo-editor-image"
-            src="{{ url_for('static', filename=usuario.foto_perfil) }}"
-            alt="Foto de Perfil"
-          />
-          {% else %}
-          <div id="photo-editor-placeholder">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p>Selecione uma imagem para carregar</p>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-      <div class="photo-editor-instructions">
-        <p>Você pode arrastar a imagem e usar a roda do mouse para zoom.</p>
-        <p>
-          Ajuste a foto para se enquadrar melhor no círculo de visualização.
-        </p>
-      </div>
-    </div>
-
-    <div class="photo-editor-controls">
-      <div class="zoom-controls">
-        <button
-          type="button"
-          id="zoom-out-btn"
-          class="zoom-btn"
-          title="Diminuir zoom"
-        >
-          <i class="fas fa-search-minus"></i>
-        </button>
-        <input type="range" id="zoom-slider" min="100" max="300" value="100" />
-        <button
-          type="button"
-          id="zoom-in-btn"
-          class="zoom-btn"
-          title="Aumentar zoom"
-        >
-          <i class="fas fa-search-plus"></i>
-        </button>
-      </div>
-    </div>
-
-    <div class="photo-editor-actions">
-      <input
-        type="file"
-        id="photo-upload"
-        accept="image/*"
-        style="display: none"
-      />
-      {% if usuario.foto_perfil %}
-      <button type="button" id="delete-photo-btn" class="btn btn-danger">
-        <i class="fas fa-trash"></i> Excluir Foto
-      </button>
-      {% else %}
-      <button type="button" id="select-photo-btn" class="btn btn-secondary">
-        <i class="fas fa-upload"></i> Selecionar Imagem
-      </button>
-      {% endif %}
-      <button type="button" id="photo-modal-cancel" class="btn btn-outline">
-        Cancelar
-      </button>
-      <button
-        type="button"
-        id="save-photo-btn"
-        class="btn btn-primary"
-        disabled
-      >
-        Salvar
-      </button>
-    </div>
-  </div>
-</div>
-
 <!-- Scripts -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
@@ -456,7 +396,6 @@
     const editarPerfilBtn = document.querySelector(".editar-perfil-btn-save");
     const nomeInput = document.getElementById("nome");
     const emailInput = document.getElementById("email");
-
     const initialNome = nomeInput.value;
     let fotoChanged = false;
     editarPerfilBtn.disabled = true;
@@ -697,48 +636,74 @@
     let isDragging = false;
     let cropper = null;
 
-    // Garante que o botão de atualizar perfil continue desabilitado
-    editarPerfilBtn.disabled = true;
+    // ----- Modal de Confirmação de Exclusão de Foto -----
+    const confirmDeleteModal = document.getElementById("confirmDeleteModal");
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
 
-    // Abre o modal ao clicar na foto de perfil
-    photoContainer.addEventListener("click", openPhotoModal);
-
-    // Se houver botão de selecionar imagem, atribui o evento
-    if (document.getElementById("select-photo-btn")) {
-      document
-        .getElementById("select-photo-btn")
-        .addEventListener("click", function () {
-          photoUploadInput.click();
-        });
+    function showConfirmDeleteModal() {
+      confirmDeleteModal.style.display = "flex";
+      confirmDeleteModal.classList.add("show");
     }
-
-    // Se houver botão de excluir, atribui o evento
+    function closeConfirmDeleteModal() {
+      confirmDeleteModal.classList.remove("show");
+      setTimeout(() => {
+        confirmDeleteModal.style.display = "none";
+      }, 300);
+    }
+    function promptDeletePhoto() {
+      showConfirmDeleteModal();
+    }
+    confirmDeleteBtn.addEventListener("click", function () {
+      deleteProfilePhotoConfirmed();
+      closeConfirmDeleteModal();
+    });
+    cancelDeleteBtn.addEventListener("click", function () {
+      closeConfirmDeleteModal();
+    });
     if (document.getElementById("delete-photo-btn")) {
       document
         .getElementById("delete-photo-btn")
-        .addEventListener("click", deleteProfilePhoto);
+        .addEventListener("click", promptDeletePhoto);
     }
 
-    photoUploadInput.addEventListener("change", handleImageUpload);
-    savePhotoBtn.addEventListener("click", savePhoto);
-    cancelBtn.addEventListener("click", closePhotoModal);
-
-    zoomSlider.addEventListener("input", handleZoomChange);
-    zoomInBtn.addEventListener("click", () => {
-      zoomSlider.value = parseInt(zoomSlider.value) + 10;
-      handleZoomChange();
-    });
-    zoomOutBtn.addEventListener("click", () => {
-      zoomSlider.value = parseInt(zoomSlider.value) - 10;
-      handleZoomChange();
-    });
-
-    window.addEventListener("click", function (event) {
-      if (event.target === photoModal) {
-        closePhotoModal();
+    // Função de exclusão efetiva da foto
+    function deleteProfilePhotoConfirmed() {
+      let deleteFlag = document.querySelector('input[name="delete_photo"]');
+      if (!deleteFlag) {
+        deleteFlag = document.createElement("input");
+        deleteFlag.type = "hidden";
+        deleteFlag.name = "delete_photo";
+        deleteFlag.value = "true";
+        document.querySelector(".form-editar-perfil").appendChild(deleteFlag);
       }
-    });
+      document.getElementById("cropped_image_data").value = "";
+      while (photoEditorArea.firstChild) {
+        photoEditorArea.removeChild(photoEditorArea.firstChild);
+      }
+      const placeholder = document.createElement("div");
+      placeholder.id = "photo-editor-placeholder";
+      placeholder.innerHTML =
+        '<i class="fas fa-cloud-upload-alt"></i><p>Selecione uma imagem para carregar</p>';
+      photoEditorArea.appendChild(placeholder);
+      document.getElementById("photo-modal-title").textContent =
+        "Adicionar Foto";
+      const deleteBtn = document.getElementById("delete-photo-btn");
+      if (deleteBtn) {
+        const selectBtn = document.createElement("button");
+        selectBtn.id = "select-photo-btn";
+        selectBtn.className = "btn btn-secondary";
+        selectBtn.innerHTML = '<i class="fas fa-upload"></i> Selecionar Imagem';
+        selectBtn.addEventListener("click", function () {
+          photoUploadInput.click();
+        });
+        deleteBtn.parentNode.replaceChild(selectBtn, deleteBtn);
+      }
+      fotoChanged = true;
+      checkPerfilFormChanged();
+    }
 
+    // ----- Funções de Manipulação da Foto -----
     function openPhotoModal() {
       photoModal.style.display = "flex";
       photoModal.classList.add("show");
@@ -773,7 +738,6 @@
       }
       const reader = new FileReader();
       reader.onload = function (event) {
-        // Limpa o editor
         while (photoEditorArea.firstChild) {
           photoEditorArea.removeChild(photoEditorArea.firstChild);
         }
@@ -784,7 +748,6 @@
         img.onload = function () {
           initCropper();
           imageChanged = true;
-          // Se uma imagem foi selecionada, atualize o rótulo do botão para "Alterar Imagem"
           const selectBtn = document.getElementById("select-photo-btn");
           if (selectBtn) {
             selectBtn.innerHTML =
@@ -930,7 +893,7 @@
         document.getElementById("cropped_image_data").value = imageData;
         updateProfilePreview(imageData);
       }
-      // Submete o formulário automaticamente – o backend tratará se é inclusão ou exclusão de foto.
+      // Submete o formulário automaticamente – o backend decide se é inclusão ou exclusão da foto.
       document.querySelector(".form-editar-perfil").submit();
       closePhotoModal();
     }
@@ -951,52 +914,6 @@
       previewImg.src = imageData;
     }
 
-    // ----- Função para excluir foto (mantendo o estado no modal) -----
-    function deleteProfilePhoto() {
-      if (confirm("Tem certeza que deseja excluir sua foto de perfil?")) {
-        // Cria (ou atualiza) o campo oculto para indicar exclusão.
-        let deleteFlag = document.querySelector('input[name="delete_photo"]');
-        if (!deleteFlag) {
-          deleteFlag = document.createElement("input");
-          deleteFlag.type = "hidden";
-          deleteFlag.name = "delete_photo";
-          deleteFlag.value = "true";
-          document.querySelector(".form-editar-perfil").appendChild(deleteFlag);
-        }
-        // Limpa o campo que armazena a imagem recortada.
-        document.getElementById("cropped_image_data").value = "";
-        // Atualiza a área do editor para exibir o placeholder
-        while (photoEditorArea.firstChild) {
-          photoEditorArea.removeChild(photoEditorArea.firstChild);
-        }
-        const placeholder = document.createElement("div");
-        placeholder.id = "photo-editor-placeholder";
-        placeholder.innerHTML =
-          '<i class="fas fa-cloud-upload-alt"></i><p>Selecione uma imagem para carregar</p>';
-        photoEditorArea.appendChild(placeholder);
-        // Atualiza o título do modal para refletir que não há foto.
-        document.getElementById("photo-modal-title").textContent =
-          "Adicionar Foto";
-        // Atualiza o botão de ação: substitui o botão de exclusão por um de seleção (se ainda não houver)
-        const deleteBtn = document.getElementById("delete-photo-btn");
-        if (deleteBtn) {
-          const selectBtn = document.createElement("button");
-          selectBtn.id = "select-photo-btn";
-          selectBtn.className = "btn btn-secondary";
-          selectBtn.innerHTML =
-            '<i class="fas fa-upload"></i> Selecionar Imagem';
-          selectBtn.addEventListener("click", function () {
-            photoUploadInput.click();
-          });
-          deleteBtn.parentNode.replaceChild(selectBtn, deleteBtn);
-        }
-        // Atualiza o estado para que o formulário seja considerado como alterado.
-        fotoChanged = true;
-        checkPerfilFormChanged();
-        // Diferentemente da versão anterior, não fecha o modal automaticamente para que o usuário veja o estado de exclusão.
-      }
-    }
-
     function resetPhotoEditor() {
       while (photoEditorArea.firstChild) {
         photoEditorArea.removeChild(photoEditorArea.firstChild);
@@ -1014,6 +931,38 @@
       }
       savePhotoBtn.disabled = true;
     }
+
+    // ----- Eventos dos Elementos de Foto -----
+    photoContainer.addEventListener("click", openPhotoModal);
+    if (document.getElementById("select-photo-btn")) {
+      document
+        .getElementById("select-photo-btn")
+        .addEventListener("click", function () {
+          photoUploadInput.click();
+        });
+    }
+    if (document.getElementById("delete-photo-btn")) {
+      document
+        .getElementById("delete-photo-btn")
+        .addEventListener("click", promptDeletePhoto);
+    }
+    photoUploadInput.addEventListener("change", handleImageUpload);
+    savePhotoBtn.addEventListener("click", savePhoto);
+    cancelBtn.addEventListener("click", closePhotoModal);
+    zoomSlider.addEventListener("input", handleZoomChange);
+    zoomInBtn.addEventListener("click", () => {
+      zoomSlider.value = parseInt(zoomSlider.value) + 10;
+      handleZoomChange();
+    });
+    zoomOutBtn.addEventListener("click", () => {
+      zoomSlider.value = parseInt(zoomSlider.value) - 10;
+      handleZoomChange();
+    });
+    window.addEventListener("click", function (event) {
+      if (event.target === photoModal) {
+        closePhotoModal();
+      }
+    });
   });
 </script>
 
