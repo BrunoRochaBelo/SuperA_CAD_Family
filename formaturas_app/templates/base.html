@@ -170,7 +170,7 @@
       messages %}
       <div id="flash-messages">
         {% for category, msg in messages %}
-        <div class="alert alert-{{ category }}">
+        <div class="alert alert-{{ category|default('info') }}">
           <span class="alert-text">{{ msg }}</span>
           <button
             class="alert-close"

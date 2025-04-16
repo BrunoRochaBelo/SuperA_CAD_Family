@@ -6,30 +6,128 @@
 <!-- Formulário para editar dados do perfil -->
 <form method="post" enctype="multipart/form-data" class="form-editar-perfil">
   <!-- Foto de Perfil e Tag de Acesso -->
+  <!-- Arquivo: templates/auth/editar_perfil.html -->
+  <!-- Substitua o HTML da seção de upload de foto pelo seguinte: -->
+
+  <!-- Foto de Perfil -->
   <div class="perfil-upload-container">
-    <label for="foto_perfil" class="perfil-foto-label">
+    <div id="foto-perfil-container" class="foto-perfil-container">
       {% if usuario.foto_perfil %}
       <img
         src="{{ url_for('static', filename=usuario.foto_perfil) }}"
         alt="Foto de Perfil"
         class="perfil-foto-preview"
+        id="current-profile-photo"
       />
       {% else %}
-      <div class="perfil-foto-placeholder">Selecionar Foto</div>
+      <div class="perfil-foto-placeholder" id="profile-placeholder">
+        <i class="fas fa-user"></i>
+        <span>Adicionar Foto</span>
+      </div>
       {% endif %}
-    </label>
+    </div>
     <span class="perfil-access-tag {{ usuario.papel.value|lower }}">
       {{ usuario.papel.value }}
     </span>
-
-    <input
-      type="file"
-      name="foto_perfil"
-      id="foto_perfil"
-      class="perfil-file-input"
-      accept="image/*"
-    />
   </div>
+
+  <!-- Modal para Gerenciamento de Foto -->
+  <div id="photoModal" class="modal-overlay">
+    <div class="modal-content photo-editor-modal">
+      <h2 id="photo-modal-title">
+        {% if usuario.foto_perfil %}Ajustar Foto{% else %}Adicionar Foto{% endif
+        %}
+      </h2>
+
+      <div class="photo-editor-container">
+        <div class="photo-editor-wrapper">
+          <div id="photo-editor-area">
+            {% if usuario.foto_perfil %}
+            <img
+              id="photo-editor-image"
+              src="{{ url_for('static', filename=usuario.foto_perfil) }}"
+              alt="Foto de Perfil"
+            />
+            {% else %}
+            <div id="photo-editor-placeholder">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>Selecione uma imagem para carregar</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="photo-editor-instructions">
+          <p>Você pode arrastar a imagem e usar a roda do mouse para zoom.</p>
+          <p>
+            Ajuste a foto para se enquadrar melhor no círculo de visualização.
+          </p>
+        </div>
+      </div>
+
+      <div class="photo-editor-controls">
+        <div class="zoom-controls">
+          <button
+            type="button"
+            id="zoom-out-btn"
+            class="zoom-btn"
+            title="Diminuir zoom"
+          >
+            <i class="fas fa-search-minus"></i>
+          </button>
+          <input
+            type="range"
+            id="zoom-slider"
+            min="100"
+            max="300"
+            value="100"
+          />
+          <button
+            type="button"
+            id="zoom-in-btn"
+            class="zoom-btn"
+            title="Aumentar zoom"
+          >
+            <i class="fas fa-search-plus"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="photo-editor-actions">
+        <input
+          type="file"
+          id="photo-upload"
+          accept="image/*"
+          style="display: none"
+        />
+
+        <!-- Botões diferentes baseados no estado do usuário -->
+        {% if usuario.foto_perfil %}
+        <button type="button" id="delete-photo-btn" class="btn btn-danger">
+          <i class="fas fa-trash"></i> Excluir Foto
+        </button>
+        {% else %}
+        <button type="button" id="select-photo-btn" class="btn btn-secondary">
+          <i class="fas fa-upload"></i> Selecionar Imagem
+        </button>
+        {% endif %}
+
+        <button type="button" id="photo-modal-cancel" class="btn btn-outline">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          id="save-photo-btn"
+          class="btn btn-primary"
+          disabled
+        >
+          Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Campo oculto para armazenar os dados da imagem processada -->
+  <input type="hidden" name="cropped_image_data" id="cropped_image_data" />
 
   <!-- Campos de texto: Apenas Nome e Email (email somente leitura) -->
   <div class="form-group">
@@ -85,29 +183,148 @@
     >
       <div class="form-group">
         <label for="current_password">Senha Atual:</label>
-        <input
-          type="password"
-          name="current_password"
-          id="current_password"
-          required
-        />
+        <div class="password-wrapper" style="position: relative">
+          <input
+            type="password"
+            name="current_password"
+            id="current_password"
+            required
+          />
+          <span
+            class="toggle-password"
+            onclick="togglePasswordVisibility('current_password', this)"
+            style="
+              position: absolute;
+              right: 10px;
+              top: 50%;
+              transform: translateY(-50%);
+              cursor: pointer;
+            "
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g class="eye-visible">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+              </g>
+              <g class="eye-hidden" style="display: none">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+                <path
+                  d="M2 4L22 20"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </g>
+            </svg>
+          </span>
+        </div>
         <div class="input-feedback" id="currentPasswordFeedback"></div>
       </div>
+
       <div class="form-group">
         <label for="new_password">Nova Senha:</label>
-        <input type="password" name="new_password" id="new_password" required />
+        <div class="password-wrapper" style="position: relative">
+          <input
+            type="password"
+            name="new_password"
+            id="new_password"
+            required
+          />
+          <span
+            class="toggle-password"
+            onclick="togglePasswordVisibility('new_password', this)"
+            style="
+              position: absolute;
+              right: 10px;
+              top: 50%;
+              transform: translateY(-50%);
+              cursor: pointer;
+            "
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g class="eye-visible">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+              </g>
+              <g class="eye-hidden" style="display: none">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+                <path
+                  d="M2 4L22 20"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </g>
+            </svg>
+          </span>
+        </div>
         <div class="input-feedback" id="newPasswordFeedback"></div>
       </div>
+
       <div class="form-group">
         <label for="confirm_password">Confirmar Nova Senha:</label>
-        <input
-          type="password"
-          name="confirm_password"
-          id="confirm_password"
-          required
-        />
+        <div class="password-wrapper" style="position: relative">
+          <input
+            type="password"
+            name="confirm_password"
+            id="confirm_password"
+            required
+          />
+          <span
+            class="toggle-password"
+            onclick="togglePasswordVisibility('confirm_password', this)"
+            style="
+              position: absolute;
+              right: 10px;
+              top: 50%;
+              transform: translateY(-50%);
+              cursor: pointer;
+            "
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g class="eye-visible">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+              </g>
+              <g class="eye-hidden" style="display: none">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+                <path
+                  d="M2 4L22 20"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </g>
+            </svg>
+          </span>
+        </div>
         <div class="input-feedback" id="confirmPasswordFeedback"></div>
       </div>
+
       <div class="password-requirements">
         <p>A senha deve conter:</p>
         <ul>
@@ -133,38 +350,127 @@
   </div>
 </div>
 
+<!-- Modal para Gerenciamento de Foto -->
+<div id="photoModal" class="modal-overlay">
+  <div class="modal-content photo-editor-modal">
+    <h2 id="photo-modal-title">
+      {% if usuario.foto_perfil %}Ajustar Foto{% else %}Adicionar Foto{% endif
+      %}
+    </h2>
+    <div class="photo-editor-container">
+      <div class="photo-editor-wrapper">
+        <div id="photo-editor-area">
+          {% if usuario.foto_perfil %}
+          <img
+            id="photo-editor-image"
+            src="{{ url_for('static', filename=usuario.foto_perfil) }}"
+            alt="Foto de Perfil"
+          />
+          {% else %}
+          <div id="photo-editor-placeholder">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Selecione uma imagem para carregar</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="photo-editor-instructions">
+        <p>Você pode arrastar a imagem e usar a roda do mouse para zoom.</p>
+        <p>
+          Ajuste a foto para se enquadrar melhor no círculo de visualização.
+        </p>
+      </div>
+    </div>
+
+    <div class="photo-editor-controls">
+      <div class="zoom-controls">
+        <button
+          type="button"
+          id="zoom-out-btn"
+          class="zoom-btn"
+          title="Diminuir zoom"
+        >
+          <i class="fas fa-search-minus"></i>
+        </button>
+        <input type="range" id="zoom-slider" min="100" max="300" value="100" />
+        <button
+          type="button"
+          id="zoom-in-btn"
+          class="zoom-btn"
+          title="Aumentar zoom"
+        >
+          <i class="fas fa-search-plus"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="photo-editor-actions">
+      <input
+        type="file"
+        id="photo-upload"
+        accept="image/*"
+        style="display: none"
+      />
+      {% if usuario.foto_perfil %}
+      <button type="button" id="delete-photo-btn" class="btn btn-danger">
+        <i class="fas fa-trash"></i> Excluir Foto
+      </button>
+      {% else %}
+      <button type="button" id="select-photo-btn" class="btn btn-secondary">
+        <i class="fas fa-upload"></i> Selecionar Imagem
+      </button>
+      {% endif %}
+      <button type="button" id="photo-modal-cancel" class="btn btn-outline">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        id="save-photo-btn"
+        class="btn btn-primary"
+        disabled
+      >
+        Salvar
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Scripts -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    /* --- Lógica para o Formulário de Editar Perfil --- */
+    // ----- Função para alternar a visibilidade da senha -----
+    function togglePasswordVisibility(inputId, toggler) {
+      const input = document.getElementById(inputId);
+      if (input.getAttribute("type") === "password") {
+        input.setAttribute("type", "text");
+        toggler.querySelector(".eye-visible").style.display = "none";
+        toggler.querySelector(".eye-hidden").style.display = "block";
+      } else {
+        input.setAttribute("type", "password");
+        toggler.querySelector(".eye-visible").style.display = "block";
+        toggler.querySelector(".eye-hidden").style.display = "none";
+      }
+    }
+
+    // ----- Lógica do formulário de editar perfil -----
     const editarPerfilBtn = document.querySelector(".editar-perfil-btn-save");
     const nomeInput = document.getElementById("nome");
     const emailInput = document.getElementById("email");
-    const fotoInput = document.getElementById("foto_perfil");
 
-    // Guarda os valores iniciais para comparação
     const initialNome = nomeInput.value;
-    const initialEmail = emailInput.value;
     let fotoChanged = false;
-
     editarPerfilBtn.disabled = true;
 
     function checkPerfilFormChanged() {
-      // Como o campo email é readonly, a comparação fica apenas com o nome e a foto
       if (nomeInput.value !== initialNome || fotoChanged) {
         editarPerfilBtn.disabled = false;
       } else {
         editarPerfilBtn.disabled = true;
       }
     }
-
     nomeInput.addEventListener("input", checkPerfilFormChanged);
-    fotoInput.addEventListener("change", function () {
-      fotoChanged = true;
-      checkPerfilFormChanged();
-    });
 
-    /* --- Lógica para o Modal de Alteração de Senha --- */
+    // ----- Modal de Alteração de Senha -----
     const openPasswordModal = document.getElementById("openPasswordModal");
     const passwordModal = document.getElementById("passwordModal");
     const passwordModalClose = document.getElementById("passwordModalClose");
@@ -174,7 +480,6 @@
     const confirmPasswordInput = document.getElementById("confirm_password");
     const modalAtualizarBtn = document.getElementById("modalAtualizarBtn");
 
-    // Seletores para os elementos de feedback específicos
     const currentPasswordFeedback = document.getElementById(
       "currentPasswordFeedback"
     );
@@ -183,57 +488,42 @@
       "confirmPasswordFeedback"
     );
 
-    // Seletores para os requisitos de senha
     const reqLength = document.getElementById("req-length");
     const reqLetter = document.getElementById("req-letter");
     const reqNumber = document.getElementById("req-number");
 
-    // Estado global da validação
     let currentPasswordValid = false;
     let newPasswordValid = false;
     let confirmPasswordValid = false;
-
     modalAtualizarBtn.disabled = true;
 
-    // Função para limpar todos os feedbacks
     function clearAllFeedbacks() {
       currentPasswordFeedback.textContent = "";
       currentPasswordFeedback.className = "input-feedback";
-
       newPasswordFeedback.textContent = "";
       newPasswordFeedback.className = "input-feedback";
-
       confirmPasswordFeedback.textContent = "";
       confirmPasswordFeedback.className = "input-feedback";
-
-      // Resetar requisitos de senha
       reqLength.className = "";
       reqLetter.className = "";
       reqNumber.className = "";
-
-      // Resetar estado de validação
       currentPasswordValid = false;
       newPasswordValid = false;
       confirmPasswordValid = false;
     }
 
-    // Função para verificar os requisitos da senha
     function checkPasswordRequirements(password) {
       const requirements = {
         length: password.length >= 6,
         letter: /[a-zA-Z]/.test(password),
         number: /[0-9]/.test(password),
       };
-
-      // Atualiza visualmente os requisitos
       reqLength.className = requirements.length ? "requirement-met" : "";
       reqLetter.className = requirements.letter ? "requirement-met" : "";
       reqNumber.className = requirements.number ? "requirement-met" : "";
-
       return requirements.length && requirements.letter && requirements.number;
     }
 
-    // Função para atualizar o estado do botão com base nas validações
     function updateButtonState() {
       modalAtualizarBtn.disabled = !(
         currentPasswordValid &&
@@ -242,32 +532,25 @@
       );
     }
 
-    // Adiciona eventos de validação para cada campo
     currentPasswordInput.addEventListener("input", function () {
       const currentPass = currentPasswordInput.value.trim();
-
       if (currentPass === "") {
         currentPasswordFeedback.textContent = "Preencha a senha atual.";
         currentPasswordFeedback.className = "input-feedback error-feedback";
         currentPasswordValid = false;
       } else if (currentPasswordValid) {
-        // Manter o estado válido se já foi validado pelo servidor
         currentPasswordFeedback.textContent = "✓";
         currentPasswordFeedback.className = "input-feedback success-feedback";
       } else {
         currentPasswordFeedback.textContent = "";
         currentPasswordFeedback.className = "input-feedback";
-        // O estado permanece falso até a validação do servidor
       }
-
       updateButtonState();
     });
 
     newPasswordInput.addEventListener("input", function () {
       const newPass = newPasswordInput.value.trim();
       const currentPass = currentPasswordInput.value.trim();
-
-      // Verifica os requisitos enquanto digita
       const requirementsMet = checkPasswordRequirements(newPass);
 
       if (newPass === "") {
@@ -289,7 +572,6 @@
         newPasswordValid = true;
       }
 
-      // Se a senha nova mudou, precisamos validar a confirmação novamente
       const confirmPass = confirmPasswordInput.value.trim();
       if (confirmPass !== "") {
         if (confirmPass === newPass && requirementsMet) {
@@ -302,7 +584,6 @@
           confirmPasswordValid = false;
         }
       }
-
       updateButtonState();
     });
 
@@ -310,7 +591,6 @@
       const confirmPass = confirmPasswordInput.value.trim();
       const newPass = newPasswordInput.value.trim();
       const requirementsMet = checkPasswordRequirements(newPass);
-
       if (confirmPass === "") {
         confirmPasswordFeedback.textContent = "Confirme a nova senha.";
         confirmPasswordFeedback.className = "input-feedback error-feedback";
@@ -324,11 +604,9 @@
         confirmPasswordFeedback.className = "input-feedback success-feedback";
         confirmPasswordValid = true;
       }
-
       updateButtonState();
     });
 
-    // Validação da senha atual com o servidor
     currentPasswordInput.addEventListener("blur", function () {
       const currentPass = currentPasswordInput.value.trim();
       if (currentPass === "") {
@@ -338,11 +616,8 @@
         updateButtonState();
         return;
       }
-
-      // Mostra feedback de verificação em andamento
       currentPasswordFeedback.textContent = "Verificando...";
       currentPasswordFeedback.className = "input-feedback";
-
       fetch('{{ url_for("perfil.validar_senha") }}', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -372,8 +647,8 @@
         });
     });
 
-    // Abre o modal de alteração de senha
     openPasswordModal.addEventListener("click", () => {
+      console.log("Abrindo modal de alterar senha");
       passwordModal.style.display = "flex";
       passwordModal.classList.add("show");
       clearAllFeedbacks();
@@ -381,7 +656,6 @@
       modalAtualizarBtn.disabled = true;
     });
 
-    // Fecha o modal ao clicar em "Cancelar" ou fora do conteúdo
     passwordModalClose.addEventListener("click", () => {
       passwordModal.classList.remove("show");
       setTimeout(() => {
@@ -403,6 +677,344 @@
         }, 300);
       }
     });
+
+    // ----- Modal de Foto de Perfil e Manipulação de Imagem -----
+    const photoModal = document.getElementById("photoModal");
+    const photoContainer = document.getElementById("foto-perfil-container");
+    const photoUploadInput = document.getElementById("photo-upload");
+    const photoEditorArea = document.getElementById("photo-editor-area");
+    const zoomSlider = document.getElementById("zoom-slider");
+    const zoomInBtn = document.getElementById("zoom-in-btn");
+    const zoomOutBtn = document.getElementById("zoom-out-btn");
+    const savePhotoBtn = document.getElementById("save-photo-btn");
+    const cancelBtn = document.getElementById("photo-modal-cancel");
+
+    let currentImage = null;
+    let imageChanged = false;
+    let currentZoom = 100;
+    let dragOffset = { x: 0, y: 0 };
+    let dragStart = { x: 0, y: 0 };
+    let isDragging = false;
+    let cropper = null;
+
+    // Garante que o botão de atualizar perfil continue desabilitado
+    editarPerfilBtn.disabled = true;
+
+    // Abre o modal ao clicar na foto de perfil
+    photoContainer.addEventListener("click", openPhotoModal);
+
+    // Se houver botão de selecionar imagem, atribui o evento
+    if (document.getElementById("select-photo-btn")) {
+      document
+        .getElementById("select-photo-btn")
+        .addEventListener("click", function () {
+          photoUploadInput.click();
+        });
+    }
+
+    // Se houver botão de excluir, atribui o evento
+    if (document.getElementById("delete-photo-btn")) {
+      document
+        .getElementById("delete-photo-btn")
+        .addEventListener("click", deleteProfilePhoto);
+    }
+
+    photoUploadInput.addEventListener("change", handleImageUpload);
+    savePhotoBtn.addEventListener("click", savePhoto);
+    cancelBtn.addEventListener("click", closePhotoModal);
+
+    zoomSlider.addEventListener("input", handleZoomChange);
+    zoomInBtn.addEventListener("click", () => {
+      zoomSlider.value = parseInt(zoomSlider.value) + 10;
+      handleZoomChange();
+    });
+    zoomOutBtn.addEventListener("click", () => {
+      zoomSlider.value = parseInt(zoomSlider.value) - 10;
+      handleZoomChange();
+    });
+
+    window.addEventListener("click", function (event) {
+      if (event.target === photoModal) {
+        closePhotoModal();
+      }
+    });
+
+    function openPhotoModal() {
+      photoModal.style.display = "flex";
+      photoModal.classList.add("show");
+      if (document.getElementById("photo-editor-image") && !cropper) {
+        initCropper();
+      }
+    }
+
+    function closePhotoModal() {
+      photoModal.classList.remove("show");
+      setTimeout(() => {
+        photoModal.style.display = "none";
+        if (
+          imageChanged &&
+          !document.getElementById("cropped_image_data").value
+        ) {
+          resetPhotoEditor();
+        }
+        if (cropper) {
+          cropper.destroy();
+          cropper = null;
+        }
+      }, 300);
+    }
+
+    function handleImageUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.match("image.*")) {
+        alert("Por favor selecione apenas imagens.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        // Limpa o editor
+        while (photoEditorArea.firstChild) {
+          photoEditorArea.removeChild(photoEditorArea.firstChild);
+        }
+        const img = document.createElement("img");
+        img.id = "photo-editor-image";
+        img.src = event.target.result;
+        photoEditorArea.appendChild(img);
+        img.onload = function () {
+          initCropper();
+          imageChanged = true;
+          // Se uma imagem foi selecionada, atualize o rótulo do botão para "Alterar Imagem"
+          const selectBtn = document.getElementById("select-photo-btn");
+          if (selectBtn) {
+            selectBtn.innerHTML =
+              '<i class="fas fa-upload"></i> Alterar Imagem';
+          }
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function initCropper() {
+      const image = document.getElementById("photo-editor-image");
+      if (!image) return;
+      if (typeof Cropper !== "undefined") {
+        if (cropper) {
+          cropper.destroy();
+        }
+        cropper = new Cropper(image, {
+          aspectRatio: 1,
+          viewMode: 1,
+          dragMode: "move",
+          autoCropArea: 1,
+          restore: false,
+          guides: false,
+          center: true,
+          highlight: false,
+          cropBoxMovable: false,
+          cropBoxResizable: false,
+          toggleDragModeOnDblclick: false,
+          ready: function () {
+            savePhotoBtn.disabled = false;
+          },
+        });
+      } else {
+        enableBasicDragAndZoom(image);
+        savePhotoBtn.disabled = false;
+      }
+    }
+
+    function enableBasicDragAndZoom(image) {
+      currentImage = image;
+      image.addEventListener("mousedown", startDrag);
+      image.addEventListener("mousemove", drag);
+      image.addEventListener("mouseup", endDrag);
+      image.addEventListener("mouseleave", endDrag);
+      photoEditorArea.addEventListener("wheel", handleWheel);
+      centerImage(image);
+    }
+
+    function startDrag(e) {
+      e.preventDefault();
+      isDragging = true;
+      dragStart.x = e.clientX;
+      dragStart.y = e.clientY;
+    }
+
+    function drag(e) {
+      if (!isDragging) return;
+      e.preventDefault();
+      const dx = e.clientX - dragStart.x;
+      const dy = e.clientY - dragStart.y;
+      dragOffset.x += dx;
+      dragOffset.y += dy;
+      dragStart.x = e.clientX;
+      dragStart.y = e.clientY;
+      applyTransformation();
+      savePhotoBtn.disabled = false;
+    }
+
+    function endDrag() {
+      isDragging = false;
+    }
+
+    function handleWheel(e) {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        currentZoom += 5;
+      } else {
+        currentZoom -= 5;
+      }
+      currentZoom = Math.max(100, Math.min(300, currentZoom));
+      zoomSlider.value = currentZoom;
+      applyTransformation();
+      savePhotoBtn.disabled = false;
+    }
+
+    function handleZoomChange() {
+      currentZoom = parseInt(zoomSlider.value);
+      applyTransformation();
+      savePhotoBtn.disabled = false;
+    }
+
+    function applyTransformation() {
+      if (!currentImage) return;
+      const scale = currentZoom / 100;
+      currentImage.style.transform = `translate(${dragOffset.x}px, ${dragOffset.y}px) scale(${scale})`;
+    }
+
+    function centerImage(image) {
+      dragOffset = { x: 0, y: 0 };
+      currentZoom = 100;
+      zoomSlider.value = currentZoom;
+      image.style.transform = "translate(0, 0) scale(1)";
+    }
+
+    function savePhoto() {
+      let imageData = "";
+      if (cropper) {
+        const canvas = cropper.getCroppedCanvas({
+          width: 300,
+          height: 300,
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: "high",
+        });
+        if (!canvas) {
+          alert("Erro ao processar a imagem. Por favor, tente novamente.");
+          return;
+        }
+        imageData = canvas.toDataURL("image/jpeg");
+        document.getElementById("cropped_image_data").value = imageData;
+        updateProfilePreview(imageData);
+      } else if (currentImage) {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = 300;
+        canvas.height = 300;
+        const scale = currentZoom / 100;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.scale(scale, scale);
+        ctx.translate(dragOffset.x / scale, dragOffset.y / scale);
+        ctx.drawImage(
+          currentImage,
+          -currentImage.width / 2,
+          -currentImage.height / 2,
+          currentImage.width,
+          currentImage.height
+        );
+        ctx.restore();
+        imageData = canvas.toDataURL("image/jpeg");
+        document.getElementById("cropped_image_data").value = imageData;
+        updateProfilePreview(imageData);
+      }
+      // Submete o formulário automaticamente – o backend tratará se é inclusão ou exclusão de foto.
+      document.querySelector(".form-editar-perfil").submit();
+      closePhotoModal();
+    }
+
+    function updateProfilePreview(imageData) {
+      const placeholder = document.getElementById("profile-placeholder");
+      if (placeholder) {
+        placeholder.remove();
+      }
+      let previewImg = document.getElementById("current-profile-photo");
+      if (!previewImg) {
+        previewImg = document.createElement("img");
+        previewImg.id = "current-profile-photo";
+        previewImg.className = "perfil-foto-preview";
+        previewImg.alt = "Foto de Perfil";
+        photoContainer.appendChild(previewImg);
+      }
+      previewImg.src = imageData;
+    }
+
+    // ----- Função para excluir foto (mantendo o estado no modal) -----
+    function deleteProfilePhoto() {
+      if (confirm("Tem certeza que deseja excluir sua foto de perfil?")) {
+        // Cria (ou atualiza) o campo oculto para indicar exclusão.
+        let deleteFlag = document.querySelector('input[name="delete_photo"]');
+        if (!deleteFlag) {
+          deleteFlag = document.createElement("input");
+          deleteFlag.type = "hidden";
+          deleteFlag.name = "delete_photo";
+          deleteFlag.value = "true";
+          document.querySelector(".form-editar-perfil").appendChild(deleteFlag);
+        }
+        // Limpa o campo que armazena a imagem recortada.
+        document.getElementById("cropped_image_data").value = "";
+        // Atualiza a área do editor para exibir o placeholder
+        while (photoEditorArea.firstChild) {
+          photoEditorArea.removeChild(photoEditorArea.firstChild);
+        }
+        const placeholder = document.createElement("div");
+        placeholder.id = "photo-editor-placeholder";
+        placeholder.innerHTML =
+          '<i class="fas fa-cloud-upload-alt"></i><p>Selecione uma imagem para carregar</p>';
+        photoEditorArea.appendChild(placeholder);
+        // Atualiza o título do modal para refletir que não há foto.
+        document.getElementById("photo-modal-title").textContent =
+          "Adicionar Foto";
+        // Atualiza o botão de ação: substitui o botão de exclusão por um de seleção (se ainda não houver)
+        const deleteBtn = document.getElementById("delete-photo-btn");
+        if (deleteBtn) {
+          const selectBtn = document.createElement("button");
+          selectBtn.id = "select-photo-btn";
+          selectBtn.className = "btn btn-secondary";
+          selectBtn.innerHTML =
+            '<i class="fas fa-upload"></i> Selecionar Imagem';
+          selectBtn.addEventListener("click", function () {
+            photoUploadInput.click();
+          });
+          deleteBtn.parentNode.replaceChild(selectBtn, deleteBtn);
+        }
+        // Atualiza o estado para que o formulário seja considerado como alterado.
+        fotoChanged = true;
+        checkPerfilFormChanged();
+        // Diferentemente da versão anterior, não fecha o modal automaticamente para que o usuário veja o estado de exclusão.
+      }
+    }
+
+    function resetPhotoEditor() {
+      while (photoEditorArea.firstChild) {
+        photoEditorArea.removeChild(photoEditorArea.firstChild);
+      }
+      currentImage = null;
+      imageChanged = false;
+      currentZoom = 100;
+      dragOffset = { x: 0, y: 0 };
+      if (!document.getElementById("photo-editor-placeholder")) {
+        const placeholder = document.createElement("div");
+        placeholder.id = "photo-editor-placeholder";
+        placeholder.innerHTML =
+          '<i class="fas fa-cloud-upload-alt"></i><p>Selecione uma imagem para carregar</p>';
+        photoEditorArea.appendChild(placeholder);
+      }
+      savePhotoBtn.disabled = true;
+    }
   });
 </script>
+
 {% endblock %}
