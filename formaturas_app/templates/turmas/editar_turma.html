@@ -22,10 +22,10 @@
       required
       placeholder="Novo nome da Turma"
     />
-    <button type="submit" class="btn">Renomear</button>
     <button type="button" class="btn btn-voltar" id="btnCancelarEdicao">
       Cancelar
     </button>
+    <button type="submit" class="btn">Renomear</button>
   </form>
 </div>
 
@@ -77,9 +77,9 @@ endfor %}
           <span class="toggle-icon"></span>
           <a
             href="{{ url_for('turmas.excluir_aluno', id=a.id, active_page='turmas') }}"
-            class="btn-excluir"
+            class="btn-excluir btn-delete-aluno"
+            data-student-id="{{ a.id }}"
             title="Excluir"
-            onclick="event.stopPropagation(); return confirm('Excluir este Aluno?');"
           ></a>
         </td>
       </tr>
@@ -129,10 +129,10 @@ endfor %}
       />
     </div>
     <div class="form-group">
-      <button type="submit" class="btn">Adicionar</button>
       <button type="button" class="btn btn-voltar" id="btnCancelarAluno">
         Cancelar
       </button>
+      <button type="submit" class="btn">Adicionar</button>
     </div>
   </form>
 </div>
@@ -246,36 +246,62 @@ endfor %}
   </div>
 </div>
 
+<!-- CONFIRMAÇÃO DE EXCLUSÃO -->
+<div class="modal-overlay" id="confirmOverlay" style="display: none">
+  <div class="modal-content">
+    <h3 id="confirmTitle">Confirmação</h3>
+    <p id="confirmMessage">Tem certeza?</p>
+    <div class="modal-button-group">
+      <button type="button" class="btn btn-voltar" id="confirmCancel">
+        Cancelar
+      </button>
+      <button type="button" class="btn btn-danger" id="confirmOk">
+        Excluir
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- JavaScript para interatividade e validação -->
 <script>
-  // Variáveis globais para identificar o aluno selecionado e o parente em edição
-  var selectedStudentId = null;
-  var editingParenteId = null;
+  // ——————————————————————————————————————————————
+  // Globais
+  // ——————————————————————————————————————————————
+  let selectedStudentId = null;
+  let editingParenteId = null;
+  const nomeOriginalTurma = document
+    .getElementById("nomeTurmaDisplay")
+    .textContent.trim();
 
+  // ——————————————————————————————————————————————
+  // Atualiza resumo (Alunos, Parentes, Fotos)
+  // ——————————————————————————————————————————————
   function updateSummary() {
-    var totalParentes = 0;
-    var totalFotos = 0;
-    document.querySelectorAll(".parente-count").forEach(function (el) {
-      var count = parseInt(el.getAttribute("data-count")) || 0;
-      var fotos = parseInt(el.getAttribute("data-fotos")) || 0;
-      totalParentes += count;
-      totalFotos += fotos;
+    let totalParentes = 0,
+      totalFotos = 0;
+    document.querySelectorAll(".parente-count").forEach((el) => {
+      totalParentes += parseInt(el.dataset.count) || 0;
+      totalFotos += parseInt(el.dataset.fotos) || 0;
     });
     document.getElementById("total-parentes").textContent = totalParentes;
     document.getElementById("total-fotos").textContent = totalFotos;
-    var totalAlunos = document.querySelectorAll(".student-row").length;
-    document.getElementById("total-alunos").textContent = totalAlunos;
+    document.getElementById("total-alunos").textContent =
+      document.querySelectorAll("tr.student-row").length;
   }
 
+  // ——————————————————————————————————————————————
+  // Renomear Turma
+  // ——————————————————————————————————————————————
   function toggleEditArea() {
-    var editDiv = document.getElementById("editarNomeTurma");
+    const editDiv = document.getElementById("editarNomeTurma");
     if (editDiv.classList.contains("visible")) {
       editDiv.classList.remove("visible");
     } else {
-      document.getElementById("novaTurma").value = document
-        .getElementById("nomeTurmaDisplay")
-        .textContent.trim();
+      const input = document.getElementById("novaTurma");
+      input.value = nomeOriginalTurma;
       editDiv.classList.add("visible");
+      checkRenameFields();
+      input.focus();
     }
   }
   document
@@ -284,130 +310,146 @@ endfor %}
   document
     .getElementById("btnToggleEdit")
     .addEventListener("click", toggleEditArea);
+  document.getElementById("btnCancelarEdicao").addEventListener("click", () => {
+    document.getElementById("editarNomeTurma").classList.remove("visible");
+  });
+  const btnRenomear = document.querySelector(
+    '#formRenomearTurma button[type="submit"]'
+  );
+  function checkRenameFields() {
+    const v = document.getElementById("novaTurma").value.trim();
+    btnRenomear.disabled = !(v.length >= 3 && v !== nomeOriginalTurma);
+  }
   document
-    .getElementById("btnCancelarEdicao")
-    .addEventListener("click", function () {
-      document.getElementById("novaTurma").value = "";
-      document.getElementById("editarNomeTurma").classList.remove("visible");
-    });
+    .getElementById("novaTurma")
+    .addEventListener("input", checkRenameFields);
+  btnRenomear.disabled = true;
 
+  // ——————————————————————————————————————————————
+  // Ordenação A‑Z / Z‑A
+  // ——————————————————————————————————————————————
   document.getElementById("orderToggle").addEventListener("click", function () {
-    var currentOrder = this.getAttribute("data-order");
-    var newOrder = currentOrder === "asc" ? "desc" : "asc";
-    sortStudentRows(newOrder);
-    this.setAttribute("data-order", newOrder);
-    this.textContent = newOrder === "asc" ? "Ordenar A-Z" : "Ordenar Z-A";
+    const next = this.dataset.order === "asc" ? "desc" : "asc";
+    sortStudentRows(next);
+    this.dataset.order = next;
+    this.textContent = next === "asc" ? "Ordenar A-Z" : "Ordenar Z-A";
   });
   function sortStudentRows(order) {
-    var tbody = document.getElementById("alunosBody");
-    var rows = [];
-    var allRows = tbody.querySelectorAll("tr.student-row");
-    allRows.forEach(function (studentRow) {
-      var studentId = studentRow.getAttribute("data-student-id");
-      var parentRow = tbody.querySelector(
-        'tr.parentes-row[data-student-id="' + studentId + '"]'
-      );
-      rows.push({
-        studentRow: studentRow,
-        parentRow: parentRow,
-        name: studentRow.getAttribute("data-student-name"),
+    const tbody = document.getElementById("alunosBody"),
+      arr = [];
+    tbody.querySelectorAll("tr.student-row").forEach((row) => {
+      const id = row.dataset.studentId;
+      arr.push({
+        row,
+        parentRow: tbody.querySelector(
+          `tr.parentes-row[data-student-id="${id}"]`
+        ),
+        name: row.dataset.studentName,
       });
     });
-    rows.sort(function (a, b) {
-      return order === "asc"
+    arr.sort((a, b) =>
+      order === "asc"
         ? a.name.localeCompare(b.name)
-        : b.name.localeCompare(a.name);
-    });
+        : b.name.localeCompare(a.name)
+    );
     tbody.innerHTML = "";
-    rows.forEach(function (pair) {
-      tbody.appendChild(pair.studentRow);
-      tbody.appendChild(pair.parentRow);
+    arr.forEach((p) => {
+      tbody.appendChild(p.row);
+      tbody.appendChild(p.parentRow);
     });
   }
 
-  document.querySelectorAll(".student-row").forEach(function (row) {
-    row.addEventListener("click", function () {
-      var studentId = this.getAttribute("data-student-id");
-      collapseOtherRows(studentId);
-      var parentRow = document.querySelector(
-        '.parentes-row[data-student-id="' + studentId + '"]'
-      );
-      var toggleIcon = this.querySelector(".toggle-icon");
-      if (
-        parentRow.style.display === "none" ||
-        parentRow.style.display === ""
-      ) {
-        parentRow.style.display = "table-row";
-        this.classList.add("expanded");
-        toggleIcon.style.transform = "rotate(180deg)";
-        carregarParentes(studentId);
-        this.scrollIntoView({ behavior: "smooth", block: "center" });
-      } else {
-        parentRow.style.display = "none";
-        this.classList.remove("expanded");
-        toggleIcon.style.transform = "rotate(0deg)";
-      }
-    });
-  });
+  // ——————————————————————————————————————————————
+  // Fecha outras linhas expandidas
+  // ——————————————————————————————————————————————
   function collapseOtherRows(currentId) {
-    document.querySelectorAll(".student-row.expanded").forEach(function (row) {
-      var studentId = row.getAttribute("data-student-id");
-      if (studentId !== currentId) {
-        var parentRow = document.querySelector(
-          '.parentes-row[data-student-id="' + studentId + '"]'
+    document.querySelectorAll("tr.student-row.expanded").forEach((row) => {
+      if (row.dataset.studentId !== currentId) {
+        const pr = document.querySelector(
+          `tr.parentes-row[data-student-id="${row.dataset.studentId}"]`
         );
-        parentRow.style.display = "none";
+        pr.style.display = "none";
         row.classList.remove("expanded");
-        var icon = row.querySelector(".toggle-icon");
-        if (icon) {
-          icon.style.transform = "rotate(0deg)";
-        }
+        const ic = row.querySelector(".toggle-icon");
+        if (ic) ic.style.transform = "rotate(0deg)";
       }
     });
   }
 
+  // ——————————————————————————————————————————————
+  // Carrega Parentes via AJAX
+  // ——————————————————————————————————————————————
   function carregarParentes(studentId) {
     fetch(`/turmas/listar_parents/${studentId}`)
       .then((r) => r.json())
       .then((data) => {
-        var container = document.getElementById(
-          "parentes-container-" + studentId
-        );
-        var countEl = document.getElementById("parente-count-" + studentId);
-        var fotos_count = data.filter(function (p) {
-          return p.comprou_foto;
-        }).length;
-        countEl.setAttribute("data-count", data.length);
-        countEl.setAttribute("data-fotos", fotos_count);
-        countEl.textContent =
-          data.length + " parente(s) | Fotos Compradas: " + fotos_count;
-        if (data.length === 0) {
-          container.innerHTML = "<p>Sem parentes cadastrados.</p>";
+        const cont = document.getElementById(`parentes-container-${studentId}`);
+        const cntEl = document.getElementById(`parente-count-${studentId}`);
+        const fotos = data.filter((p) => p.comprou_foto).length;
+        cntEl.dataset.count = data.length;
+        cntEl.dataset.fotos = fotos;
+        cntEl.textContent = `${data.length} parente(s) | Fotos Compradas: ${fotos}`;
+        if (!data.length) {
+          cont.innerHTML = "<p>Sem parentes cadastrados.</p>";
         } else {
-          var html = "";
-          data.forEach(function (p) {
-            html += `<div class="parent-item">
-              <strong>${p.nome}</strong> - ${p.grau} - ${p.cidade}
+          cont.innerHTML = data
+            .map(
+              (p) => `
+            <div class="parent-item">
+              <strong>${p.nome}</strong> – ${p.grau} – ${p.cidade}
               [${p.comprou_foto ? "Comprou" : "Não comprou"}]
-              <button class="btn-editar" onclick="editarParente(${
-                p.id
-              }, ${studentId}, '${p.nome}', '${p.grau}', '${p.cidade}', '${
-              p.profissao
-            }', '${p.data_nascimento}', '${p.telefone}', ${
-              p.comprou_foto
-            }); event.stopPropagation();" title="Editar"></button>
-              <button class="btn-excluir" onclick="deleteParente(${
-                p.id
-              }, ${studentId}); event.stopPropagation();" title="Excluir"></button>
-            </div>`;
-          });
-          container.innerHTML = html;
+              <button type="button" class="btn-editar btn-edit-parente"
+                data-parente-id="${p.id}"
+                data-student-id="${studentId}"
+                data-parente-name="${p.nome}"
+                data-parente-grau="${p.grau}"
+                data-parente-cidade="${p.cidade}"
+                data-parente-profissao="${p.profissao || ""}"
+                data-parente-data-nascimento="${p.data_nascimento || ""}"
+                data-parente-telefone="${p.telefone || ""}"
+                data-parente-comprou="${p.comprou_foto}"
+                title="Editar"></button>
+              <button type="button" class="btn-excluir btn-delete-parente"
+                data-parente-id="${p.id}"
+                data-student-id="${studentId}"
+                data-parente-name="${p.nome}"
+                title="Excluir"></button>
+            </div>
+          `
+            )
+            .join("");
         }
         updateSummary();
       });
   }
 
-  // Ao abrir o modal, exibe a validação imediatamente para mostrar as mensagens de erro
+  // ——————————————————————————————————————————————
+  // Toggle de linha de aluno
+  // ——————————————————————————————————————————————
+  function toggleStudentRow(row) {
+    const id = row.dataset.studentId;
+    collapseOtherRows(id);
+    const pr = document.querySelector(
+      `tr.parentes-row[data-student-id="${id}"]`
+    );
+    const ic = row.querySelector(".toggle-icon");
+    const open = !pr.style.display || pr.style.display === "none";
+    if (open) {
+      pr.style.display = "table-row";
+      row.classList.add("expanded");
+      if (ic) ic.style.transform = "rotate(180deg)";
+      carregarParentes(id);
+      row.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      pr.style.display = "none";
+      row.classList.remove("expanded");
+      if (ic) ic.style.transform = "rotate(0deg)";
+    }
+  }
+
+  // ——————————————————————————————————————————————
+  // Abre Modal Parente
+  // ——————————————————————————————————————————————
   function abrirModalParente(studentId) {
     selectedStudentId = studentId;
     editingParenteId = null;
@@ -415,120 +457,168 @@ endfor %}
     document.getElementById("formCadastroParente").reset();
     document.getElementById("modalSave").disabled = true;
     document.getElementById("modalOverlay").style.display = "flex";
-    checkFormFields(); // Chama a verificação imediatamente para exibir os feedbacks
+    checkFormFields();
   }
-  document.getElementById("modalClose").addEventListener("click", function () {
+  document.getElementById("modalClose").addEventListener("click", () => {
     document.getElementById("modalOverlay").style.display = "none";
   });
 
+  // ——————————————————————————————————————————————
+  // Validação Modal Parente
+  // ——————————————————————————————————————————————
   function validarFormularioParente() {
-    let isValid = true;
-    const nomeInput = document.getElementById("modalNome");
-    const grauInput = document.getElementById("modalGrau");
-    const cidadeInput = document.getElementById("modalCidade");
-    const feedbackNome = document.getElementById("feedbackNome");
-    const feedbackGrau = document.getElementById("feedbackGrau");
-    const feedbackCidade = document.getElementById("feedbackCidade");
-    feedbackNome.textContent = "";
-    feedbackGrau.textContent = "";
-    feedbackCidade.textContent = "";
-    if (!nomeInput.value.trim()) {
-      feedbackNome.textContent = "O nome é obrigatório.";
-      isValid = false;
-    }
-    if (!grauInput.value.trim()) {
-      feedbackGrau.textContent = "O grau de parentesco é obrigatório.";
-      isValid = false;
-    }
-    if (!cidadeInput.value.trim()) {
-      feedbackCidade.textContent = "A cidade é obrigatória.";
-      isValid = false;
-    }
-    return isValid;
+    let ok = true;
+    [
+      ["modalNome", "O nome é obrigatório."],
+      ["modalGrau", "O grau é obrigatório."],
+      ["modalCidade", "A cidade é obrigatória."],
+    ].forEach(([id, msg]) => {
+      const inp = document.getElementById(id),
+        fb = document.getElementById("feedback" + id.replace("modal", ""));
+      fb.textContent = "";
+      if (!inp.value.trim()) {
+        fb.textContent = msg;
+        ok = false;
+      }
+    });
+    return ok;
   }
   function checkFormFields() {
-    const saveButton = document.getElementById("modalSave");
-    saveButton.disabled = !validarFormularioParente();
+    document.getElementById("modalSave").disabled = !validarFormularioParente();
   }
-  document
-    .getElementById("modalNome")
-    .addEventListener("input", checkFormFields);
-  document
-    .getElementById("modalGrau")
-    .addEventListener("input", checkFormFields);
-  document
-    .getElementById("modalCidade")
-    .addEventListener("input", checkFormFields);
-  document.getElementById("modalSave").addEventListener("click", function () {
-    if (validarFormularioParente()) {
-      var body = {
-        formando_id: selectedStudentId,
-        nome: document.getElementById("modalNome").value,
-        grau: document.getElementById("modalGrau").value,
-        data_nascimento: document.getElementById("modalData").value,
-        profissao: document.getElementById("modalProfissao").value,
-        cidade: document.getElementById("modalCidade").value,
-        telefone: document.getElementById("modalTelefone").value,
-        comprou_foto: document.getElementById("modalComprou").checked,
-      };
-      var url = editingParenteId
-        ? `/turmas/editar_parente/${editingParenteId}`
-        : "/turmas/criar_parente";
-      fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      })
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.success === false && data.message) {
-            alert(data.message);
-          } else {
-            carregarParentes(selectedStudentId);
-            document.getElementById("modalOverlay").style.display = "none";
-            document.getElementById("formCadastroParente").reset();
-            document.getElementById("modalSave").disabled = true;
-          }
-        });
-    } else {
-      checkFormFields();
-    }
-  });
-  function editarParente(
-    id,
-    studentId,
-    nome,
-    grau,
-    cidade,
-    profissao,
-    dataNasc,
-    telefone,
-    comprou
-  ) {
-    editingParenteId = id;
-    selectedStudentId = studentId;
-    document.getElementById("modalTitle").textContent = "Editar Parente";
-    document.getElementById("modalNome").value = nome;
-    document.getElementById("modalGrau").value = grau;
-    document.getElementById("modalCidade").value = cidade;
-    document.getElementById("modalProfissao").value =
-      profissao === "null" ? "" : profissao;
-    document.getElementById("modalData").value =
-      dataNasc === "null" ? "" : dataNasc;
-    document.getElementById("modalTelefone").value =
-      telefone === "null" ? "" : telefone;
-    document.getElementById("modalComprou").checked = comprou;
-    document.getElementById("modalSave").disabled = false;
-    document.getElementById("modalOverlay").style.display = "flex";
-  }
-  function deleteParente(id, studentId) {
-    if (!confirm("Excluir este parente?")) return;
-    fetch(`/turmas/excluir_parente/${id}`, { method: "DELETE" })
+  ["modalNome", "modalGrau", "modalCidade"].forEach((id) =>
+    document.getElementById(id).addEventListener("input", checkFormFields)
+  );
+
+  // ——————————————————————————————————————————————
+  // Salvar Modal Parente (criar ou editar)
+  // ——————————————————————————————————————————————
+  document.getElementById("modalSave").addEventListener("click", () => {
+    if (!validarFormularioParente()) return checkFormFields();
+    const body = {
+      formando_id: selectedStudentId,
+      nome: document.getElementById("modalNome").value,
+      grau: document.getElementById("modalGrau").value,
+      data_nascimento: document.getElementById("modalData").value,
+      profissao: document.getElementById("modalProfissao").value,
+      cidade: document.getElementById("modalCidade").value,
+      telefone: document.getElementById("modalTelefone").value,
+      comprou_foto: document.getElementById("modalComprou").checked,
+    };
+    const url = editingParenteId
+      ? `/turmas/editar_parente/${editingParenteId}`
+      : "/turmas/criar_parente";
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
       .then((r) => r.json())
       .then((data) => {
-        carregarParentes(studentId);
+        if (data.success === false && data.message) {
+          alert(data.message);
+        } else {
+          carregarParentes(selectedStudentId);
+          document.getElementById("modalOverlay").style.display = "none";
+        }
       });
+  });
+
+  // ——————————————————————————————————————————————
+  // Modal Genérico de Confirmação
+  // ——————————————————————————————————————————————
+  let confirmCallback = null;
+  function showConfirmModal(message, onConfirm) {
+    document.getElementById("confirmMessage").textContent = message;
+    confirmCallback = onConfirm;
+    document.getElementById("confirmOverlay").style.display = "flex";
   }
+  function hideConfirmModal() {
+    document.getElementById("confirmOverlay").style.display = "none";
+    confirmCallback = null;
+  }
+  document
+    .getElementById("confirmCancel")
+    .addEventListener("click", hideConfirmModal);
+  document.getElementById("confirmOk").addEventListener("click", () => {
+    if (confirmCallback) confirmCallback();
+    hideConfirmModal();
+  });
+
+  // ——————————————————————————————————————————————
+  // Delegation: Delete Aluno, Edit Parente, Delete Parente, Toggle Linha
+  // ——————————————————————————————————————————————
+  const tbodyEl = document.getElementById("alunosBody");
+  tbodyEl.addEventListener("click", (e) => {
+    // Excluir Aluno
+    const btnAluno = e.target.closest(".btn-delete-aluno");
+    if (btnAluno) {
+      e.preventDefault();
+      e.stopPropagation();
+      const row = btnAluno.closest("tr.student-row");
+      const alunoName = row.querySelector(".student-name").textContent;
+      const href = btnAluno.getAttribute("href");
+      showConfirmModal(`Excluir o aluno "${alunoName}"?`, () => {
+        window.location.href = href;
+      });
+      return;
+    }
+    // Editar Parente
+    const btnEditP = e.target.closest(".btn-edit-parente");
+    if (btnEditP) {
+      e.stopPropagation();
+      editingParenteId = btnEditP.dataset.parenteId;
+      selectedStudentId = btnEditP.dataset.studentId;
+      document.getElementById("modalTitle").textContent = "Editar Parente";
+      document.getElementById("modalNome").value = btnEditP.dataset.parenteName;
+      document.getElementById("modalGrau").value = btnEditP.dataset.parenteGrau;
+      document.getElementById("modalCidade").value =
+        btnEditP.dataset.parenteCidade;
+      document.getElementById("modalProfissao").value =
+        btnEditP.dataset.parenteProfissao || "";
+      document.getElementById("modalData").value =
+        btnEditP.dataset.parenteDataNascimento || "";
+      document.getElementById("modalTelefone").value =
+        btnEditP.dataset.parenteTelefone || "";
+      document.getElementById("modalComprou").checked =
+        btnEditP.dataset.parenteComprou === "true";
+      document.getElementById("modalSave").disabled = false;
+      document.getElementById("modalOverlay").style.display = "flex";
+      checkFormFields();
+      return;
+    }
+    // Excluir Parente
+    const btnPar = e.target.closest(".btn-delete-parente");
+    if (btnPar) {
+      e.stopPropagation();
+      const parName = btnPar.dataset.parenteName;
+      const studentId = btnPar.dataset.studentId;
+      showConfirmModal(`Excluir o parente "${parName}"?`, () => {
+        fetch(`/turmas/excluir_parente/${btnPar.dataset.parenteId}`, {
+          method: "DELETE",
+        })
+          .then((r) => r.json())
+          .then(() => carregarParentes(studentId));
+      });
+      return;
+    }
+    // Toggle linha de aluno
+    const row = e.target.closest("tr.student-row");
+    if (row && tbodyEl.contains(row)) {
+      toggleStudentRow(row);
+    }
+  });
+
+  // ——————————————————————————————————————————————
+  // Novo Aluno (botão desabilitado até ≥3 chars e persistência)
+  // ——————————————————————————————————————————————
+  const formNovoAlunoEl = document.getElementById("novoAlunoForm");
+  const inputAlunoEl = document.getElementById("aluno");
+  const btnAddAluno = formNovoAlunoEl.querySelector('button[type="submit"]');
+  btnAddAluno.disabled = true;
+  inputAlunoEl.addEventListener("input", () => {
+    btnAddAluno.disabled = inputAlunoEl.value.trim().length < 3;
+  });
   document
     .getElementById("btnAbrirFormAluno")
     .addEventListener("click", function () {
@@ -538,57 +628,27 @@ endfor %}
         .getElementById("formNovoAluno")
         .scrollIntoView({ behavior: "smooth" });
     });
-  document
-    .getElementById("btnCancelarAluno")
-    .addEventListener("click", function () {
-      document.getElementById("formNovoAluno").classList.remove("visible");
-      document.getElementById("btnAbrirFormAluno").style.display =
-        "inline-block";
+  document.getElementById("btnCancelarAluno").addEventListener("click", () => {
+    document.getElementById("formNovoAluno").classList.remove("visible");
+    document.getElementById("btnAbrirFormAluno").style.display = "inline-block";
+  });
+  formNovoAlunoEl.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (inputAlunoEl.value.trim().length < 3) return;
+    const fd = new FormData(this);
+    fetch(this.action, { method: "POST", body: fd }).then((resp) => {
+      if (resp.redirected) window.location.href = resp.url;
+      else window.location.reload();
     });
-  document
-    .getElementById("novoAlunoForm")
-    .addEventListener("submit", function (event) {
-      event.preventDefault();
-      var alunoName = this.querySelector("#aluno").value.trim();
-      if (!alunoName) {
-        alert("Nome do aluno é obrigatório.");
-        return;
-      }
-      var newId = Date.now();
-      var tbody = document.getElementById("alunosBody");
-      var trStudent = document.createElement("tr");
-      trStudent.className = "student-row";
-      trStudent.setAttribute("data-student-id", newId);
-      trStudent.setAttribute("data-student-name", alunoName.toLowerCase());
-      trStudent.innerHTML =
-        '<td><span class="student-name">' +
-        alunoName +
-        '</span><br><small class="parente-count" id="parente-count-' +
-        newId +
-        '" data-count="0" data-fotos="0">0 parente(s) | Fotos Compradas: 0</small></td><td style="text-align: right;"><span class="toggle-icon">&#9660;</span>&nbsp;<a href="#" class="btn-excluir" title="Excluir" onclick="event.stopPropagation(); if(confirm(\'Excluir este Aluno?\')) { this.closest(\'tr.student-row\').remove(); updateSummary(); } return false;"></a></td>';
-      var trParent = document.createElement("tr");
-      trParent.className = "parentes-row";
-      trParent.setAttribute("data-student-id", newId);
-      trParent.innerHTML =
-        '<td colspan="2"><div class="parentes-container" id="parentes-container-' +
-        newId +
-        '"><p>Sem parentes cadastrados.</p></div><button class="btn" onclick="abrirModalParente(' +
-        newId +
-        '); event.stopPropagation();">Adicionar Parente</button></td>';
-      tbody.appendChild(trStudent);
-      tbody.appendChild(trParent);
-      this.reset();
-      this.classList.remove("visible");
-      document.getElementById("btnAbrirFormAluno").style.display =
-        "inline-block";
-      updateSummary();
-    });
-  window.addEventListener("load", function () {
-    var order = document
-      .getElementById("orderToggle")
-      .getAttribute("data-order");
-    sortStudentRows(order);
+  });
+
+  // ——————————————————————————————————————————————
+  // Inicialização
+  // ——————————————————————————————————————————————
+  window.addEventListener("load", () => {
+    sortStudentRows(document.getElementById("orderToggle").dataset.order);
     updateSummary();
   });
 </script>
+
 {% endblock %}

@@ -309,6 +309,25 @@ header {
   justify-content: center;
 }
 
+/* Estilo do botão #modalCloseBtn */
+#modalCloseBtn {
+  display: inline-block;
+  background-color: transparent;
+  color: var(--color-link);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background-color 0.3s, color 0.3s;
+  font-weight: 500;
+  font-size: var(--btn-font-size);
+  box-sizing: border-box;
+}
+#modalCloseBtn:hover {
+  color: var(--color-link-hover);
+  box-shadow: none;
+}
+
 .profile-btn-primary {
   background-color: hsl(354, 70%, 55%);
   color: white;
@@ -705,6 +724,7 @@ main.fade-in {
 }
 #orderToggle:hover {
   color: var(--color-link-hover);
+  box-shadow: none;
 }
 
 .btn-voltar:disabled,
@@ -1175,11 +1195,10 @@ label {
 }
 
 .perfil-foto-preview {
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   border-radius: 50%;
-  border: 2px solid var(--color-border, #ccc);
   transition: 0.3s ease;
 }
 
@@ -1244,7 +1263,7 @@ label {
   color: var(--color-text-1);
 }
 
-/* Estilos para o container da foto do perfil com máscara circular translúcida. */
+/* Estilos para o container da foto do perfil. */
 
 .foto-perfil-container {
   width: 120px;
@@ -1286,12 +1305,6 @@ label {
 
 .foto-perfil-container:hover::after {
   opacity: 1;
-}
-
-.perfil-foto-preview {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .perfil-foto-placeholder {

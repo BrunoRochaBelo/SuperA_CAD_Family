@@ -230,12 +230,6 @@
           <!-- Grupo de botões: Editar Perfil e Encerrar Sessão -->
           <div class="profile-button-group profile-animate">
             <a
-              href="{{ url_for('perfil.editar_perfil') }}"
-              class="profile-btn btn"
-            >
-              Editar Perfil
-            </a>
-            <a
               href="{{ url_for('auth.logout') }}"
               class="profile-btn btn-voltar btn-icon-text"
             >
@@ -257,6 +251,12 @@
               </span>
               Encerrar sessão
             </a>
+            <a
+              href="{{ url_for('perfil.editar_perfil') }}"
+              class="profile-btn btn"
+            >
+              Editar Perfil
+            </a>
           </div>
 
           {% else %}
@@ -265,13 +265,7 @@
         </div>
 
         <div class="profile-footer">
-          <button
-            type="button"
-            id="modalCloseBtn"
-            class="profile-btn profile-btn-secondary"
-          >
-            Fechar
-          </button>
+          <button type="button" id="modalCloseBtn" class="btn">Fechar</button>
         </div>
       </div>
     </div>
