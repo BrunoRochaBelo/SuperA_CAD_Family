@@ -1,0 +1,31 @@
+[2025-04-17 00:02:48,673] INFO - Acesso à página de turmas - usuário: ciro@demo.com
+[2025-04-17 00:18:37,804] INFO - Acesso à página de turmas - usuário: ciro@demo.com
+[2025-04-17 00:18:40,184] INFO - Acesso à página de turmas - usuário: ciro@demo.com
+[2025-04-17 00:29:22,887] INFO - [empresa:1] Login realizado com sucesso | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:29:22,897] INFO - [empresa:1] Acesso à lista de empresas | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:29:23,212] INFO - [empresa:1] Listagem de empresas via API | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:29:30,191] INFO - [empresa:1] Acesso à lista de empresas | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:29:30,257] INFO - [empresa:1] Listagem de empresas via API | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:29:32,128] INFO - [empresa:1] Logout efetuado | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:29:36,665] INFO - [empresa:2] Login realizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 00:45:50,729] INFO - [empresa:1] Login realizado com sucesso | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:45:50,754] INFO - [empresa:1] Acesso à lista de empresas | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:45:51,057] INFO - [empresa:1] Listagem de empresas via API | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:45:56,688] INFO - [empresa:1] Acesso à lista de empresas | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:45:56,763] INFO - [empresa:1] Listagem de empresas via API | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:45:58,101] INFO - [empresa:1] Logout efetuado | Usuário: adminbruno@diretiva.com
+[2025-04-17 00:46:02,664] INFO - [empresa:2] Login realizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:20:18,211] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:20:31,231] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:23:53,888] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:24:06,419] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:24:16,888] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:32:33,840] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:34:50,009] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:35:22,672] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:36:16,086] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:37:06,254] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:38:37,286] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:44:42,949] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 01:57:51,513] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 02:02:56,636] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com

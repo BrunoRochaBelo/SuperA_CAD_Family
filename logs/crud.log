@@ -1,0 +1,6 @@
+[2025-04-17 00:03:01,834] INFO - Parente criado: 'Maria' (grau: Mãe) para formando ID 1 por ciro@demo.com
+[2025-04-17 00:18:40,176] WARNING - Turma excluída: 'COLÉGIO BOA VIAGEM - CBV - 2024 - 866' por ciro@demo.com
+[2025-04-17 00:29:29,955] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou empresa 'SuperA'
+[2025-04-17 00:29:30,178] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou usuário ADM 'ciro@demo.com' para empresa 'SuperA'
+[2025-04-17 00:45:56,461] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou empresa 'SuperA'
+[2025-04-17 00:45:56,676] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou usuário ADM 'ciro@demo.com' para empresa 'SuperA'

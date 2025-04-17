@@ -1,0 +1,173 @@
+{# templates/partials/modal_alterar_senha.html #}
+<div
+  id="passwordModal"
+  class="modal-overlay"
+  style="display: none"
+  data-validate-url="{{ url_for('perfil.validar_senha') }}"
+>
+  <div class="modal-content">
+    <h2>Alterar Senha</h2>
+    <form
+      method="post"
+      action="{{ url_for('perfil.alterar_senha') }}"
+      id="passwordForm"
+    >
+      <!-- Senha Atual -->
+      <div class="form-group">
+        <label for="current_password">Senha Atual:</label>
+        <div class="password-wrapper" style="position: relative">
+          <input
+            type="password"
+            name="current_password"
+            id="current_password"
+            required
+          />
+          <span
+            class="toggle-password"
+            onclick="togglePasswordVisibility('current_password', this)"
+            style="
+              position: absolute;
+              right: 10px;
+              top: 50%;
+              transform: translateY(-50%);
+              cursor: pointer;
+            "
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <g class="eye-visible">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+              </g>
+              <g class="eye-hidden" style="display: none">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+                <path
+                  d="M2 4L22 20"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </g>
+            </svg>
+          </span>
+        </div>
+        <div class="input-feedback" id="currentPasswordFeedback"></div>
+      </div>
+
+      <!-- Nova Senha -->
+      <div class="form-group">
+        <label for="new_password">Nova Senha:</label>
+        <div class="password-wrapper" style="position: relative">
+          <input
+            type="password"
+            name="new_password"
+            id="new_password"
+            required
+          />
+          <span
+            class="toggle-password"
+            onclick="togglePasswordVisibility('new_password', this)"
+            style="
+              position: absolute;
+              right: 10px;
+              top: 50%;
+              transform: translateY(-50%);
+              cursor: pointer;
+            "
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <g class="eye-visible">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+              </g>
+              <g class="eye-hidden" style="display: none">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+                <path
+                  d="M2 4L22 20"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </g>
+            </svg>
+          </span>
+        </div>
+        <div class="input-feedback" id="newPasswordFeedback"></div>
+      </div>
+
+      <!-- Confirmar Nova Senha -->
+      <div class="form-group">
+        <label for="confirm_password">Confirmar Nova Senha:</label>
+        <div class="password-wrapper" style="position: relative">
+          <input
+            type="password"
+            name="confirm_password"
+            id="confirm_password"
+            required
+          />
+          <span
+            class="toggle-password"
+            onclick="togglePasswordVisibility('confirm_password', this)"
+            style="
+              position: absolute;
+              right: 10px;
+              top: 50%;
+              transform: translateY(-50%);
+              cursor: pointer;
+            "
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <g class="eye-visible">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+              </g>
+              <g class="eye-hidden" style="display: none">
+                <path
+                  d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                />
+                <path
+                  d="M2 4L22 20"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </g>
+            </svg>
+          </span>
+        </div>
+        <div class="input-feedback" id="confirmPasswordFeedback"></div>
+      </div>
+
+      <!-- Requisitos -->
+      <div class="password-requirements">
+        <p>A senha deve conter:</p>
+        <ul>
+          <li id="req-length">Mínimo de 6 caracteres</li>
+          <li id="req-letter">Pelo menos uma letra</li>
+          <li id="req-number">Pelo menos um número</li>
+        </ul>
+      </div>
+
+      <!-- Botões -->
+      <div class="modal-button-group">
+        <button type="button" id="passwordModalClose" class="btn btn-voltar">
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          id="modalAtualizarBtn"
+          class="btn cadastro-parente-btn-save"
+          disabled
+        >
+          Atualizar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

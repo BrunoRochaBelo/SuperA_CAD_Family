@@ -493,8 +493,7 @@ main.fade-in {
   justify-content: flex-end;
   margin-top: 30px;
   padding: 25px;
-  border-radius: 6px;
-  background: var(--color-card-bg);
+  border-top: 2px solid var(--color-card-bg);
 }
 
 /* ====================================
@@ -1470,6 +1469,31 @@ label {
   justify-content: flex-end;
   gap: 10px;
   margin-top: auto;
+}
+
+/* Destaca o crop box com borda circular */
+.cropper-view-box {
+  border: 2px dashed rgba(255, 255, 255, 0.8) !important;
+  border-radius: 50% !important;
+  box-sizing: border-box;
+}
+
+/* Remove aquela camada escura dentro da área de crop */
+.cropper-drag-box {
+  opacity: 0 !important;
+}
+
+/* Drag & drop highlight */
+#photo-editor-area.dragover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Zoom % */
+#zoom-percentage {
+  min-width: 40px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #333;
 }
 
 /* ====================================
