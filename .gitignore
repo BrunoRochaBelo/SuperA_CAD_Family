@@ -1,7 +1,36 @@
-﻿__pycache__/
-*.pyc
+﻿# Cache e arquivos temporários do Python
+__pycache__/
+*.py[cod]
 *.pyo
+*.pyd
+
+# Banco de dados local (SQLite, se for o caso)
 *.db
+
+# Arquivos de configuração e segredos
 .env
+.env.*
+
+# Diretórios gerados automaticamente
 instance/
 migrations/
+*.egg-info/
+dist/
+build/
+
+# Ambiente virtual (indispensável!)
+venv/
+.env/
+.venv/
+env/
+
+# Arquivos e logs temporários
+*.log
+*.bak
+*.tmp
+.DS_Store  # macOS
+Thumbs.db  # Windows
+
+# VSCode settings (se você usar VSCode)
+.vscode/
+
