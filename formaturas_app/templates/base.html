@@ -24,8 +24,8 @@
       <nav class="navbar">
         <div class="navbar-left">
           {% if current_user.is_authenticated %}
-          <div
-            class="navbar-profile"
+          <a
+            class="navbar-profile {% if active_page=='editar_perfil' %}active{% endif %}"
             id="profileIcon"
             data-tippy-content="Meu Perfil"
           >
@@ -39,8 +39,13 @@
               {{ current_user.nome[0].upper() }}
             </div>
             {% endif %}
-            <span class="profile-label">Você</span>
-          </div>
+
+            <span
+              class="profile-label {% if active_page=='editar_perfil' %}active{% endif %}"
+            >
+              Você
+            </span>
+          </a>
 
           {% endif %}
         </div>
@@ -294,7 +299,7 @@
 
         // Se estiver na rota /auth/editar_perfil, aplica o estilo imediatamente
         if (profileIcon && currentPath === "/auth/editar_perfil") {
-          profileIcon.classList.add("editing-indicator");
+          profileIcon.classList.add("active");
         }
 
         if (profileIcon) {

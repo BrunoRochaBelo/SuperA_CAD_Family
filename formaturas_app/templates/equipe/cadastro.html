@@ -19,51 +19,58 @@
     </p>
   </div>
   <div class="card">
-    <form
-      method="POST"
-      action="{{ url_for('equipe.cadastrar_usuario') }}"
-      id="formCadastrarUsuario"
-      novalidate
-    >
-      <div class="form-group">
-        <label for="nome">Nome *</label>
-        <input
-          type="text"
-          id="nome"
-          name="nome"
-          class="form-control"
-          required
-          placeholder="Digite o nome"
-        />
-        <span class="feedback" id="feedbackNome" style="color: red"></span>
-      </div>
-      <div class="form-group">
-        <label for="email">Email *</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          class="form-control"
-          required
-          placeholder="Digite o email"
-        />
-        <span class="feedback" id="feedbackEmail" style="color: red"></span>
-      </div>
-      <div class="form-group">
-        <label for="papel">Perfil de Acesso</label>
-        <select id="papel" name="papel" class="form-control">
-          <option value="ADM">ADM</option>
-          <option value="EDITOR">EDITOR</option>
-          <option value="VISUALIZADOR">VISUALIZADOR</option>
-        </select>
-      </div>
-      <a href="{{ url_for('equipe.index') }}" class="btn btn-voltar"
-        >← Equipe</a
+    <div style="width: 100%">
+      <form
+        method="POST"
+        action="{{ url_for('equipe.cadastrar_usuario') }}"
+        id="formCadastrarUsuario"
+        novalidate
       >
-      <button type="submit" class="btn btn-primary" id="btnCadastrar" disabled>
-        Cadastrar
-      </button>
-    </form>
+        <div class="form-group">
+          <label for="nome">Nome *</label>
+          <input
+            type="text"
+            id="nome"
+            name="nome"
+            class="form-control"
+            required
+            placeholder="Digite o nome"
+          />
+          <span class="feedback" id="feedbackNome" style="color: red"></span>
+        </div>
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-control"
+            required
+            placeholder="Digite o email"
+          />
+          <span class="feedback" id="feedbackEmail" style="color: red"></span>
+        </div>
+        <div class="form-group">
+          <label for="papel">Perfil de Acesso</label>
+          <select id="papel" name="papel" class="form-control">
+            <option value="ADM">ADM</option>
+            <option value="EDITOR">EDITOR</option>
+            <option value="VISUALIZADOR">VISUALIZADOR</option>
+          </select>
+        </div>
+        <a href="{{ url_for('equipe.index') }}" class="btn btn-voltar"
+          >← Equipe</a
+        >
+        <button
+          type="submit"
+          class="btn btn-primary"
+          id="btnCadastrar"
+          disabled
+        >
+          Cadastrar
+        </button>
+      </form>
+    </div>
   </div>
 
   <script>

@@ -141,7 +141,7 @@ header {
 
 .navbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
   align-items: center;
   background-color: var(--color-navbar-bg);
   padding: 10px 20px;
@@ -164,9 +164,10 @@ header {
   color: var(--color-text-2);
   font-weight: 500;
 }
+.profile-label.active {
+  color: var(--color-navbar-active);
+}
 .navbar-profile-initial {
-  width: 40px;
-  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -175,17 +176,16 @@ header {
   font-weight: 400;
   font-size: 18px;
   color: #4a77e5;
+  transition: width 0.3s ease-in, height 0.3s ease-in;
 }
 .navbar-profile img {
-  width: 40px;
-  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--color-text-2);
   box-sizing: border-box;
 }
-.navbar-profile.editing-indicator img,
-.navbar-profile.editing-indicator .navbar-profile-initial {
+.navbar-profile.active img,
+.navbar-profile.active .navbar-profile-initial {
   filter: brightness(0.5);
   border-color: var(--color-navbar-active);
 }
@@ -1861,25 +1861,16 @@ label {
   .profile-label {
     display: block;
   }
-  .navbar-profile-initial {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #e3e9ff;
-    border-radius: 50%;
-    font-weight: 400;
-    font-size: 18px;
-    color: #4a77e5;
-  }
+  .navbar-profile-initial,
   .navbar-profile img {
     width: 28px;
     height: 28px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--color-text-2);
-    box-sizing: border-box;
+  }
+  .navbar a.active .navbar-profile-initial,
+  .navbar a.active .navbar-profile img {
+    width: 28px;
+    height: 26px;
+    transition: width 0.3s ease-in, height 0.3s ease-in;
   }
   .nav-text {
     display: inline-block;
@@ -1999,7 +1990,17 @@ label {
     border-radius: 12px;
     padding: 5px 20px;
   }
-
+  .navbar-profile-initial,
+  .navbar-profile img {
+    width: 38px;
+    height: 38px;
+  }
+  .navbar a.active .navbar-profile-initial,
+  .navbar a.active .navbar-profile img {
+    width: 38px;
+    height: 36px;
+    transition: width 0.3s ease-in, height 0.3s ease-in;
+  }
   .navbar a {
     flex-direction: row;
     gap: 8px;

@@ -107,7 +107,11 @@ def editar_perfil():
 
         return redirect(url_for("perfil.editar_perfil"))
 
-    return render_template("auth/editar_perfil.html", usuario=current_user)
+    return render_template(
+        "auth/editar_perfil.html",
+        usuario=current_user,
+        active_page="editar_perfil"
+    )
 
 
 @perfil_bp.route('/alterar_senha', methods=['POST'])
