@@ -118,6 +118,7 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-btn-primary-hover);
+  cursor: pointer;
 }
 
 /* Estilização para Firefox */
@@ -576,21 +577,12 @@ main.fade-in {
 .input-readonly-wrapper {
   position: relative;
   display: flex;
+  width: 100%;
 }
 
 .readonly-input {
   background-color: var(--color-input-disabled-bg);
   cursor: not-allowed;
-}
-
-.icone-cadeado {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 1.2rem;
-  color: #888;
 }
 
 /* ====================================
@@ -1092,25 +1084,6 @@ label {
   transition: transform 0.3s ease;
 }
 
-/* Scrollbar na .modal-content */
-.modal-content::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.modal-content::-webkit-scrollbar-track {
-  background: var(--color-container-bg);
-  border-radius: 8px;
-  margin: 4px;
-}
-.modal-content::-webkit-scrollbar-thumb {
-  background-color: var(--color-input-border);
-  border-radius: 8px;
-  border: 2px solid var(--color-container-bg);
-}
-.modal-content::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-btn-primary-hover);
-}
-
 .modal-overlay.show .modal-content {
   transform: translateY(0);
 }
@@ -1159,10 +1132,7 @@ label {
   align-items: center;
 }
 .form-editar-perfil-input {
-  padding: 10px;
   font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
 }
 
 .form-editar-perfil .form-group {
@@ -1172,8 +1142,18 @@ label {
 .form-group.form-btns {
   display: flex;
   gap: 15px;
-  margin-top: 20px;
+  margin-top: 25px;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.icone-cadeado {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 1.2rem;
+  color: #888;
 }
 
 .editar-perfil-btn-save:hover {

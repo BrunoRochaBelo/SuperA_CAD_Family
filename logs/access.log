@@ -59,3 +59,12 @@
 [2025-04-17 22:09:40,294] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
 [2025-04-17 22:10:13,226] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
 [2025-04-17 23:16:22,993] INFO - [empresa:2] Perfil atualizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 23:34:40,652] INFO - [empresa:2] Login realizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 23:46:33,817] INFO - Acesso à página de turmas - usuário: ciro@demo.com
+[2025-04-17 23:46:39,040] INFO - Acesso à página de turmas - usuário: ciro@demo.com
+[2025-04-17 23:48:42,765] INFO - [empresa:2] Logout efetuado | Usuário: ciro@demo.com
+[2025-04-17 23:51:37,723] INFO - [empresa:2] Login realizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 23:51:41,492] INFO - [empresa:2] Logout efetuado | Usuário: ciro@demo.com
+[2025-04-17 23:53:28,965] INFO - [empresa:2] Login realizado com sucesso | Usuário: ciro@demo.com
+[2025-04-17 23:53:33,882] INFO - Acesso à página de turmas - usuário: ciro@demo.com
+[2025-04-17 23:53:45,649] INFO - Acesso à página de turmas - usuário: ciro@demo.com
