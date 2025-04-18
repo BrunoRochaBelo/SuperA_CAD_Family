@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const passwordModal = document.getElementById("passwordModal");
-  if (!passwordModal) return; // Evita rodar se o modal não existe
+  if (!passwordModal) return;
 
   const openPasswordModal = document.getElementById("openPasswordModal");
   const passwordModalClose = document.getElementById("passwordModalClose");
@@ -38,7 +38,6 @@ document.addEventListener("DOMContentLoaded", function () {
       el.className = "input-feedback";
     });
     [reqLength, reqLetter, reqNumber].forEach((el) => (el.className = ""));
-
     currentPasswordValid = false;
     newPasswordValid = false;
     confirmPasswordValid = false;
@@ -196,7 +195,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 300);
   }
 
-  // Toggle de visibilidade dos campos de senha
   document.querySelectorAll(".toggle-password").forEach((el) => {
     el.addEventListener("click", function () {
       const inputId = el.getAttribute("onclick").match(/'([^']+)'/)[1];
@@ -214,5 +212,44 @@ document.addEventListener("DOMContentLoaded", function () {
         eyeHidden.style.display = "none";
       }
     });
+  });
+
+  // ======== ENTER PARA PULAR CAMPOS COM VALIDAÇÃO ========
+  function ativarNavegacaoComEnter(formElement, camposValidacao = {}) {
+    const inputs = Array.from(
+      formElement.querySelectorAll("input:not([type='hidden']):not([disabled])")
+    );
+
+    inputs.forEach((input, index) => {
+      input.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter" && input.tagName !== "TEXTAREA") {
+          e.preventDefault();
+          input.blur();
+
+          const validador = camposValidacao[input.id];
+          let podeAvancar = true;
+
+          if (validador && typeof validador === "function") {
+            podeAvancar = await validador();
+          }
+
+          if (podeAvancar) {
+            const proximo = inputs[index + 1];
+            if (proximo) {
+              proximo.focus();
+            } else {
+              const botao = formElement.querySelector("button[type='submit']");
+              if (botao) botao.focus(); // ou botao.click() / formElement.requestSubmit();
+            }
+          }
+        }
+      });
+    });
+  }
+
+  ativarNavegacaoComEnter(passwordForm, {
+    current_password: () => Promise.resolve(currentPasswordValid),
+    new_password: () => Promise.resolve(newPasswordValid),
+    confirm_password: () => Promise.resolve(confirmPasswordValid),
   });
 });

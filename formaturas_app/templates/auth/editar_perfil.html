@@ -52,7 +52,6 @@
           </div>
         </div>
         <div class="photo-editor-instructions">
-          <p>Você pode arrastar a imagem e usar a roda do mouse para zoom.</p>
           <p>
             Ajuste a foto para se enquadrar melhor no círculo de visualização.
           </p>
@@ -210,21 +209,34 @@
 <!-- Scripts -->
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+    // Elementos principais
     const editarPerfilBtn = document.querySelector(".editar-perfil-btn-save");
     const nomeInput = document.getElementById("nome");
     const initialNome = nomeInput.value;
-    let fotoChanged = false;
-
-    // Zoom elements
+    const photoModal = document.getElementById("photoModal");
+    const photoContainer = document.getElementById("foto-perfil-container");
+    const photoUploadInput = document.getElementById("photo-upload");
+    const photoEditorArea = document.getElementById("photo-editor-area");
+    const savePhotoBtn = document.getElementById("save-photo-btn");
+    const cancelBtn = document.getElementById("photo-modal-cancel");
     const zoomSlider = document.getElementById("zoom-slider");
     const zoomInBtn = document.getElementById("zoom-in-btn");
     const zoomOutBtn = document.getElementById("zoom-out-btn");
     const zoomPercent = document.createElement("span");
-    zoomPercent.id = "zoom-percentage";
-    zoomPercent.innerText = "100%";
-    document.querySelector(".zoom-controls").appendChild(zoomPercent);
 
-    // Habilita o botão “Atualizar Perfil”
+    // setup do display % e variável CSS
+    zoomPercent.id = "zoom-percentage";
+    zoomPercent.innerText = "0%";
+    document.querySelector(".zoom-controls").appendChild(zoomPercent);
+    zoomSlider.style.setProperty("--percent", "0%");
+
+    let cropper = null;
+    let minRatio = 1;
+    let modalChanged = false;
+    let fotoChanged = false;
+    let originalState = {};
+
+    // só libera “Atualizar Perfil” se nome ou foto mudarem
     editarPerfilBtn.disabled = true;
     function checkPerfilFormChanged() {
       editarPerfilBtn.disabled = !(
@@ -233,23 +245,28 @@
     }
     nomeInput.addEventListener("input", checkPerfilFormChanged);
 
-    // Componentes do modal
-    const photoModal = document.getElementById("photoModal");
-    const photoContainer = document.getElementById("foto-perfil-container");
-    const photoUploadInput = document.getElementById("photo-upload");
-    const photoEditorArea = document.getElementById("photo-editor-area");
-    const savePhotoBtn = document.getElementById("save-photo-btn");
-    const cancelBtn = document.getElementById("photo-modal-cancel");
-    let cropper = null;
-    let originalModalState = {};
-
-    function setZoomControls(on) {
-      [zoomSlider, zoomInBtn, zoomOutBtn].forEach((el) => (el.disabled = !on));
-      zoomPercent.style.visibility = on ? "visible" : "hidden";
+    // habilita/desabilita controles de zoom e “Salvar”
+    function setZoomControls(active) {
+      [zoomSlider, zoomInBtn, zoomOutBtn].forEach(
+        (el) => (el.disabled = !active)
+      );
+      zoomPercent.style.visibility = active ? "visible" : "hidden";
     }
 
+    // checa se mudou algo no modal e habilita/desabilita Salvar
+    function updateSaveBtnState() {
+      // se foto não for nova e zoom = 0, desabilita
+      const pct = +zoomSlider.value;
+      if (!fotoChanged && pct === 0) {
+        savePhotoBtn.disabled = true;
+      } else {
+        savePhotoBtn.disabled = false;
+      }
+    }
+
+    // snapshot do estado original do modal
     function saveOriginalState() {
-      originalModalState = {
+      originalState = {
         html: photoEditorArea.innerHTML,
         btnClone: (
           document.getElementById("select-photo-btn") ||
@@ -257,52 +274,47 @@
         ).cloneNode(true),
         saveDisabled: savePhotoBtn.disabled,
         zoomValue: +zoomSlider.value,
+        zoomText: zoomPercent.innerText,
       };
     }
+
+    // restaura tudo no “Cancelar”
     function restoreOriginalState() {
-      photoEditorArea.innerHTML = originalModalState.html;
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+      photoEditorArea.classList.remove("dragover");
+      photoEditorArea.innerHTML = originalState.html;
+
       const currBtn =
         document.getElementById("select-photo-btn") ||
         document.getElementById("delete-photo-btn");
-      if (currBtn)
-        currBtn.replaceWith(originalModalState.btnClone.cloneNode(true));
-      savePhotoBtn.disabled = originalModalState.saveDisabled;
-      zoomSlider.value = originalModalState.zoomValue;
-      zoomPercent.innerText = originalModalState.zoomValue + "%";
+      if (currBtn) currBtn.replaceWith(originalState.btnClone.cloneNode(true));
+
+      fotoChanged = false;
+      savePhotoBtn.disabled = originalState.saveDisabled;
+      zoomSlider.value = originalState.zoomValue;
+      zoomPercent.innerText = originalState.zoomText;
+      zoomSlider.style.setProperty("--percent", originalState.zoomValue + "%");
       setZoomControls(!!document.getElementById("photo-editor-image"));
       bindActionBtn();
-      if (document.getElementById("photo-editor-image")) initCropper();
     }
 
+    // troca select ↔ delete
     function bindActionBtn() {
       const btn =
         document.getElementById("select-photo-btn") ||
         document.getElementById("delete-photo-btn");
       if (!btn) return;
-      btn.replaceWith(btn.cloneNode(true));
-      const fresh =
-        document.getElementById("select-photo-btn") ||
-        document.getElementById("delete-photo-btn");
+      const fresh = btn.cloneNode(true);
+      btn.replaceWith(fresh);
       if (fresh.id === "select-photo-btn") {
         fresh.addEventListener("click", () => photoUploadInput.click());
       } else {
         fresh.addEventListener("click", handleDeleteImage);
       }
     }
-
-    function handleDeleteImage() {
-      if (cropper) cropper.destroy(), (cropper = null);
-      photoEditorArea.innerHTML = `
-        <div id="photo-editor-placeholder">
-          <i class="fas fa-cloud-upload-alt"></i>
-          <p>Arraste ou selecione uma imagem</p>
-        </div>`;
-      savePhotoBtn.disabled = false;
-      fotoChanged = true;
-      checkPerfilFormChanged();
-      swapToSelectBtn();
-    }
-
     function swapToSelectBtn() {
       const btn = document.getElementById("delete-photo-btn");
       btn.id = "select-photo-btn";
@@ -317,26 +329,50 @@
       btn.classList.replace("btn-secondary", "btn-voltar");
       bindActionBtn();
     }
+    function handleDeleteImage() {
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+      photoEditorArea.innerHTML = `
+        <div id="photo-editor-placeholder">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Arraste ou selecione uma imagem</p>
+        </div>`;
+      fotoChanged = true;
+      updateSaveBtnState();
+      checkPerfilFormChanged();
+      swapToSelectBtn();
+    }
 
+    // abre / fecha modal
     function openPhotoModal() {
       saveOriginalState();
+      fotoChanged = false;
+      savePhotoBtn.disabled = true;
+      zoomSlider.value = 0;
+      zoomPercent.innerText = "0%";
+      zoomSlider.style.setProperty("--percent", "0%");
+
       photoModal.style.display = "flex";
       setTimeout(() => photoModal.classList.add("show"), 10);
+
       setZoomControls(!!document.getElementById("photo-editor-image"));
-      if (document.getElementById("photo-editor-image")) initCropper();
+      if (document.getElementById("photo-editor-image")) {
+        initCropper();
+      }
     }
     function closePhotoModal() {
       photoModal.classList.remove("show");
       setTimeout(() => (photoModal.style.display = "none"), 300);
     }
 
-    // ** Aqui a mágica do Cropper com slider sincronizado **
+    // inicializa o Cropper com range 0–100%
     function initCropper() {
       const img = document.getElementById("photo-editor-image");
       if (!img) return;
-      cropper?.destroy();
+      if (cropper) cropper.destroy();
 
-      let minRatio = 1;
       cropper = new Cropper(img, {
         aspectRatio: 1,
         viewMode: 1,
@@ -351,61 +387,73 @@
         scalable: false,
         rotatable: false,
         ready() {
-          // calcula o cover mínimo e aplica
-          const cData = cropper.getContainerData();
-          const iData = cropper.getImageData();
+          // cover mínimo
+          const c = cropper.getContainerData();
+          const i = cropper.getImageData();
           minRatio = Math.max(
-            cData.width / iData.naturalWidth,
-            cData.height / iData.naturalHeight
+            c.width / i.naturalWidth,
+            c.height / i.naturalHeight
           );
-          cropper.minRatio = minRatio;
           cropper.zoomTo(minRatio);
           cropper.setCropBoxData({
-            left: cData.left,
-            top: cData.top,
-            width: cData.width,
-            height: cData.height,
+            left: c.left,
+            top: c.top,
+            width: c.width,
+            height: c.height,
           });
 
-          // slider relativo a esse minRatio
-          zoomSlider.min = 100;
-          zoomSlider.max = 300;
+          // slider ready
+          zoomSlider.min = 0;
+          zoomSlider.max = 100;
           zoomSlider.step = 1;
-          zoomSlider.value = 100;
-          zoomPercent.innerText = "100%";
-
-          savePhotoBtn.disabled = false;
+          zoomSlider.value = 0;
+          zoomPercent.innerText = "0%";
+          zoomSlider.style.setProperty("--percent", "0%");
           setZoomControls(true);
-        },
-        zoom(event) {
-          // sempre que zoomar por scroll/pinça, atualiza slider
-          const d = event.detail;
-          // detail.oldRatio e detail.ratio são fatores relativos
-          // mas vamos pegar o valor absoluto:
-          const imgData = cropper.getImageData();
-          const currentRatio = imgData.width / imgData.naturalWidth;
-          const percent = (currentRatio / cropper.minRatio) * 100;
-          zoomSlider.value = percent;
-          zoomPercent.innerText = Math.round(percent) + "%";
+
+          // evento zoom do Cropper
+          img.addEventListener("zoom", (event) => {
+            const r = event.detail.ratio;
+            if (r < minRatio || r > minRatio * 5) {
+              event.preventDefault();
+              const clamped = r < minRatio ? 0 : 100;
+              zoomSlider.value = clamped;
+              zoomPercent.innerText = clamped + "%";
+              zoomSlider.style.setProperty("--percent", clamped + "%");
+            } else {
+              const pct = Math.round(((r / minRatio - 1) / 4) * 100);
+              zoomSlider.value = pct;
+              zoomPercent.innerText = pct + "%";
+              zoomSlider.style.setProperty("--percent", pct + "%");
+            }
+            updateSaveBtnState();
+          });
+
+          // crop (arraste) também conta como mudança
+          img.addEventListener("crop", () => {
+            modalChanged = true;
+            updateSaveBtnState();
+          });
         },
       });
     }
 
-    // upload via input ou drag&drop
+    // upload + preview
     function handleImageUpload(e) {
       const file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
       if (!file || !file.type.match("image.*"))
-        return alert("Imagem inválida!");
+        return alert("Selecione uma imagem válida.");
       const reader = new FileReader();
       reader.onload = (ev) => {
         photoEditorArea.innerHTML = "";
-        const img = document.createElement("img");
-        img.id = "photo-editor-image";
-        img.src = ev.target.result;
-        photoEditorArea.appendChild(img);
-        img.onload = () => {
+        const imgEl = document.createElement("img");
+        imgEl.id = "photo-editor-image";
+        imgEl.src = ev.target.result;
+        photoEditorArea.appendChild(imgEl);
+        imgEl.onload = () => {
           initCropper();
           fotoChanged = true;
+          updateSaveBtnState();
           checkPerfilFormChanged();
           swapToDeleteBtn();
         };
@@ -413,25 +461,25 @@
       reader.readAsDataURL(file);
     }
 
-    // listeners de zoom
+    // slider & botões zoom
     zoomSlider.addEventListener("input", () => {
-      const pct = +zoomSlider.value;
+      const pct = Math.min(Math.max(+zoomSlider.value, 0), 100);
+      const newRatio = minRatio * (1 + (pct / 100) * 4);
+      cropper.zoomTo(newRatio);
       zoomPercent.innerText = pct + "%";
-      if (cropper) {
-        const newRatio = (pct / 100) * cropper.minRatio;
-        cropper.zoomTo(newRatio);
-      }
+      zoomSlider.style.setProperty("--percent", pct + "%");
+      updateSaveBtnState();
     });
     zoomInBtn.addEventListener("click", () => {
-      zoomSlider.value = Math.min(300, +zoomSlider.value + 10);
+      zoomSlider.value = Math.min(100, +zoomSlider.value + 10);
       zoomSlider.dispatchEvent(new Event("input"));
     });
     zoomOutBtn.addEventListener("click", () => {
-      zoomSlider.value = Math.max(100, +zoomSlider.value - 10);
+      zoomSlider.value = Math.max(0, +zoomSlider.value - 10);
       zoomSlider.dispatchEvent(new Event("input"));
     });
 
-    // salvar (crop ou delete)
+    // salvar ou excluir
     function savePhoto() {
       if (!cropper && !document.getElementById("photo-editor-image")) {
         let del = document.querySelector('input[name="delete_photo"]');
@@ -444,8 +492,7 @@
         }
         document.getElementById("cropped_image_data").value = "";
         document.querySelector(".form-editar-perfil").submit();
-        closePhotoModal();
-        return;
+        return closePhotoModal();
       }
       const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
       document.getElementById("cropped_image_data").value =
@@ -454,7 +501,7 @@
       closePhotoModal();
     }
 
-    // eventos gerais
+    // listeners gerais
     photoContainer.addEventListener("click", openPhotoModal);
     photoUploadInput.addEventListener("change", handleImageUpload);
     savePhotoBtn.addEventListener("click", savePhoto);
@@ -462,7 +509,6 @@
       restoreOriginalState();
       closePhotoModal();
     });
-
     bindActionBtn();
   });
 </script>

@@ -46,6 +46,7 @@
   /* Botões */
   --color-btn-primary-bg: var(--color-brand-primary);
   --color-btn-primary-hover: hsl(354, 65%, 47%);
+  --color-btn-primary-active: var(--color-brand-secondary);
   --color-btn-danger-bg: hsl(354, 65%, 38%);
   --color-btn-danger-hover: hsl(354, 65%, 34%);
   --color-btn-disabled-bg: hsl(0, 0%, 32%);
@@ -149,6 +150,10 @@ header {
 .navbar-profile {
   margin-right: 1rem;
   cursor: pointer;
+}
+.navbar-profile:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
 }
 .navbar-profile-initial {
   width: 40px;
@@ -654,9 +659,15 @@ main.fade-in {
 }
 
 .btn:hover {
-  background-color: var(--color-btn-primary-hover);
+  background: var(--color-btn-primary-hover);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   color: var(--color-text-1);
+}
+
+.btn:active {
+  background-color: var(--color-btn-primary-active);
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .btn-danger {
@@ -1269,7 +1280,7 @@ label {
   height: 120px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid var(--color-border, #ccc);
+  border: 2px solid var(--color-input-border);
   cursor: pointer;
   position: relative;
   transition: all 0.3s ease;
@@ -1280,7 +1291,8 @@ label {
 
 .foto-perfil-container:hover {
   opacity: 0.9;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 3px 6px
+    color-mix(in srgb, var(--color-navbar-bg) 16%, transparent);
 }
 
 .foto-perfil-container::after {
@@ -1291,7 +1303,7 @@ label {
   transform: translate(-50%, -50%);
   width: 48px;
   height: 48px;
-  background-color: rgba(127, 44, 44, 0.878);
+  background-color: var(--color-brand-soft);
   border-radius: 50%;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'><path d='M12 9a3 3 0 100 6 3 3 0 000-6zm0-2a5 5 0 110 10 5 5 0 010-10zm7-3h-2.586l-1.707-1.707A1 1 0 0014.586 2H9.414a1 1 0 00-.707.293L7 4H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zM5 18V6h2.586l1.707-1.707A1 1 0 0110.414 4h3.172a1 1 0 01.707.293L16.414 6H19v12H5z'/></svg>");
   background-size: 60% 60%;
@@ -1313,15 +1325,15 @@ label {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #f7f7f7;
-  color: #777;
+  background-color: var(--color-card-bg);
+  color: var(--color-text-3);
   font-size: 0.9rem;
 }
 
 .perfil-foto-placeholder i {
   font-size: 2rem;
   margin-bottom: 5px;
-  color: #aaa;
+  color: var(--color-text-4);
 }
 
 /* Modal de Editor de Foto com máscara circular translúcida */
@@ -1341,7 +1353,7 @@ label {
 }
 
 .photo-editor-wrapper {
-  background-color: #f7f7f7;
+  background-color: var(--color-card-bg);
   border-radius: 8px;
   overflow: hidden;
   position: relative;
@@ -1376,7 +1388,7 @@ label {
   background: radial-gradient(
     circle 150px at center,
     transparent 149px,
-    rgba(0, 0, 0, 0.6) 150px
+    hsla(354, 2%, 25%, 0.4) 150px
   );
 }
 
@@ -1396,7 +1408,7 @@ label {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #777;
+  color: var(--color-text-3);
   text-align: center;
   padding: 2rem;
 }
@@ -1404,64 +1416,201 @@ label {
 #photo-editor-placeholder i {
   font-size: 3rem;
   margin-bottom: 1rem;
-  color: #aaa;
+  color: var(--color-text-4);
 }
 
 .photo-editor-instructions {
   font-size: 0.9rem;
-  color: #777;
-  margin-bottom: 1rem;
+  color: var(--color-text-3);
   text-align: center;
 }
 
 .photo-editor-controls {
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
+/* === CONTROLES DE ZOOM MODERNIZADOS === */
 .zoom-controls {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
+  padding: 12px 8px;
+  background: var(--color-card-bg);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  max-width: 280px;
+  width: 100%;
 }
 
-/* Estilo base */
+/* Botões de zoom redesenhados */
 .zoom-btn {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(4px);
+  background: var(--color-hover-bg);
   border: none;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 60%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  color: var(--color-text-2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  position: relative;
 }
 
 .zoom-btn:hover {
-  transform: scale(1.1);
-  background-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  background-color: var(--color-hover-bg);
 }
 
-/* Zoom OUT - lupa com cabo menor */
+.zoom-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.zoom-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Adding new variables for SVG colors to improve theme consistency */
+:root {
+  /* SVG Icons */
+  --color-svg-stroke: hsl(0, 0%, 80%);
+}
+
+/* Zoom OUT - lupa com traço */
 #zoom-out-btn {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'><circle cx='11' cy='11' r='7'/><line x1='8' y1='11' x2='14' y2='11'/><line x1='18' y1='18' x2='15.5' y2='15.5'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%23cccccc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'><circle cx='11' cy='11' r='7'/><line x1='8' y1='11' x2='14' y2='11'/><line x1='18' y1='18' x2='15.5' y2='15.5'/></svg>");
+  background-size: 50%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
-/* Zoom IN - lupa com cabo menor */
+/* Zoom IN - lupa com "+" */
 #zoom-in-btn {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'><circle cx='11' cy='11' r='7'/><line x1='11' y1='8' x2='11' y2='14'/><line x1='8' y1='11' x2='14' y2='11'/><line x1='18' y1='18' x2='15.5' y2='15.5'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%23cccccc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'><circle cx='11' cy='11' r='7'/><line x1='11' y1='8' x2='11' y2='14'/><line x1='8' y1='11' x2='14' y2='11'/><line x1='18' y1='18' x2='15.5' y2='15.5'/></svg>");
+  background-size: 50%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
+/* === SLIDER DE ZOOM MODERNO (0–100%) === */
 #zoom-slider {
-  flex-grow: 1;
-  max-width: 200px;
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  /* Espaço pra o thumb entrar até o centro do track */
+  padding: 0; /* metade da largura do thumb (20px/2) */
+  width: 100%;
+  height: 8px;
+  border-radius: 8px;
+  outline: none;
+  /* variável pra controlar o ponto de corte do gradiente */
+  --percent: 0%;
+  /* sem background aqui, vamos pro pseudo-elemento */
+  background: transparent;
+}
+
+/* Track WebKit (Chrome, Safari) */
+#zoom-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  /* o gradiente agora fica aqui, respeitando o padding
+     e indo só até o centro do thumb */
+  background: linear-gradient(
+    to right,
+    var(--color-brand-primary) var(--percent),
+    var(--color-input-border) var(--percent)
+  );
+}
+
+/* Thumb WebKit */
+#zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-card-bg);
+  border: 2px solid var(--color-brand-primary);
+  cursor: pointer;
+  /* só refaz o vertical centering, sem mexer no left/right */
+  margin-top: -6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transition: all 0.15s ease;
+}
+
+/* Firefox track/progress/thumb */
+#zoom-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 8px;
+  background: var(--color-input-border);
+  cursor: pointer;
+}
+#zoom-slider::-moz-range-progress {
+  height: 8px;
+  border-radius: 8px;
+  background: var(--color-brand-primary);
+}
+#zoom-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-card-bg);
+  border: 2px solid var(--color-brand-primary);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transition: all 0.15s ease;
+}
+
+/* Estado desabilitado */
+#zoom-slider:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+#zoom-slider:disabled::-webkit-slider-thumb,
+#zoom-slider:disabled::-moz-range-thumb {
+  cursor: not-allowed;
+  border-color: var(--color-btn-disabled-bg);
+  background: var(--color-input-disabled-bg);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Zoom percentage badge */
+#zoom-percentage {
+  min-width: 48px;
+  height: 24px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--color-text-2);
+  background: var(--color-hover-bg);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+/* State indicators para o zoom */
+#zoom-percentage[data-zoom="min"] {
+  color: var(--color-text-3);
+}
+
+#zoom-percentage[data-zoom="max"] {
+  color: var(--color-brand-primary);
+  font-weight: 600;
 }
 
 .photo-editor-actions {
@@ -1485,15 +1634,7 @@ label {
 
 /* Drag & drop highlight */
 #photo-editor-area.dragover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Zoom % */
-#zoom-percentage {
-  min-width: 40px;
-  text-align: center;
-  font-size: 0.9rem;
-  color: #333;
+  background-color: var(--color-brand-soft);
 }
 
 /* ====================================
@@ -1886,6 +2027,11 @@ label {
 }
 
 .table-card {
+  width: 100%;
+  padding-bottom: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   overflow-x: auto;
 }
 

@@ -353,6 +353,35 @@
         }
       });
     </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const forms = document.querySelectorAll("form");
+
+        forms.forEach((form) => {
+          const focusables = Array.from(
+            form.querySelectorAll("input, select, textarea")
+          ).filter(
+            (el) =>
+              !el.disabled && el.type !== "hidden" && el.offsetParent !== null
+          ); // ignora escondidos
+
+          focusables.forEach((el, index) => {
+            el.addEventListener("keydown", (e) => {
+              if (e.key === "Enter" && el.tagName !== "TEXTAREA") {
+                e.preventDefault();
+                const next = focusables[index + 1];
+                if (next) {
+                  next.focus();
+                } else {
+                  // Último campo: opcionalmente envia o form
+                  form.requestSubmit(); // ou form.submit();
+                }
+              }
+            });
+          });
+        });
+      });
+    </script>
     {% block scripts %}{% endblock %}
   </body>
 </html>
