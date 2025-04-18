@@ -4,3 +4,4 @@
 [2025-04-17 00:29:30,178] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou usuário ADM 'ciro@demo.com' para empresa 'SuperA'
 [2025-04-17 00:45:56,461] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou empresa 'SuperA'
 [2025-04-17 00:45:56,676] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou usuário ADM 'ciro@demo.com' para empresa 'SuperA'
+[2025-04-17 23:53:45,630] INFO - Importação Excel de turmas: 55 registros inseridos por ciro@demo.com

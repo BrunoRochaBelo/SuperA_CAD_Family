@@ -156,6 +156,14 @@ header {
   transform: scale(0.95);
   transition: transform 0.1s ease;
 }
+.profile-label {
+  display: none;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 4px;
+  color: var(--color-text-2);
+  font-weight: 500;
+}
 .navbar-profile-initial {
   width: 40px;
   height: 40px;
@@ -194,7 +202,6 @@ header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
   color: var(--color-text-2);
   text-decoration: none;
   font-weight: 500;
@@ -1849,6 +1856,37 @@ label {
   .flex-respWrap::-webkit-scrollbar-thumb:hover,
   main::-webkit-scrollbar-thumb:hover {
     background-color: var(--color-btn-primary-hover);
+  }
+
+  .profile-label {
+    display: block;
+  }
+  .navbar-profile-initial {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e3e9ff;
+    border-radius: 50%;
+    font-weight: 400;
+    font-size: 18px;
+    color: #4a77e5;
+  }
+  .navbar-profile img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-text-2);
+    box-sizing: border-box;
+  }
+  .nav-text {
+    display: inline-block;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 4px;
+    font-weight: 500;
   }
 
   .container-floating {
