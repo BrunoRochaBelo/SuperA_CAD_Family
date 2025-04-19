@@ -2079,3 +2079,186 @@ label {
   min-height: 300px;
   margin: 0 auto;
 }
+
+/* ====================================
+          24. PAGINA FALLBACK
+==================================== */
+
+.fallback-container {
+  background-color: var(--color-container-bg);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+  padding: 2.5rem 2rem;
+  max-width: 90%;
+  width: 520px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem auto;
+  height: 70%;
+  max-height: 70vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.fallback-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1rem;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+
+.fallback-container h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+  background: linear-gradient(90deg, var(--color-text-1), var(--color-text-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.face-icon {
+  width: 24px;
+  height: 24px;
+  position: relative;
+  top: 2px;
+  -webkit-text-fill-color: initial;
+  background: none;
+}
+
+.fallback-container p {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text-2);
+  margin: 0 0 1.5rem;
+  max-width: 440px;
+  font-weight: 400;
+}
+
+.turmas-add-container {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-illustration {
+  margin: 0.5rem 0 1.5rem;
+  width: 280px;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-state-svg {
+  width: 100%;
+  height: 100%;
+  opacity: 0.85;
+}
+
+.btn-importar {
+  background-color: var(--color-btn-primary-bg);
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1.6rem;
+  border-radius: 10px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(229, 46, 46, 0.25);
+}
+
+.btn-importar:hover {
+  background-color: var(--color-btn-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(229, 46, 46, 0.35);
+}
+
+.btn-importar:active {
+  background-color: var(--color-btn-primary-active);
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(229, 46, 46, 0.2);
+}
+
+.btn-importar::before {
+  content: "+";
+  margin-right: 0.5rem;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Para garantir que o contêiner se ajuste adequadamente em diferentes ambientes */
+@media (min-height: 700px) {
+  .fallback-container {
+    min-height: 450px;
+  }
+}
+
+@media (max-height: 600px) {
+  .fallback-icon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 0.75rem;
+  }
+
+  .fallback-container h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .face-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .fallback-container p {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .empty-illustration {
+    width: 200px;
+    height: 130px;
+    margin: 0.5rem 0 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .fallback-container {
+    padding: 1.75rem 1.25rem;
+    width: 100%;
+    margin: 1rem auto;
+  }
+
+  .fallback-container h2 {
+    font-size: 1.5rem;
+  }
+
+  .fallback-container p {
+    font-size: 0.95rem;
+  }
+
+  .empty-illustration {
+    width: 180px;
+    height: 120px;
+  }
+
+  .btn-importar {
+    padding: 0.7rem 1.4rem;
+    font-size: 0.9rem;
+  }
+}

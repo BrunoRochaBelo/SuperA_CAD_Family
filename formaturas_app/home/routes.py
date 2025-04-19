@@ -3,11 +3,17 @@ from flask_login import login_required
 from sqlalchemy import func
 from formaturas_app.models import Formando, Parente
 from formaturas_app import db
+from formaturas_app.decorators import exige_turma
 
 home_bp = Blueprint('home', __name__)
 
 @home_bp.route('/', methods=["GET"])
 @login_required
+@exige_turma(
+    active_page='home',
+    title='Sem turmas cadastradas',
+    message='Para acessar o dashboard, adicione ao menos uma turma.'
+)
 def index():
     # Expira a sessão para garantir dados atualizados
     db.session.expire_all()
@@ -29,7 +35,6 @@ def index():
     total_turmas = turmas_query.count()
 
     # Consulta para Parentes (filtra por turma e cidade, se informado)
-    # Importante: faz JOIN com Formando para evitar contar órfãos
     parentes_query = Parente.query.join(Formando, Parente.formando_id == Formando.id)
     if turma_filter:
         parentes_query = parentes_query.filter(Formando.turma == turma_filter)
@@ -71,23 +76,25 @@ def index():
         alunos_com_foto_data = [alunos_com_foto]
 
     # Gráfico de Pizza: Distribuição de Parentes por Cidade
-    # Aqui normalizamos o campo cidade usando trim() e lower(), agrupando os registros e,
-    # na exibição, capitalizamos o valor.
     pais_por_cidade_q = db.session.query(
         func.trim(func.lower(Parente.cidade)).label('cidade_norm'),
         func.count(Parente.id)
-    ).join(Formando)  # garante que só são contados parentes que possuem formando
+    ).join(Formando)
     if turma_filter:
         pais_por_cidade_q = pais_por_cidade_q.filter(Formando.turma == turma_filter)
     pais_por_cidade = pais_por_cidade_q.group_by('cidade_norm').all()
-    cidades_labels = [ (cidade.capitalize() if cidade else "Desconhecido") for cidade, count in pais_por_cidade ]
-    pais_counts    = [ count for cidade, count in pais_por_cidade ]
+    cidades_labels = [
+        (cidade.capitalize() if cidade else "Desconhecido")
+        for cidade, _ in pais_por_cidade
+    ]
+    pais_counts = [count for _, count in pais_por_cidade]
 
     # Ranking de Turmas por Taxa de Conversão
     turmas = [t[0] for t in db.session.query(Formando.turma).distinct().all()]
     ranking_data = []
     for t in turmas:
-        total = db.session.query(func.count(Formando.id)).filter(Formando.turma == t).scalar() or 0
+        total = db.session.query(func.count(Formando.id))\
+                   .filter(Formando.turma == t).scalar() or 0
         alunos_com_foto_t = db.session.query(Formando.id).join(Parente)\
                               .filter(Formando.turma == t, Parente.comprou_foto == True)\
                               .distinct().count()

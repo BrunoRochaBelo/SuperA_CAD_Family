@@ -2,39 +2,65 @@
 import io
 import datetime
 import pandas as pd
+from io import BytesIO
 from werkzeug.utils import secure_filename
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import (
+    Blueprint, render_template, request, redirect,
+    url_for, flash, jsonify
+)
 from flask_login import login_required, current_user
 from sqlalchemy import func, case
+
 from formaturas_app import db
 from formaturas_app.models import Formando, Parente
 from formaturas_app.utils.loggers import logger_access, logger_crud
+from formaturas_app.decorators import exige_turma
 
 turmas_bp = Blueprint('turmas', __name__)
 
 @turmas_bp.route('/')
 @login_required
+@exige_turma(
+    active_page='turmas',
+    title='Sem turmas cadastradas',
+    message='Para visualizar turmas, adicione ao menos uma turma.'
+)
 def index():
     db.session.expire_all()
-    # Log de acesso à listagem de turmas
     logger_access.info(f"Acesso à página de turmas - usuário: {current_user.email}")
 
-    # Consulta para obter dados consolidados por turma.
-    turmas_data = db.session.query(
-        Formando.turma,
-        func.count(func.distinct(Formando.id)).label('alunos_count'),
-        func.count(Parente.id).label('parentes_count'),
-        func.coalesce(func.sum(case((Parente.comprou_foto, 1), else_=0)), 0).label('fotos_compradas_count')
-    ).outerjoin(Parente, Parente.formando_id == Formando.id) \
-     .group_by(Formando.turma) \
-     .order_by(Formando.turma.asc()).all()
+    # Dados consolidados por turma
+    turmas_data = (
+        db.session
+          .query(
+              Formando.turma,
+              func.count(func.distinct(Formando.id)).label('alunos_count'),
+              func.count(Parente.id).label('parentes_count'),
+              func.coalesce(
+                func.sum(case((Parente.comprou_foto, 1), else_=0)), 0
+              ).label('fotos_compradas_count')
+          )
+          .outerjoin(Parente, Parente.formando_id == Formando.id)
+          .group_by(Formando.turma)
+          .order_by(Formando.turma.asc())
+          .all()
+    )
 
     total_turmas   = len(turmas_data)
     total_alunos   = db.session.query(func.count(Formando.id)).scalar() or 0
-    total_parentes = db.session.query(func.count(Parente.id)).join(Formando).scalar() or 0
-    total_fotos    = db.session.query(
-        func.coalesce(func.sum(case((Parente.comprou_foto, 1), else_=0)), 0)
-    ).join(Formando).scalar() or 0
+    total_parentes = (
+        db.session.query(func.count(Parente.id))
+                  .join(Formando)
+                  .scalar() or 0
+    )
+    total_fotos = (
+        db.session
+          .query(func.coalesce(
+              func.sum(case((Parente.comprou_foto, 1), else_=0)), 0
+          ))
+          .join(Formando)
+          .scalar() or 0
+    )
 
     return render_template(
         'turmas/index.html',
@@ -51,6 +77,7 @@ def index():
 @login_required
 def nova_turma():
     db.session.expire_all()
+
     if request.method == 'POST':
         if 'arquivo' not in request.files:
             flash('Nenhum arquivo enviado!', 'danger')
@@ -63,7 +90,7 @@ def nova_turma():
             flash('Formato inválido! Envie CSV, XLS ou XLSX.', 'danger')
             return redirect(url_for('turmas.nova_turma', active_page='turmas'))
 
-        # Importação CSV
+        # CSV
         if nome_arquivo.endswith('.csv'):
             conteudo = arquivo.read().decode('utf-8', errors='replace')
             linhas = conteudo.splitlines()
@@ -71,61 +98,59 @@ def nova_turma():
                 flash('Arquivo CSV vazio!', 'danger')
                 return redirect(url_for('turmas.nova_turma', active_page='turmas'))
             contador = _import_csv(linhas)
-            logger_crud.info(f"Importação CSV de turmas: {contador} registros inseridos por {current_user.email}")
+            logger_crud.info(
+                f"Importação CSV: {contador} registros por {current_user.email}"
+            )
             return redirect(url_for('turmas.index', active_page='turmas'))
 
-        # Importação Excel
-        else:
-            conteudo_bin = arquivo.read()
-            try:
-                df = pd.read_excel(io.BytesIO(conteudo_bin))
-            except Exception as e:
-                flash(f'Erro ao ler planilha: {e}', 'danger')
-                return redirect(url_for('turmas.nova_turma', active_page='turmas'))
+        # Excel
+        conteudo_bin = arquivo.read()
+        try:
+            df = pd.read_excel(io.BytesIO(conteudo_bin))
+        except Exception as e:
+            flash(f'Erro ao ler planilha: {e}', 'danger')
+            return redirect(url_for('turmas.nova_turma', active_page='turmas'))
 
-            df.columns = df.columns.str.strip().str.lower()
-            if 'turma' not in df.columns or 'aluno' not in df.columns:
-                flash('Planilha deve ter colunas "Turma" e "Aluno".', 'danger')
-                return redirect(url_for('turmas.nova_turma', active_page='turmas'))
+        df.columns = df.columns.str.strip().str.lower()
+        if 'turma' not in df.columns or 'aluno' not in df.columns:
+            flash('Planilha deve ter colunas "Turma" e "Aluno".', 'danger')
+            return redirect(url_for('turmas.nova_turma', active_page='turmas'))
 
-            contador = 0
-            for _, row in df.iterrows():
-                t = str(row['turma']).strip()
-                a = str(row['aluno']).strip()
-                if t and a:
-                    db.session.add(Formando(turma=t, aluno=a))
-                    contador += 1
-            db.session.commit()
-            flash(f'Importação Excel ok! {contador} registros inseridos.', 'success')
-            logger_crud.info(f"Importação Excel de turmas: {contador} registros inseridos por {current_user.email}")
-            return redirect(url_for('turmas.index', active_page='turmas'))
+        contador = 0
+        for _, row in df.iterrows():
+            t = str(row['turma']).strip()
+            a = str(row['aluno']).strip()
+            if t and a:
+                db.session.add(Formando(turma=t, aluno=a))
+                contador += 1
+        db.session.commit()
+        flash(f'Importação Excel ok! {contador} registros inseridos.', 'success')
+        logger_crud.info(
+            f"Importação Excel: {contador} registros por {current_user.email}"
+        )
+        return redirect(url_for('turmas.index', active_page='turmas'))
 
     return render_template('turmas/importar.html', active_page='turmas')
 
 
 def _import_csv(linhas):
-    """
-    Lê as linhas de um CSV, insere Formando e retorna a quantidade de registros.
-    """
     reader = csv.reader(linhas)
     header = next(reader, None)
     if not header:
         flash('Não foi possível ler o cabeçalho do CSV!', 'danger')
         return 0
 
-    header_norm = [col.strip().lower() for col in header]
-    if 'turma' not in header_norm or 'aluno' not in header_norm:
+    cols = [c.strip().lower() for c in header]
+    if 'turma' not in cols or 'aluno' not in cols:
         flash('CSV deve ter colunas "Turma" e "Aluno".', 'danger')
         return 0
 
-    idx_turma = header_norm.index('turma')
-    idx_aluno = header_norm.index('aluno')
+    idx_t, idx_a = cols.index('turma'), cols.index('aluno')
     contador = 0
     for row in reader:
-        if len(row) <= max(idx_turma, idx_aluno):
+        if len(row) <= max(idx_t, idx_a):
             continue
-        t = row[idx_turma].strip()
-        a = row[idx_aluno].strip()
+        t, a = row[idx_t].strip(), row[idx_a].strip()
         if t and a:
             db.session.add(Formando(turma=t, aluno=a))
             contador += 1
@@ -139,22 +164,28 @@ def _import_csv(linhas):
 def editar_turma(turma):
     db.session.expire_all()
     if request.method == 'POST':
-        nova_turma = request.form.get('nova_turma')
-        if not nova_turma:
+        nova = request.form.get('nova_turma')
+        if not nova:
             flash('Informe o novo nome da Turma.', 'danger')
-            return redirect(url_for('turmas.editar_turma', turma=turma, active_page='turmas'))
+            return redirect(
+                url_for('turmas.editar_turma', turma=turma, active_page='turmas')
+            )
 
-        Formando.query.filter_by(turma=turma).update({Formando.turma: nova_turma})
+        Formando.query.filter_by(turma=turma).update({Formando.turma: nova})
         db.session.commit()
-        logger_crud.info(f"Turma renomeada: '{turma}' ➝ '{nova_turma}' por {current_user.email}")
+        logger_crud.info(
+            f"Turma renomeada: '{turma}' → '{nova}' por {current_user.email}"
+        )
         flash('Turma renomeada!', 'success')
-        return redirect(url_for('turmas.editar_turma', turma=nova_turma, active_page='turmas'))
+        return redirect(
+            url_for('turmas.editar_turma', turma=nova, active_page='turmas')
+        )
 
     order = request.args.get('order', 'asc')
-    if order == 'desc':
-        alunos = Formando.query.filter_by(turma=turma).order_by(Formando.aluno.desc()).all()
-    else:
-        alunos = Formando.query.filter_by(turma=turma).order_by(Formando.aluno.asc()).all()
+    alunos = Formando.query.filter_by(turma=turma)
+    alunos = alunos.order_by(
+        Formando.aluno.desc() if order=='desc' else Formando.aluno.asc()
+    ).all()
 
     return render_template(
         'turmas/editar_turma.html',
@@ -169,29 +200,38 @@ def editar_turma(turma):
 @login_required
 def excluir_aluno(id):
     db.session.expire_all()
-    aluno = Formando.query.get_or_404(id)
-    old_turma = aluno.turma
-    db.session.delete(aluno)
+    f = Formando.query.get_or_404(id)
+    old = f.turma
+    db.session.delete(f)
     db.session.commit()
-    logger_crud.info(f"Aluno excluído: '{aluno.aluno}' da turma '{old_turma}' por {current_user.email}")
+    logger_crud.info(
+        f"Aluno excluído: '{f.aluno}' da turma '{old}' por {current_user.email}"
+    )
     flash('Aluno excluído da Turma!', 'success')
-    return redirect(url_for('turmas.editar_turma', turma=old_turma, active_page='turmas'))
+    return redirect(
+        url_for('turmas.editar_turma', turma=old, active_page='turmas')
+    )
 
 
 @turmas_bp.route('/adicionar_aluno/<string:turma>', methods=['POST'])
 @login_required
 def adicionar_aluno(turma):
     db.session.expire_all()
-    novo_aluno = request.form.get('aluno')
-    if not novo_aluno:
+    novo = request.form.get('aluno')
+    if not novo:
         flash('Nome do Aluno é obrigatório.', 'danger')
-        return redirect(url_for('turmas.editar_turma', turma=turma, active_page='turmas'))
-
-    db.session.add(Formando(turma=turma, aluno=novo_aluno))
+        return redirect(
+            url_for('turmas.editar_turma', turma=turma, active_page='turmas')
+        )
+    db.session.add(Formando(turma=turma, aluno=novo))
     db.session.commit()
-    logger_crud.info(f"Aluno adicionado: '{novo_aluno}' na turma '{turma}' por {current_user.email}")
+    logger_crud.info(
+        f"Aluno adicionado: '{novo}' na turma '{turma}' por {current_user.email}"
+    )
     flash('Aluno adicionado!', 'success')
-    return redirect(url_for('turmas.editar_turma', turma=turma, active_page='turmas'))
+    return redirect(
+        url_for('turmas.editar_turma', turma=turma, active_page='turmas')
+    )
 
 
 @turmas_bp.route('/excluir_turma/<string:turma>')
@@ -200,7 +240,9 @@ def excluir_turma(turma):
     db.session.expire_all()
     Formando.query.filter_by(turma=turma).delete()
     db.session.commit()
-    logger_crud.warning(f"Turma excluída: '{turma}' por {current_user.email}")
+    logger_crud.warning(
+        f"Turma excluída: '{turma}' por {current_user.email}"
+    )
     flash('Turma excluída!', 'success')
     return redirect(url_for('turmas.index', active_page='turmas'))
 

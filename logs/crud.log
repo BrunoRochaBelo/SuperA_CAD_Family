@@ -5,3 +5,6 @@
 [2025-04-17 00:45:56,461] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou empresa 'SuperA'
 [2025-04-17 00:45:56,676] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou usuário ADM 'ciro@demo.com' para empresa 'SuperA'
 [2025-04-17 23:53:45,630] INFO - Importação Excel de turmas: 55 registros inseridos por ciro@demo.com
+[2025-04-18 20:36:15,288] WARNING - Turma excluída: 'COLÉGIO BOA VIAGEM - CBV - 2024 - 866' por ciro@demo.com
+[2025-04-18 21:03:32,465] INFO - Importação Excel: 55 registros por ciro@demo.com
+[2025-04-18 21:03:42,101] WARNING - Turma excluída: 'COLÉGIO BOA VIAGEM - CBV - 2024 - 866' por ciro@demo.com
