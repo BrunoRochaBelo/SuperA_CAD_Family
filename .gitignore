@@ -5,7 +5,7 @@ __pycache__/
 *.pyd
 
 # Banco de dados local (SQLite, se for o caso)
-*.db
+# *.db
 
 # Arquivos de configuração e segredos
 .env
@@ -13,7 +13,9 @@ __pycache__/
 
 # Diretórios gerados automaticamente
 instance/
-migrations/
+# migrations/
+
+# Pacotes e builds
 *.egg-info/
 dist/
 build/
@@ -33,4 +35,3 @@ Thumbs.db  # Windows
 
 # VSCode settings (se você usar VSCode)
 .vscode/
-

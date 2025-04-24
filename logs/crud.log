@@ -33,3 +33,6 @@
 [2025-04-24 18:52:27,745] INFO - [empresa:1] Usuário: adminbruno@diretiva.com excluiu empresa (ID:2) 'SuperA'
 [2025-04-24 18:54:35,171] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou empresa 'Direitva'
 [2025-04-24 18:54:35,360] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou usuário ADM 'admin@demo.com' para empresa 'Direitva'
+[2025-04-24 19:46:42,819] INFO - Importação Excel: 55 registros por adminbruno@diretiva.com
+[2025-04-24 19:48:03,402] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou empresa 'Diretiva'
+[2025-04-24 19:48:03,480] INFO - [empresa:1] Usuário: adminbruno@diretiva.com criou usuário ADM 'admin@demo.com' para empresa 'Diretiva'

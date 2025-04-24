@@ -216,3 +216,19 @@
 [2025-04-24 18:54:35,375] INFO - [empresa:1] Acesso à lista de empresas | Usuário: adminbruno@diretiva.com
 [2025-04-24 18:54:35,542] INFO - [empresa:1] Listagem de empresas via API | Usuário: adminbruno@diretiva.com
 [2025-04-24 18:54:52,105] INFO - [empresa:1] Logout efetuado | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:36:36,398] INFO - [empresa:1] Login realizado com sucesso | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:36:36,415] INFO - [empresa:1] Acesso à lista de empresas | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:36:36,754] INFO - [empresa:1] Listagem de empresas via API | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:46:12,946] INFO - [empresa:1] Acesso à lista de empresas | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:46:42,830] INFO - Acesso à página de turmas - usuário: adminbruno@diretiva.com
+[2025-04-24 19:46:57,349] INFO - [empresa:1] Logout efetuado | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:47:15,633] INFO - [empresa:1] Login realizado com sucesso | Usuário: anna@demo.com
+[2025-04-24 19:47:40,138] INFO - [empresa:1] Logout efetuado | Usuário: anna@demo.com
+[2025-04-24 19:47:50,035] INFO - [empresa:1] Login realizado com sucesso | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:47:50,052] INFO - [empresa:1] Acesso à lista de empresas | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:47:50,137] INFO - [empresa:1] Listagem de empresas via API | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:48:03,490] INFO - [empresa:1] Acesso à lista de empresas | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:48:03,603] INFO - [empresa:1] Listagem de empresas via API | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:48:05,805] INFO - [empresa:1] Logout efetuado | Usuário: adminbruno@diretiva.com
+[2025-04-24 19:48:25,969] INFO - [empresa:2] Login realizado com sucesso | Usuário: admin@demo.com
+[2025-04-24 19:54:14,557] INFO - [empresa:2] Logout efetuado | Usuário: admin@demo.com

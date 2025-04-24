@@ -1,7 +1,7 @@
 ﻿import os
 import logging
-import sqlite3
 from logging.handlers import RotatingFileHandler
+
 from flask import Flask, send_from_directory, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -10,25 +10,12 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 
-# pra registrar o PRAGMA no Engine do SQLAlchemy
-from sqlalchemy import event
-from sqlalchemy.engine import Engine
-
 # Extensões globais
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 limiter = Limiter(key_func=get_remote_address)
-
-# --- Ativa foreign_keys no SQLite assim que qualquer conexão for aberta ---
-@event.listens_for(Engine, "connect")
-def _set_sqlite_pragma(dbapi_conn, connection_record):
-    if isinstance(dbapi_conn, sqlite3.Connection):
-        cursor = dbapi_conn.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
-# -------------------------------------------------------------------------
 
 def create_app():
     load_dotenv()
@@ -79,11 +66,7 @@ def create_app():
             'favicon.svg', mimetype='image/svg+xml'
         )
 
-    # Cria tabelas iniciais e seed admin
-    with app.app_context():
-        db.create_all()
-        from formaturas_app.seed import seed_admin
-        seed_admin()
+
 
     # Bloqueia quem tá com empresa inativa
     @app.before_request
