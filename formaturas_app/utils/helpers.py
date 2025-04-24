@@ -1,5 +1,3 @@
-# formaturas_app/utils/helpers.py
-
 # Valor padrão caso o campo max_usuarios não esteja definido na empresa
 DEFAULT_LIMITE_USUARIOS = 5
 

@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, Response, jsonify, flash
 from flask_login import login_required, current_user
 from formaturas_app import db
 from formaturas_app.models import Parente, Formando
-from formaturas_app.decorators import exige_turma  # <-- import do decorator
+from formaturas_app.decorators import exige_turma
 import pandas as pd
 from io import BytesIO
 from datetime import datetime
@@ -28,9 +28,26 @@ def filtrar():
     if current_user.papel.value != 'ADM':
         return "Acesso negado!", 403
 
-    turmas_opcoes = db.session.query(Formando.turma).distinct().all()
-    alunos_opcoes = db.session.query(Formando.aluno).distinct().all()
-    cidades_opcoes = db.session.query(Parente.cidade).distinct().all()
+    # opções só da empresa logada
+    turmas_opcoes = (
+        db.session.query(Formando.turma)
+        .filter(Formando.empresa_id == current_user.empresa_id)
+        .distinct()
+        .all()
+    )
+    alunos_opcoes = (
+        db.session.query(Formando.aluno)
+        .filter(Formando.empresa_id == current_user.empresa_id)
+        .distinct()
+        .all()
+    )
+    cidades_opcoes = (
+        db.session.query(Parente.cidade)
+        .join(Formando, Parente.formando_id == Formando.id)
+        .filter(Formando.empresa_id == current_user.empresa_id)
+        .distinct()
+        .all()
+    )
     preview_fields = []
 
     if request.method == 'POST':
@@ -43,7 +60,7 @@ def filtrar():
         preview_fields = fields
         file_name    = request.form.get('file_name')
 
-        query    = _build_query(turma, aluno, cidade, comprou_foto)
+        query     = _build_query(turma, aluno, cidade, comprou_foto)
         resultado = query.all()
 
         if export_type in ['excel', 'pdf']:
@@ -63,10 +80,22 @@ def filtrar():
 @relatorios_bp.route('/listar_alunos/<turma>')
 @login_required
 def listar_alunos(turma):
+    # só mostra alunos da empresa atual
     if turma == 'TODAS':
-        formandos = Formando.query.all()
+        formandos = (
+            Formando.query
+            .filter(Formando.empresa_id == current_user.empresa_id)
+            .all()
+        )
     else:
-        formandos = Formando.query.filter_by(turma=turma).all()
+        formandos = (
+            Formando.query
+            .filter(
+                Formando.empresa_id == current_user.empresa_id,
+                Formando.turma == turma
+            )
+            .all()
+        )
     data = [{'aluno': f.aluno} for f in formandos]
     return jsonify(data)
 
@@ -84,7 +113,7 @@ def preview():
     comprou_foto = data.get('comprou_foto')
     fields       = data.get('fields', [])
 
-    query    = _build_query(turma, aluno, cidade, comprou_foto)
+    query     = _build_query(turma, aluno, cidade, comprou_foto)
     resultado = query.limit(3).all()
 
     preview_data = []
@@ -94,7 +123,12 @@ def preview():
     return jsonify({'preview': preview_data})
 
 def _build_query(turma, aluno, cidade, comprou_foto):
-    query = db.session.query(Parente, Formando).join(Formando, Parente.formando_id == Formando.id)
+    # junta Parente + Formando e já filtra por empresa
+    query = (
+        db.session.query(Parente, Formando)
+        .join(Formando, Parente.formando_id == Formando.id)
+        .filter(Formando.empresa_id == current_user.empresa_id)
+    )
     if turma and turma != 'TODAS':
         query = query.filter(Formando.turma == turma)
     if aluno and aluno != 'TODOS':
@@ -143,9 +177,9 @@ def header_footer(canvas, doc):
 def gerar_pdf(resultado, fields, file_name):
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
-    elements = [ Paragraph("Relatório", getSampleStyleSheet()['Title']), Spacer(1, 12) ]
+    elements = [Paragraph("Relatório", getSampleStyleSheet()['Title']), Spacer(1, 12)]
     data = [fields] + [
-        [ get_value(p, f, field) for field in fields ]
+        [get_value(p, f, field) for field in fields]
         for p, f in resultado
     ]
     table = Table(data, hAlign='CENTER')

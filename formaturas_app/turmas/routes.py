@@ -1,4 +1,6 @@
-﻿import csv
+﻿# routes.py
+
+import csv
 import io
 import datetime
 import pandas as pd
@@ -29,7 +31,6 @@ def index():
     db.session.expire_all()
     logger_access.info(f"Acesso à página de turmas - usuário: {current_user.email}")
 
-    # Dados consolidados por turma
     turmas_data = (
         db.session
           .query(
@@ -41,26 +42,30 @@ def index():
               ).label('fotos_compradas_count')
           )
           .outerjoin(Parente, Parente.formando_id == Formando.id)
+          .filter(Formando.empresa_id == current_user.empresa_id)  # <<< filtro multitenant
           .group_by(Formando.turma)
           .order_by(Formando.turma.asc())
           .all()
     )
 
-    total_turmas   = len(turmas_data)
-    total_alunos   = db.session.query(func.count(Formando.id)).scalar() or 0
-    total_parentes = (
-        db.session.query(func.count(Parente.id))
-                  .join(Formando)
-                  .scalar() or 0
-    )
-    total_fotos = (
-        db.session
-          .query(func.coalesce(
-              func.sum(case((Parente.comprou_foto, 1), else_=0)), 0
-          ))
-          .join(Formando)
-          .scalar() or 0
-    )
+    total_turmas   = db.session.query(func.count(Formando.id)) \
+                        .filter(Formando.empresa_id == current_user.empresa_id) \
+                        .scalar() or 0
+    total_alunos   = db.session.query(func.count(Formando.id)) \
+                        .filter(Formando.empresa_id == current_user.empresa_id) \
+                        .scalar() or 0
+    total_parentes = db.session.query(func.count(Parente.id)) \
+                        .join(Formando) \
+                        .filter(Formando.empresa_id == current_user.empresa_id) \
+                        .scalar() or 0
+    total_fotos = db.session.query(
+                        func.coalesce(
+                          func.sum(case((Parente.comprou_foto, 1), else_=0)), 0
+                        )
+                      ) \
+                      .join(Formando) \
+                      .filter(Formando.empresa_id == current_user.empresa_id) \
+                      .scalar() or 0
 
     return render_template(
         'turmas/index.html',
@@ -71,7 +76,6 @@ def index():
         total_fotos_compradas=total_fotos,
         active_page='turmas'
     )
-
 
 @turmas_bp.route('/nova_turma', methods=['GET', 'POST'])
 @login_required
@@ -121,7 +125,13 @@ def nova_turma():
             t = str(row['turma']).strip()
             a = str(row['aluno']).strip()
             if t and a:
-                db.session.add(Formando(turma=t, aluno=a))
+                db.session.add(
+                    Formando(
+                        turma=t,
+                        aluno=a,
+                        empresa_id=current_user.empresa_id  # <<< garante vínculo
+                    )
+                )
                 contador += 1
         db.session.commit()
         flash(f'Importação Excel ok! {contador} registros inseridos.', 'success')
@@ -131,7 +141,6 @@ def nova_turma():
         return redirect(url_for('turmas.index', active_page='turmas'))
 
     return render_template('turmas/importar.html', active_page='turmas')
-
 
 def _import_csv(linhas):
     reader = csv.reader(linhas)
@@ -152,12 +161,17 @@ def _import_csv(linhas):
             continue
         t, a = row[idx_t].strip(), row[idx_a].strip()
         if t and a:
-            db.session.add(Formando(turma=t, aluno=a))
+            db.session.add(
+                Formando(
+                    turma=t,
+                    aluno=a,
+                    empresa_id=current_user.empresa_id  # <<< mesma ideia aqui
+                )
+            )
             contador += 1
     db.session.commit()
     flash(f'Importação CSV ok! {contador} registros inseridos.', 'success')
     return contador
-
 
 @turmas_bp.route('/editar_turma/<string:turma>', methods=['GET', 'POST'])
 @login_required
@@ -171,7 +185,10 @@ def editar_turma(turma):
                 url_for('turmas.editar_turma', turma=turma, active_page='turmas')
             )
 
-        Formando.query.filter_by(turma=turma).update({Formando.turma: nova})
+        # só afeta registros da empresa do usuário
+        Formando.query \
+            .filter_by(turma=turma, empresa_id=current_user.empresa_id) \
+            .update({Formando.turma: nova})
         db.session.commit()
         logger_crud.info(
             f"Turma renomeada: '{turma}' → '{nova}' por {current_user.email}"
@@ -182,10 +199,11 @@ def editar_turma(turma):
         )
 
     order = request.args.get('order', 'asc')
-    alunos = Formando.query.filter_by(turma=turma)
-    alunos = alunos.order_by(
-        Formando.aluno.desc() if order=='desc' else Formando.aluno.asc()
-    ).all()
+    alunos = Formando.query \
+                .filter_by(turma=turma, empresa_id=current_user.empresa_id) \
+                .order_by(
+                    Formando.aluno.desc() if order=='desc' else Formando.aluno.asc()
+                ).all()
 
     return render_template(
         'turmas/editar_turma.html',
@@ -195,12 +213,15 @@ def editar_turma(turma):
         active_page='turmas'
     )
 
-
 @turmas_bp.route('/excluir_aluno/<int:id>')
 @login_required
 def excluir_aluno(id):
     db.session.expire_all()
     f = Formando.query.get_or_404(id)
+    if f.empresa_id != current_user.empresa_id:
+        flash('Acesso negado!', 'danger')
+        return redirect(url_for('turmas.index', active_page='turmas'))
+
     old = f.turma
     db.session.delete(f)
     db.session.commit()
@@ -212,7 +233,6 @@ def excluir_aluno(id):
         url_for('turmas.editar_turma', turma=old, active_page='turmas')
     )
 
-
 @turmas_bp.route('/adicionar_aluno/<string:turma>', methods=['POST'])
 @login_required
 def adicionar_aluno(turma):
@@ -223,7 +243,14 @@ def adicionar_aluno(turma):
         return redirect(
             url_for('turmas.editar_turma', turma=turma, active_page='turmas')
         )
-    db.session.add(Formando(turma=turma, aluno=novo))
+
+    db.session.add(
+        Formando(
+            turma=turma,
+            aluno=novo,
+            empresa_id=current_user.empresa_id  # <<< preenche FK
+        )
+    )
     db.session.commit()
     logger_crud.info(
         f"Aluno adicionado: '{novo}' na turma '{turma}' por {current_user.email}"
@@ -233,12 +260,14 @@ def adicionar_aluno(turma):
         url_for('turmas.editar_turma', turma=turma, active_page='turmas')
     )
 
-
 @turmas_bp.route('/excluir_turma/<string:turma>')
 @login_required
 def excluir_turma(turma):
     db.session.expire_all()
-    Formando.query.filter_by(turma=turma).delete()
+    # deleta só turmas da empresa do usuário
+    Formando.query \
+        .filter_by(turma=turma, empresa_id=current_user.empresa_id) \
+        .delete()
     db.session.commit()
     logger_crud.warning(
         f"Turma excluída: '{turma}' por {current_user.email}"
@@ -246,20 +275,25 @@ def excluir_turma(turma):
     flash('Turma excluída!', 'success')
     return redirect(url_for('turmas.index', active_page='turmas'))
 
-
-# --- Endpoints para gerenciamento de Parentes ---
+# Endpoints de Parentes
 
 @turmas_bp.route('/listar_parents/<int:formando_id>')
 @login_required
 def listar_parents(formando_id):
     db.session.expire_all()
-    parentes = Parente.query.filter_by(formando_id=formando_id).all()
+    # só retorna parentes do formando da empresa certa
+    parentes = (
+        Parente.query
+               .join(Formando)
+               .filter(
+                   Parente.formando_id == formando_id,
+                   Formando.empresa_id == current_user.empresa_id
+               )
+               .all()
+    )
     data = []
     for p in parentes:
-        if p.data_nascimento and isinstance(p.data_nascimento, datetime.date):
-            data_nasc = p.data_nascimento.isoformat()
-        else:
-            data_nasc = ''
+        data_nasc = p.data_nascimento.isoformat() if p.data_nascimento else ''
         data.append({
             'id': p.id,
             'nome': p.nome,
@@ -272,7 +306,6 @@ def listar_parents(formando_id):
         })
     return jsonify(data)
 
-
 @turmas_bp.route('/criar_parente', methods=['POST'])
 @login_required
 def criar_parente():
@@ -284,6 +317,10 @@ def criar_parente():
     fid = data.get('formando_id')
     if not fid:
         return jsonify({'success': False, 'message': 'Faltou ID do Aluno'}), 400
+
+    formando = Formando.query.get_or_404(fid)
+    if formando.empresa_id != current_user.empresa_id:
+        return jsonify({'success': False, 'message': 'Acesso negado'}), 403
 
     p = Parente(
         formando_id=fid,
@@ -301,7 +338,6 @@ def criar_parente():
 
     return listar_parents(fid)
 
-
 @turmas_bp.route('/editar_parente/<int:parente_id>', methods=['POST'])
 @login_required
 def editar_parente(parente_id):
@@ -309,8 +345,11 @@ def editar_parente(parente_id):
     if current_user.papel.value not in ['ADM', 'EDITOR']:
         return jsonify({'success': False, 'message': 'Acesso negado'}), 403
 
-    data = request.get_json() or {}
     p = Parente.query.get_or_404(parente_id)
+    if p.formando.empresa_id != current_user.empresa_id:
+        return jsonify({'success': False, 'message': 'Acesso negado'}), 403
+
+    data = request.get_json() or {}
     p.nome = data.get('nome', p.nome)
     p.grau = data.get('grau', p.grau)
     p.cidade = data.get('cidade', p.cidade)
@@ -323,7 +362,6 @@ def editar_parente(parente_id):
 
     return listar_parents(p.formando_id)
 
-
 @turmas_bp.route('/excluir_parente/<int:parente_id>', methods=['DELETE'])
 @login_required
 def excluir_parente(parente_id):
@@ -332,6 +370,9 @@ def excluir_parente(parente_id):
         return jsonify({'success': False, 'message': 'Acesso negado'}), 403
 
     p = Parente.query.get_or_404(parente_id)
+    if p.formando.empresa_id != current_user.empresa_id:
+        return jsonify({'success': False, 'message': 'Acesso negado'}), 403
+
     fid = p.formando_id
     db.session.delete(p)
     db.session.commit()

@@ -38,7 +38,7 @@ def require_trusted_origin(allowed_hosts=None):
         allowed_hosts = [
             "127.0.0.1",
             "localhost",
-            "supera-cad-family.onrender.com",  # domínio de produção
+            "supera-cad-family.onrender.com",
         ]
 
     def decorator(func):
@@ -56,18 +56,20 @@ def require_trusted_origin(allowed_hosts=None):
 
 def exige_turma(active_page, title, message, button_endpoint='turmas.nova_turma'):
     """
-    Garante que exista ao menos UMA turma (via Formando.turma).
+    Garante que exista ao menos UMA turma **da empresa logada**.
     Se não houver, renderiza shared/sem_turmas.html passando:
-      - active_page: para marcar a aba ativa na navbar
+      - active_page: aba ativa
       - fallback_title: título principal da mensagem
       - fallback_message: texto explicativo
-      - button_endpoint: endpoint para o botão de criar turma
+      - button_endpoint: endpoint pro botão de criar turma
     """
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
+            # conta só as turmas da empresa do usuário atual
             primeira = (
                 Formando.query
+                       .filter(Formando.empresa_id == current_user.empresa_id)
                        .with_entities(Formando.turma)
                        .distinct()
                        .first()

@@ -2194,13 +2194,6 @@ label {
   box-shadow: 0 2px 8px rgba(229, 46, 46, 0.2);
 }
 
-.btn-importar::before {
-  content: "+";
-  margin-right: 0.5rem;
-  font-size: 1.1rem;
-  line-height: 1;
-}
-
 /* Para garantir que o contêiner se ajuste adequadamente em diferentes ambientes */
 @media (min-height: 700px) {
   .fallback-container {

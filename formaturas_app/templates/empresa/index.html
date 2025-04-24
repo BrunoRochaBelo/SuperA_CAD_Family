@@ -19,29 +19,51 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
-    <!-- Tippy.js CSS para tooltips -->
+    <!-- Tippy.js CSS pra tooltips -->
     <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
   </head>
   <body>
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div id="flash-messages">
+      {% for category, msg in messages %}
+      <div class="alert alert-{{ category|default('info') }}">
+        <span class="alert-text">{{ msg }}</span>
+        <button
+          class="alert-close"
+          onclick="this.parentElement.style.display='none';"
+        >
+          &times;
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
+
+    <!-- Expõe no JS o ID da empresa do super-admin -->
+    <script>
+      const CURRENT_EMPRESA_ID = {{ current_user.empresa_id }};
+    </script>
+
     <div class="perfil-wrapper" style="margin-top: 20px"></div>
     <div class="container-floating">
       <div class="container">
         <h2>Gerenciamento de Empresas</h2>
 
-        <!-- Resumo de Empresas -->
+        <!-- Resumo -->
         <div class="empresas-summary">
           Total de Empresas:
           <span id="total-empresas">{{ empresas|length }}</span>
         </div>
 
-        <!-- Botão de ordenação -->
+        <!-- Ordenação -->
         <div class="sorting">
           <button id="orderToggle" data-order="asc" class="btn">
             Ordenar A-Z
           </button>
         </div>
 
-        <!-- Tabela com a lista de empresas -->
+        <!-- Tabela -->
         <div class="table-responsive">
           <table class="table" id="empresasTable">
             <thead>
@@ -73,11 +95,13 @@
                     data-empresa-id="{{ emp.id }}"
                     title="Editar"
                   ></button>
+                  {% if emp.id != current_user.empresa_id %}
                   <button
                     class="btn-excluir"
                     data-empresa-id="{{ emp.id }}"
                     title="Excluir"
                   ></button>
+                  {% endif %}
                 </td>
               </tr>
               {% endfor %}
@@ -85,7 +109,7 @@
           </table>
         </div>
 
-        <!-- Botão para adicionar nova empresa -->
+        <!-- Botões no rodapé -->
         <div class="profile-button-group">
           <div class="empresa-controls">
             <a
@@ -98,27 +122,11 @@
             href="{{ url_for('auth.logout') }}"
             class="profile-btn btn-voltar btn-icon-text"
           >
-            <span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-            </span>
-            Encerrar sessão
+            <span><!-- ícone logout --></span> Encerrar sessão
           </a>
         </div>
 
-        <!-- Modal para Edição de Empresa -->
+        <!-- Modal Editar (igual ao seu anterior) -->
         <div
           class="modal-overlay"
           id="modalEditarEmpresa"
@@ -176,7 +184,7 @@
           </div>
         </div>
 
-        <!-- Modal para Exclusão de Empresa -->
+        <!-- Modal Excluir -->
         <div
           class="modal-overlay"
           id="modalExcluirEmpresa"
@@ -186,7 +194,7 @@
             <h2>Excluir Empresa</h2>
             <p>
               Tem certeza que deseja excluir a empresa
-              <span id="excluirEmpresaNome"></span>?
+              <strong id="excluirEmpresaNome"></strong>?
             </p>
             <div class="modal-button-group">
               <button
@@ -207,59 +215,86 @@
           </div>
         </div>
       </div>
-      <!-- Fim container -->
     </div>
 
+    <!-- JS -->
     <script>
-      // Atualiza a lista de empresas via API
+      window.onload = function () {
+        // Auto-dismiss dos alerts: fade out e depois oculta o container
+        setTimeout(function () {
+          const flashDiv = document.getElementById("flash-messages");
+          if (flashDiv) {
+            flashDiv.style.opacity = "0";
+            setTimeout(function () {
+              flashDiv.style.display = "none";
+            }, 500); // tempo para a transição
+          }
+        }, 5000);
+
+        // Adiciona a classe "fade-in" para que o main fique visível
+        document.querySelector("main").classList.add("fade-in");
+      };
+    </script>
+    <script>
+      // Atualiza a lista via API
       function updateEmpresaList() {
         fetch("{{ url_for('empresa.api_empresas') }}")
-          .then((response) => response.json())
+          .then((res) => res.json())
           .then((data) => {
             const empresas = data.empresas;
             document.getElementById("total-empresas").textContent =
               empresas.length;
             const tbody = document.getElementById("empresasBody");
             tbody.innerHTML = "";
+
             empresas.forEach((emp) => {
+              const canDelete = emp.id !== CURRENT_EMPRESA_ID;
               const row = document.createElement("tr");
               row.className = "empresa-row";
               row.setAttribute("data-empresa-id", emp.id);
               row.setAttribute("data-empresa-nome", emp.nome.toLowerCase());
               row.setAttribute("data-empresa-status", emp.status);
               row.innerHTML = `
-            <td>
-              ${emp.nome}<br>
-              <small class="empresa-info">${emp.admin_email}</small>
-            </td>
-            <td>${emp.status}</td>
-            <td style="text-align: right">
-              <button class="btn-editar" data-empresa-id="${emp.id}" title="Editar"></button>
-              <button class="btn-excluir" data-empresa-id="${emp.id}" title="Excluir"></button>
-            </td>
-          `;
+                <td>
+                  ${emp.nome}<br>
+                  <small class="empresa-info">${emp.admin_email}</small>
+                </td>
+                <td>${emp.status}</td>
+                <td style="text-align: right">
+                  <button class="btn-editar" data-empresa-id="${
+                    emp.id
+                  }" title="Editar"></button>
+                  ${
+                    canDelete
+                      ? `<button class="btn-excluir" data-empresa-id="${emp.id}" title="Excluir"></button>`
+                      : ""
+                  }
+                </td>
+              `;
               tbody.appendChild(row);
             });
+
             attachEmpresaRowEvents();
           });
       }
 
+      // Binda eventos de click nas linhas e botões
       function attachEmpresaRowEvents() {
-        document.querySelectorAll(".empresa-row").forEach(function (row) {
-          row.addEventListener("click", function (e) {
+        // Editar
+        document.querySelectorAll(".empresa-row").forEach((row) => {
+          row.addEventListener("click", (e) => {
             if (
               !e.target.closest(".btn-editar") &&
               !e.target.closest(".btn-excluir")
             ) {
-              var empresaId = this.getAttribute("data-empresa-id");
-              var empresaNome = this.getAttribute("data-empresa-nome");
-              var empresaStatus = this.getAttribute("data-empresa-status");
-              document.getElementById("editEmpresaId").value = empresaId;
-              document.getElementById("editEmpresaNome").value = empresaNome;
-              document.getElementById("editEmpresaStatus").value =
-                empresaStatus;
-              originalNome = empresaNome;
-              originalStatus = empresaStatus;
+              const id = row.dataset.empresaId;
+              const nome = row.dataset.empresaNome;
+              const status = row.dataset.empresaStatus;
+              document.getElementById("editEmpresaId").value = id;
+              document.getElementById("editEmpresaNome").value = nome;
+              document.getElementById("editEmpresaStatus").value = status;
+              originalNome = nome;
+              originalStatus = status;
               document.getElementById("feedbackEditNome").textContent = "";
               document.getElementById(
                 "btnSalvarModalEditarEmpresa"
@@ -269,147 +304,66 @@
             }
           });
         });
-        // Eventos para botões de exclusão
-        document.querySelectorAll(".btn-excluir").forEach(function (btn) {
-          btn.addEventListener("click", function (e) {
+
+        // Excluir
+        document.querySelectorAll(".btn-excluir").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
             e.stopPropagation();
-            var empresaId = btn.getAttribute("data-empresa-id");
-            var row = btn.closest("tr");
-            var empresaNome = row.children[0].textContent.trim();
-            document.getElementById("excluirEmpresaNome").textContent =
-              empresaNome;
+            const id = btn.dataset.empresaId;
+            const nome = btn.closest("tr").dataset.empresaNome;
+            document.getElementById("excluirEmpresaNome").textContent = nome;
             document
               .getElementById("modalExcluirEmpresa")
-              .setAttribute("data-empresa-id", empresaId);
+              .setAttribute("data-empresa-id", id);
             document.getElementById("modalExcluirEmpresa").style.display =
               "flex";
           });
         });
       }
 
-      // Ordenação das empresas
+      // Ordenação
       document
         .getElementById("orderToggle")
         .addEventListener("click", function () {
-          var currentOrder = this.getAttribute("data-order");
-          var newOrder = currentOrder === "asc" ? "desc" : "asc";
-          sortEmpresaRows(newOrder);
-          this.setAttribute("data-order", newOrder);
-          this.textContent = newOrder === "asc" ? "Ordenar A-Z" : "Ordenar Z-A";
+          const order =
+            this.getAttribute("data-order") === "asc" ? "desc" : "asc";
+          sortEmpresaRows(order);
+          this.setAttribute("data-order", order);
+          this.textContent = order === "asc" ? "Ordenar A-Z" : "Ordenar Z-A";
         });
 
       function sortEmpresaRows(order) {
-        var tbody = document.getElementById("empresasBody");
-        var rows = Array.from(tbody.querySelectorAll(".empresa-row"));
-        rows.sort(function (a, b) {
-          var nameA = a.getAttribute("data-empresa-nome");
-          var nameB = b.getAttribute("data-empresa-nome");
-          return order === "asc"
-            ? nameA.localeCompare(nameB)
-            : nameB.localeCompare(nameA);
+        const tbody = document.getElementById("empresasBody");
+        const rows = Array.from(tbody.querySelectorAll(".empresa-row"));
+        rows.sort((a, b) => {
+          const na = a.dataset.empresaNome;
+          const nb = b.dataset.empresaNome;
+          return order === "asc" ? na.localeCompare(nb) : nb.localeCompare(na);
         });
-        rows.forEach(function (row) {
-          tbody.appendChild(row);
-        });
+        rows.forEach((r) => tbody.appendChild(r));
       }
 
-      // Variáveis globais para modal de edição
-      let originalNome = "";
-      let originalStatus = "";
-
-      document
-        .getElementById("editEmpresaNome")
-        .addEventListener("input", checkEditEmpresaFormFields);
-      document
-        .getElementById("editEmpresaStatus")
-        .addEventListener("change", checkEditEmpresaFormFields);
-
-      function validateEditEmpresaForm() {
-        let valid = true;
-        const nomeField = document.getElementById("editEmpresaNome");
-        const feedback = document.getElementById("feedbackEditNome");
-        feedback.textContent = "";
-        if (!nomeField.value.trim()) {
-          feedback.textContent = "O nome da empresa é obrigatório.";
-          valid = false;
-        }
-        return valid;
-      }
-
-      function checkEditEmpresaFormFields() {
-        const currentNome = document
-          .getElementById("editEmpresaNome")
-          .value.trim();
-        const currentStatus =
-          document.getElementById("editEmpresaStatus").value;
-        const saveBtn = document.getElementById("btnSalvarModalEditarEmpresa");
-        if (
-          validateEditEmpresaForm() &&
-          (currentNome !== originalNome || currentStatus !== originalStatus)
-        ) {
-          saveBtn.disabled = false;
-        } else {
-          saveBtn.disabled = true;
-        }
-      }
-
+      // Fechar modais
       document
         .getElementById("btnFecharModalEditarEmpresa")
-        .addEventListener("click", function () {
+        .addEventListener("click", () => {
           document.getElementById("modalEditarEmpresa").style.display = "none";
         });
-
-      // Submissão do formulário de edição via AJAX
-      document
-        .getElementById("formEditarEmpresa")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-          if (!validateEditEmpresaForm()) {
-            checkEditEmpresaFormFields();
-            return;
-          }
-          var empresaId = document.getElementById("editEmpresaId").value;
-          var empresaNome = document
-            .getElementById("editEmpresaNome")
-            .value.trim();
-          var empresaStatus =
-            document.getElementById("editEmpresaStatus").value;
-          fetch("/empresa/editar_empresa/" + empresaId, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              nome: empresaNome,
-              status: empresaStatus,
-            }),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                flashMessage("Empresa atualizada com sucesso!", "success");
-                updateEmpresaList();
-                document.getElementById("modalEditarEmpresa").style.display =
-                  "none";
-              } else {
-                alert("Erro ao atualizar empresa: " + data.message);
-              }
-            });
-        });
-
-      // Modal para Exclusão de Empresa
       document
         .getElementById("btnFecharModalExcluirEmpresa")
-        .addEventListener("click", function () {
+        .addEventListener("click", () => {
           document.getElementById("modalExcluirEmpresa").style.display = "none";
         });
 
+      // Confirmar exclusão
       document
         .getElementById("btnConfirmarExclusaoEmpresa")
-        .addEventListener("click", function () {
-          var empresaId = document
+        .addEventListener("click", () => {
+          const id = document
             .getElementById("modalExcluirEmpresa")
             .getAttribute("data-empresa-id");
-          fetch("/empresa/excluir_empresa/" + empresaId, { method: "DELETE" })
-            .then((response) => response.json())
+          fetch(`/empresa/excluir_empresa/${id}`, { method: "DELETE" })
+            .then((res) => res.json())
             .then((data) => {
               if (data.success) {
                 flashMessage("Empresa excluída com sucesso!", "success");
@@ -417,11 +371,12 @@
                 document.getElementById("modalExcluirEmpresa").style.display =
                   "none";
               } else {
-                alert("Erro ao excluir empresa: " + data.message);
+                alert("Erro: " + data.message);
               }
             });
         });
 
+      // Função de flash na UI (reaproveita a sua)
       function flashMessage(message, category) {
         let flashContainer = document.getElementById("flash-messages");
         if (!flashContainer) {
@@ -430,30 +385,23 @@
           document.body.appendChild(flashContainer);
         }
         flashContainer.style.display = "block";
-        flashContainer.style.opacity = "1";
         const flashDiv = document.createElement("div");
         flashDiv.className =
           "alert alert-" + (category === "success" ? "success" : category);
         flashDiv.innerHTML = `<span class="alert-text">${message}</span>
-        <button class="alert-close" onclick="this.parentElement.remove();">×</button>`;
+          <button class="alert-close" onclick="this.parentElement.remove();">×</button>`;
         flashContainer.appendChild(flashDiv);
         setTimeout(() => {
           flashDiv.style.opacity = "0";
-          setTimeout(() => {
-            flashDiv.remove();
-            if (flashContainer.children.length === 0) {
-              flashContainer.style.opacity = "0";
-              flashContainer.style.display = "none";
-            }
-          }, 500);
+          setTimeout(() => flashDiv.remove(), 500);
         }, 3000);
       }
 
-      window.addEventListener("load", function () {
-        var order = document
-          .getElementById("orderToggle")
-          .getAttribute("data-order");
-        sortEmpresaRows(order);
+      // On load
+      window.addEventListener("load", () => {
+        sortEmpresaRows(
+          document.getElementById("orderToggle").getAttribute("data-order")
+        );
         updateEmpresaList();
       });
     </script>

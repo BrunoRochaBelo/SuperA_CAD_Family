@@ -10,24 +10,23 @@ empresa_bp = Blueprint('empresa', __name__)
 @empresa_bp.route('/')
 @login_required
 def index():
-    # só admin do sistema
+    # Só o master super-admin global
     if current_user.email.lower() != "adminbruno@diretiva.com":
         log_audit("Tentativa de acesso não autorizado à lista de empresas")
         flash("Acesso não autorizado!", "danger")
         return redirect(url_for("auth.login"))
 
-    # acesso permitido
     log_access("Acesso à lista de empresas")
-    empresas = Empresa.query.all()
+    empresas = Empresa.query.order_by(Empresa.nome).all()
     companies_data = []
     for emp in empresas:
         admin = Usuario.query.filter_by(
             empresa_id=emp.id, papel=PapelEnum.ADM
         ).first()
         companies_data.append({
-            'id': emp.id,
-            'nome': emp.nome,
-            'status': emp.status.value,
+            'id':          emp.id,
+            'nome':        emp.nome,
+            'status':      emp.status.value,
             'admin_email': admin.email if admin else "N/A"
         })
 
@@ -43,19 +42,19 @@ def cadastrar_empresa():
         return redirect(url_for("auth.login"))
 
     if request.method == 'POST':
-        nome_empresa           = request.form.get('nome_empresa')
-        email_admin            = request.form.get('email_admin')
-        senha_admin            = request.form.get('senha_admin')
-        max_usuarios           = request.form.get('max_usuarios')
-        assinatura_ativa_ate_s = request.form.get('assinatura_ativa_ate')
-        status_str             = request.form.get('status')
+        nome_empresa           = request.form.get('nome_empresa', '').strip()
+        email_admin            = request.form.get('email_admin', '').lower().strip()
+        senha_admin            = request.form.get('senha_admin', '').strip()
+        max_usuarios_s         = request.form.get('max_usuarios', '').strip()
+        assinatura_ativa_ate_s = request.form.get('assinatura_ativa_ate', '').strip()
+        status_str             = request.form.get('status', '').strip()
 
         if not nome_empresa or not email_admin or not senha_admin:
             flash("Preencha os campos obrigatórios!", "danger")
             return redirect(url_for('empresa.cadastrar_empresa'))
 
         try:
-            max_usuarios = int(max_usuarios) if max_usuarios else 5
+            max_usuarios = int(max_usuarios_s) if max_usuarios_s else 5
         except ValueError:
             max_usuarios = 5
 
@@ -73,7 +72,6 @@ def cadastrar_empresa():
             flash("Já existe uma empresa com esse nome.", "danger")
             return redirect(url_for('empresa.cadastrar_empresa'))
 
-        # cria empresa
         nova_empresa = Empresa(
             nome=nome_empresa,
             assinatura_ativa_ate=assinatura_ativa_ate,
@@ -84,9 +82,9 @@ def cadastrar_empresa():
         db.session.commit()
         log_crud("criou", f"empresa '{nome_empresa}'")
 
-        # cria usuário ADM
+        # cria usuário ADM vinculado
         admin = Usuario(
-            email=email_admin.lower(),
+            email=email_admin,
             nome="Administrador",
             papel=PapelEnum.ADM,
             empresa_id=nova_empresa.id
@@ -94,7 +92,10 @@ def cadastrar_empresa():
         admin.set_password(senha_admin)
         db.session.add(admin)
         db.session.commit()
-        log_crud("criou", f"usuário ADM '{email_admin.lower()}' para empresa '{nome_empresa}'")
+        log_crud(
+            "criou",
+            f"usuário ADM '{email_admin}' para empresa '{nome_empresa}'"
+        )
 
         flash("Empresa e usuário administrador cadastrados com sucesso!", "success")
         return redirect(url_for('empresa.index'))
@@ -107,21 +108,21 @@ def cadastrar_empresa():
 def editar_empresa(empresa_id):
     if current_user.email.lower() != "adminbruno@diretiva.com":
         log_audit("Tentativa de edição não autorizada de empresa")
-        return jsonify({'success': False, 'message': 'Acesso não autorizado'})
+        return jsonify({'success': False, 'message': 'Acesso não autorizado'}), 403
 
     data = request.get_json() or {}
     empresa = Empresa.query.get(empresa_id)
     if not empresa:
-        return jsonify({'success': False, 'message': 'Empresa não encontrada'})
+        return jsonify({'success': False, 'message': 'Empresa não encontrada'}), 404
 
     if empresa.nome == "Administração do Sistema":
         return jsonify({
             'success': False,
             'message': 'Não é permitido alterar a administração do sistema.'
-        })
+        }), 403
 
     old_nome = empresa.nome
-    empresa.nome = data.get('nome', old_nome)
+    empresa.nome = data.get('nome', old_nome).strip() or old_nome
     status_str = data.get('status')
     if status_str:
         try:
@@ -132,7 +133,8 @@ def editar_empresa(empresa_id):
     db.session.commit()
     log_crud(
         "editou",
-        f"empresa (ID:{empresa.id}) de '{old_nome}' para '{empresa.nome}', status='{empresa.status.value}'"
+        f"empresa (ID:{empresa.id}) de '{old_nome}' para "
+        f"'{empresa.nome}', status='{empresa.status.value}'"
     )
     return jsonify({'success': True})
 
@@ -140,19 +142,21 @@ def editar_empresa(empresa_id):
 @empresa_bp.route('/excluir_empresa/<int:empresa_id>', methods=['DELETE'])
 @login_required
 def excluir_empresa(empresa_id):
+    # Só super-admin global
     if current_user.email.lower() != "adminbruno@diretiva.com":
         log_audit("Tentativa de exclusão não autorizada de empresa")
-        return jsonify({'success': False, 'message': 'Acesso não autorizado'})
+        return jsonify({'success': False, 'message': 'Acesso não autorizado'}), 403
 
     empresa = Empresa.query.get(empresa_id)
     if not empresa:
-        return jsonify({'success': False, 'message': 'Empresa não encontrada'})
+        return jsonify({'success': False, 'message': 'Empresa não encontrada'}), 404
 
-    if empresa.nome == "Administração do Sistema":
+    # 🚫 Não deixa excluir a própria empresa do super-admin
+    if empresa.id == current_user.empresa_id:
         return jsonify({
             'success': False,
-            'message': 'Não é permitido excluir a administração do sistema.'
-        })
+            'message': 'Não é permitido excluir sua própria empresa.'
+        }), 403
 
     nome = empresa.nome
     db.session.delete(empresa)
@@ -166,19 +170,19 @@ def excluir_empresa(empresa_id):
 def api_empresas():
     if current_user.email.lower() != "adminbruno@diretiva.com":
         log_audit("Tentativa de acesso não autorizado ao endpoint /api/empresas")
-        return jsonify({'success': False, 'message': 'Acesso não autorizado'})
+        return jsonify({'success': False, 'message': 'Acesso não autorizado'}), 403
 
     log_access("Listagem de empresas via API")
-    empresas = Empresa.query.all()
+    empresas = Empresa.query.order_by(Empresa.nome).all()
     empresas_data = []
     for emp in empresas:
         admin = Usuario.query.filter_by(
             empresa_id=emp.id, papel=PapelEnum.ADM
         ).first()
         empresas_data.append({
-            'id': emp.id,
-            'nome': emp.nome,
-            'status': emp.status.value,
+            'id':          emp.id,
+            'nome':        emp.nome,
+            'status':      emp.status.value,
             'admin_email': admin.email if admin else "N/A"
         })
     return jsonify({'empresas': empresas_data})

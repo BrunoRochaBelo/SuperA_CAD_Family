@@ -7,39 +7,53 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """
-    Realiza o login com validação de email e senha.
-    Exibe mensagens específicas e preserva o campo email se a senha estiver incorreta.
-    """
     email_valor = ""
-
     if request.method == 'POST':
         email = request.form.get("email", "").strip().lower()
         senha = request.form.get("senha", "")
-        email_valor = email  # salva para repopular o input
+        email_valor = email
 
+        # traz usuário (se existir)
         usuario = Usuario.query.filter_by(email=email).first()
 
-        if not usuario:
-            log_access(f"Tentativa de login com email inexistente: {email}")
+        # Checa se o usuário EXISTE e se a empresa NÃO foi deletada
+        if not usuario or not usuario.empresa:
+            log_access(f"Tentativa de login com email inexistente ou sem empresa: {email}")
             flash("Email não encontrado. Verifique o endereço digitado.", "danger")
-            return render_template("auth/login.html", active_page="login", email_valor=email_valor)
+            return render_template(
+                "auth/login.html", active_page="login", email_valor=email_valor
+            )
 
+        # Valida senha normalmente
         if not usuario.check_password(senha):
             log_access(f"Senha incorreta para o email: {email}")
             flash("Senha incorreta. Tente novamente.", "danger")
-            return render_template("auth/login.html", active_page="login", email_valor=email_valor)
+            return render_template(
+                "auth/login.html", active_page="login", email_valor=email_valor
+            )
 
+        # Agora a empresa existe de verdade, posso chamar assinatura_valida()
         if not usuario.empresa.assinatura_valida():
             log_access("Login bloqueado por assinatura expirada")
-            flash("Assinatura expirada! Regularize seu pagamento para acessar o sistema.", "danger")
-            return render_template("auth/login.html", active_page="login", email_valor=email_valor)
+            flash(
+                "Assinatura expirada! Regularize seu pagamento para acessar o sistema.",
+                "danger",
+            )
+            return render_template(
+                "auth/login.html", active_page="login", email_valor=email_valor
+            )
 
         if usuario.empresa.status != StatusEnum.ATIVA:
             log_access("Login bloqueado - empresa inativa")
-            flash("Sua empresa está inativa. Entre em contato com o administrador do sistema.", "danger")
-            return render_template("auth/login.html", active_page="login", email_valor=email_valor)
+            flash(
+                "Sua empresa está inativa. Entre em contato com o administrador do sistema.",
+                "danger",
+            )
+            return render_template(
+                "auth/login.html", active_page="login", email_valor=email_valor
+            )
 
+        # Tudo certo, loga o usuário
         login_user(usuario)
         log_access("Login realizado com sucesso")
         flash("Login realizado com sucesso!", "success")
@@ -48,7 +62,9 @@ def login():
             return redirect(url_for("empresa.index"))
         return redirect(url_for("home.index", active_page="home"))
 
-    return render_template("auth/login.html", active_page="login", email_valor=email_valor)
+    return render_template(
+        "auth/login.html", active_page="login", email_valor=email_valor
+    )
 
 
 @auth_bp.route("/logout")
