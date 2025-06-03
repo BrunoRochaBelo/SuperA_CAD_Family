@@ -277,9 +277,9 @@ def excluir_turma(turma):
 
 # Endpoints de Parentes
 
-@turmas_bp.route('/listar_parents/<int:formando_id>')
+@turmas_bp.route('/listar_parentes/<int:formando_id>')
 @login_required
-def listar_parents(formando_id):
+def listar_parentes(formando_id):
     db.session.expire_all()
     # só retorna parentes do formando da empresa certa
     parentes = (
@@ -336,7 +336,7 @@ def criar_parente():
     db.session.commit()
     logger_crud.info(f"Parente criado: '{p.nome}' (grau: {p.grau}) para formando ID {fid} por {current_user.email}")
 
-    return listar_parents(fid)
+    return listar_parentes(fid)
 
 @turmas_bp.route('/editar_parente/<int:parente_id>', methods=['POST'])
 @login_required
@@ -360,7 +360,7 @@ def editar_parente(parente_id):
     db.session.commit()
     logger_crud.info(f"Parente editado: '{p.nome}' (ID: {parente_id}) por {current_user.email}")
 
-    return listar_parents(p.formando_id)
+    return listar_parentes(p.formando_id)
 
 @turmas_bp.route('/excluir_parente/<int:parente_id>', methods=['DELETE'])
 @login_required
@@ -378,4 +378,4 @@ def excluir_parente(parente_id):
     db.session.commit()
     logger_crud.warning(f"Parente excluído: '{p.nome}' (ID: {parente_id}) por {current_user.email}")
 
-    return listar_parents(fid)
+    return listar_parentes(fid)

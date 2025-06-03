@@ -380,7 +380,7 @@ endfor %}
   // Carrega Parentes via AJAX
   // ——————————————————————————————————————————————
   function carregarParentes(studentId) {
-    fetch(`/turmas/listar_parents/${studentId}`)
+    fetch(`/turmas/listar_parentes/${studentId}`)
       .then((r) => r.json())
       .then((data) => {
         const cont = document.getElementById(`parentes-container-${studentId}`);
