@@ -99,7 +99,11 @@ def index():
         .all()
     )
     foto_dict = {t: cnt for t, cnt in alunos_com_foto_por_turma}
-    alunos_com_foto_data = [foto_dict.get(t, 0) for t in turmas_labels]
+    if turma_filter:
+        alunos_com_foto_data = [foto_dict.get(t, 0) for t in turmas_labels]
+    else:
+        total_fotos = sum(foto_dict.values())
+        alunos_com_foto_data = [total_fotos]
 
     # — Pizza: Parentes por cidade
     pais_por_cidade = (
