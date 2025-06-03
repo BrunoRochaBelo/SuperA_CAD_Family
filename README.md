@@ -128,7 +128,7 @@ source venv/bin/activate
 ### 2️⃣ Instale as dependências
 
 ```bash
-pip install -r [requirements.txt](http://_vscodecontentref_/0)
+pip install -r requirements.txt
 ```
 
 ### 3️⃣ Configure o `.env`
