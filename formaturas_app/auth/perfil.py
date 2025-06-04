@@ -33,10 +33,11 @@ def editar_perfil():
         if nome:
             current_user.nome = escape(nome.strip())
         if username:
-            cleaned = escape(username.strip())
-            if '<' in cleaned or '>' in cleaned:
+            raw = username.strip()
+            if '<' in raw or '>' in raw:
                 flash("O nome de usuário contém caracteres inválidos.", "danger")
                 return redirect(url_for("perfil.editar_perfil"))
+            cleaned = escape(raw)
             exists = Usuario.query.filter(
                 Usuario.username == cleaned,
                 Usuario.id != current_user.id
