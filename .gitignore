@@ -10,6 +10,7 @@ __pycache__/
 # Arquivos de configuração e segredos
 .env
 .env.*
+!.env.example
 
 # Diretórios gerados automaticamente
 instance/

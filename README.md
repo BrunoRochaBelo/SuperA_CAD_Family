@@ -133,12 +133,13 @@ pip install -r requirements.txt
 
 ### 3️⃣ Configure o `.env`
 
-Crie ou edite o arquivo .env na raiz do projeto.
-No arquivo `.env`, você pode definir as variáveis de ambiente necessárias, por exemplo,
+Copie o arquivo `.env.example` para `.env` e ajuste as variáveis conforme o seu ambiente. Para executar em produção, defina `DATABASE_URL` apontando para o banco PostgreSQL desejado. Um exemplo é:
 
 ```
-DATABASE_URL=postgresql+psycopg2://formaturas_user:DevDiretiva@localhost:5432/formaturas
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/politika
 ```
+
+O mesmo arquivo também permite customizar a `SECRET_KEY` e outras configurações que você queira manter fora do controle de versão.
 
 ### 4️⃣ Rode o script de criação do usuário master
 
