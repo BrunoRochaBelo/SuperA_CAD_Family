@@ -151,13 +151,22 @@ python -m formaturas_app.utils.criar_usuarios_iniciais
 
 O usuário master criado será responsável por cadastrar os demais usuários pela interface do sistema.
 
-### 5️⃣ Rode a aplicação
+### 5️⃣ Aplique as migrações do banco de dados
+
+Execute as migrações antes de iniciar a aplicação:
+
+```bash
+flask --app run.py db upgrade
+```
+
+Certifique-se de que a variável `FLASK_APP` aponte para `run.py` ou para a função `create_app`.
+### 6️⃣ Rode a aplicação
 
 ```bash
 python run.py
 ```
 
-### 6️⃣ Acesse no navegador
+### 7️⃣ Acesse no navegador
 
 ```
 http://127.0.0.1:5000/auth/login
